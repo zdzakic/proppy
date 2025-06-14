@@ -6,7 +6,11 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
+    const root = document.documentElement;
+
+    // Dodaj i data-theme (za DaisyUI) i class (za Tailwind dark:)
+    root.setAttribute('data-theme', theme);
+    root.classList.toggle('dark', theme === 'dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
 
