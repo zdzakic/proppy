@@ -5,32 +5,39 @@ const PropertiesTable = () => {
   const [properties, setProperties] = useState([]);
 
   useEffect(() => {
-    axios.get('/properties/')
-      .then(res => setProperties(res.data))
-      .catch(err => console.error('Error fetching properties:', err));
+    axios
+      .get('/properties/')
+      .then((res) => setProperties(res.data))
+      .catch((err) => console.error('Error fetching properties:', err));
   }, []);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="table table-zebra w-full">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Block ID</th>
-            <th>Comment</th>
-          </tr>
-        </thead>
-        <tbody>
-          {properties.map(prop => (
-            <tr key={prop.id}>
-              <td>{prop.name}</td>
-              <td>{prop.block_id}</td>
-              <td>{prop.comment}</td>
+    <section className="bg-white dark:bg-gray-900 shadow-md rounded-2xl p-6">
+      <h1 className="text-2xl font-bold mb-4 text-primary">Properties</h1>
+      <div className="overflow-x-auto">
+        <table className="table w-full text-sm">
+          <thead>
+            <tr className="bg-gray-100 dark:bg-gray-800 text-grayText dark:text-gray-300 uppercase text-xs">
+              <th className="py-3 px-4 text-left">Name</th>
+              <th className="py-3 px-4 text-left">Block ID</th>
+              <th className="py-3 px-4 text-left">Comment</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {properties.map((prop) => (
+              <tr
+                key={prop.id}
+                className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
+              >
+                <td className="py-2 px-4 text-grayText dark:text-gray-200">{prop.name}</td>
+                <td className="py-2 px-4 text-grayText dark:text-gray-200">{prop.block_id}</td>
+                <td className="py-2 px-4 text-grayText dark:text-gray-200">{prop.comment}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 };
 

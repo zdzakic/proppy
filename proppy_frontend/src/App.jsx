@@ -9,8 +9,8 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import OwnersPage from './pages/OwnersPage';
 import PropertiesPage from './pages/PropertiesPage';
-import OwnershipsTable from './pages/OwnershipsTable';
-
+import OwnershipsTable from './components/OwnershipsTable';
+import OwnershipPage from './pages/OwnershipPage';
 
 const App = () => {
   return (
