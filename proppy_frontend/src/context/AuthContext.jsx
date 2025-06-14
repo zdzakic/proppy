@@ -3,9 +3,21 @@ import { createContext, useState, useEffect } from 'react';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [accessToken, setAccessToken] = useState(localStorage.getItem('access') || null);
-  const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refresh') || null);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || null);
+  const [accessToken, setAccessToken] = useState(null);
+  const [refreshToken, setRefreshToken] = useState(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const storedAccess = localStorage.getItem('access');
+    const storedRefresh = localStorage.getItem('refresh');
+    const storedUser = localStorage.getItem('user');
+
+    if (storedAccess && storedRefresh && storedUser) {
+      setAccessToken(storedAccess);
+      setRefreshToken(storedRefresh);
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
   const login = ({ access, refresh, user }) => {
     setAccessToken(access);

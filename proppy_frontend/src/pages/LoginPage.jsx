@@ -7,25 +7,25 @@ const LoginPage = () => {
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post('/api/token/', {
-        username,
+      const res = await axios.post('/token/', {
+        email,
         password,
       });
 
       const { access, refresh, user } = res.data;
 
-      login({ access, refresh, user }); // šalje podatke AuthContext-u
+      login({ access, refresh, user });
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
-      setError('Neispravno korisničko ime ili lozinka.');
+      setError('Invalid credentials.');
     }
   };
 
@@ -35,11 +35,11 @@ const LoginPage = () => {
       <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
         {error && <p className="text-red-500">{error}</p>}
         <input
-          type="text"
-          placeholder="Username"
+          type="email"
+          placeholder="Email"
           className="input input-bordered"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <input
           type="password"
