@@ -1,15 +1,25 @@
 import { Link } from 'react-router-dom';
 
+const navLinks = [
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/dashboard/owners', label: 'Owners' },
+  { to: '/dashboard/properties', label: 'Properties' },
+  { to: '/dashboard/ownerships', label: 'Ownerships' },
+  // You can add more routes later
+];
+
 const Sidebar = () => {
   return (
     <div className="flex flex-col h-screen w-64 bg-base-200 p-4">
       <div className="mb-8 text-lg font-bold">Proppy Dashboard</div>
-      <Link to="/dashboard" className="btn btn-ghost justify-start">Dashboard</Link>
-      <Link to="/table1" className="btn btn-ghost justify-start">Table 1</Link>
-      <Link to="/table2" className="btn btn-ghost justify-start">Table 2</Link>
-      <Link to="/table3" className="btn btn-ghost justify-start">Table 3</Link>
+      {navLinks.map(link => (
+        <Link key={link.to} to={link.to} className="btn btn-ghost justify-start">
+          {link.label}
+        </Link>
+      ))}
     </div>
   );
 };
 
 export default Sidebar;
+

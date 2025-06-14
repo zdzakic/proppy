@@ -17,6 +17,7 @@ INSTALLED_APPS = [
     'users',
     'dashboard',
     'core',
+    'properties',
 ]
 
 MIDDLEWARE = [

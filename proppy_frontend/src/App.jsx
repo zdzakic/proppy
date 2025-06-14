@@ -6,10 +6,11 @@ import DashboardLayout from './layout/DashboardLayout';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
-import Table1 from './pages/Table1';
-import Table2 from './pages/Table2';
-import Table3 from './pages/Table3';
 import ProtectedRoute from './components/ProtectedRoute';
+import OwnersPage from './pages/OwnersPage';
+import PropertiesPage from './pages/PropertiesPage';
+import OwnershipsTable from './pages/OwnershipsTable';
+
 
 const App = () => {
   return (
@@ -27,9 +28,9 @@ const App = () => {
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/table1" element={<Table1 />} />
-                <Route path="/table2" element={<Table2 />} />
-                <Route path="/table3" element={<Table3 />} />
+                <Route path="/dashboard/owners" element={<OwnersPage />} />
+                <Route path="/dashboard/properties" element={<PropertiesPage />} />
+                <Route path="/dashboard/ownerships" element={<OwnershipsTable />} />
               </Route>
             </Route>
           </Routes>
