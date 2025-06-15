@@ -44,7 +44,7 @@ const LoginPage = () => {
 
     try {
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      // await new Promise((resolve) => setTimeout(resolve, 3000));
       const res = await axios.post('/token/', { email, password });
       const { access, refresh, user } = res.data;
 

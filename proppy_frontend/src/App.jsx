@@ -6,14 +6,6 @@ import { AuthProvider } from './context/AuthContext';
 import PublicLayout from './layout/PublicLayout';
 import DashboardLayout from './layout/DashboardLayout';
 
-// import HomePage from './pages/HomePage';
-// import LoginPage from './pages/LoginPage';
-// import Dashboard from './pages/Dashboard';
-// import ProtectedRoute from './components/ProtectedRoute';
-// import OwnersPage from './pages/OwnersPage';
-// import PropertiesPage from './pages/PropertiesPage';
-// import OwnershipPage from './pages/OwnershipPage';
-
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -21,6 +13,7 @@ const ProtectedRoute = lazy(() => import('./components/ProtectedRoute'));
 const OwnersPage = lazy(() => import('./pages/OwnersPage'));
 const PropertiesPage = lazy(() => import('./pages/PropertiesPage'));
 const OwnershipPage = lazy(() => import('./pages/OwnershipPage'));
+const TwoColumnLogin = lazy(() => import('./pages/TwoColumnLogin'));
 
 const App = () => {
   return (
@@ -29,10 +22,13 @@ const App = () => {
         <Router>
           <Suspense fallback={<Loader />}>
             <Routes>
+              {/* LOGIN */}
+              <Route path="/login" element={<TwoColumnLogin />} />
               {/* PUBLIC */}
               <Route element={<PublicLayout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/login" element={<LoginPage />} />
+                {/* <Route path="/login" element={<TwoColumnLogin //>} /> */}
               </Route>
 
               {/* DASHBOARD */}

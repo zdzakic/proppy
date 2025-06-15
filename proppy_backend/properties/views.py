@@ -12,6 +12,7 @@ class PropertyListAPIView(generics.ListAPIView):
 class OwnerListAPIView(generics.ListAPIView):
     queryset = Owner.objects.all().prefetch_related('properties')
     serializer_class = OwnerSerializer
+    
 
 class OwnershipListAPIView(generics.ListAPIView):
     def get(self, request):
