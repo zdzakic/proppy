@@ -3,6 +3,7 @@ import axios from '../util/axios';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { isValidEmail } from '../util/validators';
+import Loader from '../components/Loader';
 
 const LoginPage = () => {
   const { login } = useContext(AuthContext);
@@ -15,6 +16,8 @@ const LoginPage = () => {
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  const [loading, setLoading] = useState(false); 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,6 +43,8 @@ const LoginPage = () => {
     if (!valid) return;
 
     try {
+      setLoading(true);
+      await new Promise((resolve) => setTimeout(resolve, 3000));
       const res = await axios.post('/token/', { email, password });
       const { access, refresh, user } = res.data;
 
@@ -47,16 +52,19 @@ const LoginPage = () => {
       navigate('/dashboard');
     } catch (err) {
       setError('Invalid credentials!');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
+    <div className='relative'>
+      {loading && <Loader />}
     <div className="flex justify-center px-4 py-16 bg-light dark:bg-[#0e1625]">
       <div className="bg-white dark:bg-[#1a2538] rounded-2xl shadow-xl p-8 w-full max-w-md">
         <h2 className="text-2xl font-bold text-navy dark:text-white mb-6 text-center">
           Sign in to Proppy
         </h2>
-
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           {/* EMAIL */}
           <div>
@@ -105,11 +113,13 @@ const LoginPage = () => {
           <button
             type="submit"
             className="w-full bg-primary hover:opacity-90 text-white font-semibold py-2 px-4 rounded-lg transition"
+            disabled={loading}
           >
-            LOGIN
+            {loading ? 'Logging in...' : 'LOGIN'}
           </button>
         </form>
       </div>
+    </div>
     </div>
   );
 };
