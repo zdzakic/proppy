@@ -2,7 +2,12 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+# custom user model 
+AUTH_USER_MODEL = 'users.User'
+
+# secret key
 SECRET_KEY = 'sdh232KV_23232mpqfjjjwsdsd62323__hd'
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',

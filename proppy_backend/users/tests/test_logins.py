@@ -8,9 +8,11 @@ class AuthTests(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.user = User.objects.create_user(
-            username='testuser',  # ⬅️ obavezno
             email='test@example.com',
-            password='securepass123'
+            password='securepass123',
+            first_name='Test',
+            last_name='User',
+            role='admin'
         )
 
     def test_login_returns_token_pair(self):
@@ -27,9 +29,7 @@ class AuthTests(TestCase):
         self.assertIn('user', data)
         self.assertEqual(data['user']['email'], 'test@example.com')
 
-
     def test_refresh_token_returns_new_access_token(self):
-        # Prvo login
         login_response = self.client.post('/api/token/', {
             'email': 'test@example.com',
             'password': 'securepass123'
@@ -39,7 +39,6 @@ class AuthTests(TestCase):
         refresh_token = login_response.json().get('refresh')
         self.assertIsNotNone(refresh_token)
 
-        # Sad refresh
         refresh_response = self.client.post('/api/token/refresh/', {
             'refresh': refresh_token
         })

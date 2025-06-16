@@ -20,7 +20,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['user'] = {
             'id': user.id,
             'email': user.email,
-            'name': user.first_name,
-            'is_admin': user.is_staff,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'role': user.role,
+            'is_admin': user.is_superuser,
+            'is_staff': user.is_staff,
+            'is_active': user.is_active,    
         }
         return data
