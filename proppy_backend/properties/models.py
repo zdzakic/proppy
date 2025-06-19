@@ -1,21 +1,42 @@
 from django.db import models
+from django.conf import settings
 
-class Owner(models.Model):
-    name = models.CharField(max_length=100)
-    date_left = models.DateField(null=True, blank=True)
-    phone = models.CharField(max_length=20, blank=True)
-    email = models.EmailField(blank=True)
-    comments = models.TextField(blank=True)
+
+class Company(models.Model):
+    name = models.CharField(max_length=255)         
+    address = models.TextField()                    
+    is_valid = models.BooleanField(default=True)    
+    comment = models.TextField(blank=True)          
+
+    def __str__(self):
+        return self.name
+
+
+class Block(models.Model):
+    name = models.CharField(max_length=255)            
+    company = models.ForeignKey(Company, on_delete=models.CASCADE) 
+    comment = models.TextField(blank=True)         
 
     def __str__(self):
         return self.name
 
 
 class Property(models.Model):
-    name = models.CharField(max_length=100)
-    block_id = models.IntegerField()
+    name = models.CharField(max_length=255)  # propertyname
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    block = models.ForeignKey(Block, on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.TextField(blank=True)
-    owners = models.ManyToManyField(Owner, related_name='properties')
 
     def __str__(self):
         return self.name
+
+
+class Ownership(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)  # null znači da je još uvijek aktivno
+    comment = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.user} owns {self.property} from {self.start_date}"

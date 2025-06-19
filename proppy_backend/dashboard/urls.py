@@ -1,8 +1,6 @@
 from django.urls import path
-from .views import Table1View, Table2View, Table3View
+from .views import OwnerSummaryAPIView
 
 urlpatterns = [
-    path('table1/', Table1View.as_view()),
-    path('table2/', Table2View.as_view()),
-    path('table3/', Table3View.as_view()),
+    path('owner/summary/', OwnerSummaryAPIView.as_view(), name='owner-summary'),
 ]

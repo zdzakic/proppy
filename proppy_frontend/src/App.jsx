@@ -5,6 +5,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import PublicLayout from './layout/PublicLayout';
 import DashboardLayout from './layout/DashboardLayout';
+import DashboardRouter from './pages/dashboard/DashboardRouter';
+const OwnerDashboard = lazy(() => import('./pages/dashboard/OwnerDashboard'));
+// const TenantDashboard = lazy(() => import('./pages/dashboard/TenantDashboard'));
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const LoginPage = lazy(() => import('./pages/LoginPage'));
@@ -34,10 +37,10 @@ const App = () => {
               {/* DASHBOARD */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<DashboardLayout />}>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/dashboard/owners" element={<OwnersPage />} />
-                  <Route path="/dashboard/properties" element={<PropertiesPage />} />
-                  <Route path="/dashboard/ownerships" element={<OwnershipPage />} />
+                  <Route path="/dashboard" element={<DashboardRouter />} />
+                  <Route path="/dashboard/owner" element={<OwnerDashboard />} />
+                  {/* <Route path="/dashboard/properties" element={<PropertiesPage />} /> */}
+                  {/* <Route path="/dashboard/ownerships" element={<OwnershipPage />} /> */}
                 </Route>
               </Route>
             </Routes>

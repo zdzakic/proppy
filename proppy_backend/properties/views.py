@@ -1,34 +1,75 @@
+# views.py
+from rest_framework.views import APIView
 from rest_framework import generics
-from .models import Property, Owner
-from .serializers import PropertySerializer, OwnerSerializer, OwnershipSerializer
 from rest_framework.response import Response
+from .models import Ownership, Property
+from .serializers import OwnershipSerializer, PropertySerializer
+from rest_framework.permissions import IsAuthenticated
+from users.permissions import IsOwnerOnly, IsAdminOnly, IsTenantOnly, IsOwnerOrAdmin
+
+class OwnershipListAPIView(generics.ListAPIView):
+    """
+    Returns ownership records:
+    - Admins see all ownerships
+    - Owners see only their own
+
+    Why ListAPIView:
+    - Enables pagination, filtering, and ordering
+    - Cleaner than APIView (no need for custom `get()` method)
+    - Works seamlessly with DRF's ecosystem
+
+    Why get_queryset():
+    - Filters data based on authenticated user's role
+    - Ensures modular and testable access control logic
+    - Keeps data exposure safe and controlled
+
+    Why RolePermission (IsOwnerOrAdmin):
+    - Ensures only users with role 'owner' or 'admin' can access this view
+    - Easily extendable for future roles (e.g. manager, support)
+    - Prevents unauthorized access before any DB queries are executed
+    """
+
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    serializer_class = OwnershipSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.role == 'admin':
+            return Ownership.objects.select_related('user', 'property')
+        elif user.role == 'owner':
+            return Ownership.objects.select_related('user', 'property').filter(user=user)
+        else:
+            return Ownership.objects.none()
+
 
 
 class PropertyListAPIView(generics.ListAPIView):
-    queryset = Property.objects.all().prefetch_related('owners')
+    """
+    Returns all property records:
+    - Admins and Owners can access the full list
+
+    Why ListAPIView:
+    - Inherits built-in pagination, filtering and ordering
+    - Avoids manual query logic, leverages DRF capabilities
+
+    Why get_queryset():
+    - Clean separation of filtering logic from view behavior
+    - Only users with roles 'admin' or 'owner' can access
+    - Future filtering rules can be easily injected per role
+
+    Why RolePermission (IsOwnerOrAdmin):
+    - Ensures role-based access control at the permission level
+    - Centralized and consistent across all views
+    """
+
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
     serializer_class = PropertySerializer
 
+    def get_queryset(self):
+        user = self.request.user
 
-class OwnerListAPIView(generics.ListAPIView):
-    queryset = Owner.objects.all().prefetch_related('properties')
-    serializer_class = OwnerSerializer
-    
-
-class OwnershipListAPIView(generics.ListAPIView):
-    def get(self, request):
-        data = []
-
-        for owner in Owner.objects.prefetch_related('properties'):
-            for property in owner.properties.all():
-                data.append({
-                    "owner_id": owner.id,
-                    "owner_name": owner.name,
-                    "owner_email": owner.email,
-                    "property_id": property.id,
-                    "property_name": property.name,
-                    "block_id": property.block_id,
-                    "comment": property.comment
-                })
-
-        serializer = OwnershipSerializer(data, many=True)
-        return Response(serializer.data)
+        if user.role in ['admin', 'owner']:
+            return Property.objects.select_related('company', 'block')
+        else:
+            return Property.objects.none()
