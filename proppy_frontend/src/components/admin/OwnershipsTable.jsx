@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from '../util/axios';
+import axios from '../../util/axios';
 
 const OwnershipsTable = () => {
   const [data, setData] = useState([]);
@@ -20,6 +20,7 @@ const OwnershipsTable = () => {
         <table className="table w-full text-sm">
           <thead>
             <tr className="bg-gray-100 dark:bg-gray-800 text-grayText dark:text-gray-300 uppercase text-xs">
+              <th className="py-3 px-4 text-left">ID</th>
               <th className="py-3 px-4 text-left">Owner Name</th>
               <th className="py-3 px-4 text-left">Email</th>
               <th className="py-3 px-4 text-left">Flat Name</th>
@@ -33,6 +34,9 @@ const OwnershipsTable = () => {
                 key={index}
                 className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition"
               >
+                <td className="py-2 px-4 text-grayText dark:text-gray-200">
+                  {entry.owner_id}
+                </td>
                 <td className="py-2 px-4 text-grayText dark:text-gray-200">
                   {entry.owner_name}
                 </td>

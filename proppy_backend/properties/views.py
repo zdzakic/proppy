@@ -3,9 +3,10 @@ from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
 from .models import Ownership, Property
-from .serializers import OwnershipSerializer, PropertySerializer
+from .serializers import OwnershipSerializer, PropertySerializer, OwnerListSerializer
 from rest_framework.permissions import IsAuthenticated
 from users.permissions import IsOwnerOnly, IsAdminOnly, IsTenantOnly, IsOwnerOrAdmin
+from users.models import User
 
 class OwnershipListAPIView(generics.ListAPIView):
     """
@@ -73,3 +74,26 @@ class PropertyListAPIView(generics.ListAPIView):
             return Property.objects.select_related('company', 'block')
         else:
             return Property.objects.none()
+
+
+class OwnerListAPIView(generics.ListAPIView):
+    """
+    Returns a list of owners with their properties.
+
+    - Admins see all owners
+    - Owners see only themselves
+    """
+
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+    serializer_class = OwnerListSerializer
+
+    def get_queryset(self):
+        qs = User.objects.filter(role='owner').prefetch_related(
+            'ownerships__property',
+            'ownerships__property__block'
+        )
+
+        user = self.request.user
+        if user.role == 'owner':
+            return qs.filter(id=user.id)
+        return qs

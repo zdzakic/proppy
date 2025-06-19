@@ -11,12 +11,19 @@ class OwnershipSerializer(serializers.Serializer):
     from multiple related models: `User` (owner) and `Property`. It is used for
     aggregated read-only API views (e.g. list of ownerships).
     """
-    owner_id = serializers.IntegerField()
-    owner_email = serializers.EmailField()
-    property_id = serializers.IntegerField()
-    property_name = serializers.CharField()
-    block_id = serializers.IntegerField()
-    comment = serializers.CharField()
+    owner_id = serializers.IntegerField(source='user.id')
+    owner_email = serializers.EmailField(source='user.email')
+    owner_name = serializers.SerializerMethodField()
+
+    property_id = serializers.IntegerField(source='property.id')
+    property_name = serializers.CharField(source='property.name')
+    block_id = serializers.IntegerField(source='property.block.id', default=None)
+    block_name = serializers.CharField(source='property.block.name', default=None)
+    company_name = serializers.CharField(source='property.company.name', default=None)
+    comment = serializers.CharField(source='property.comment')
+
+    def get_owner_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}".strip()    
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -34,3 +41,21 @@ class PropertySerializer(serializers.ModelSerializer):
         model = Property
         fields = ['id', 'name', 'comment', 'block', 'block_name', 'company', 'company_name']
 
+
+class OwnerListSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.SerializerMethodField()
+    email = serializers.EmailField()
+    properties = serializers.SerializerMethodField()
+
+    def get_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+
+    def get_properties(self, obj):
+        return [
+            {
+                "id": ownership.property.id,
+                "name": ownership.property.name
+            }
+            for ownership in obj.ownerships.all()
+        ]

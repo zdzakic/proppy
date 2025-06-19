@@ -1,4 +1,4 @@
-import OwnershipsTable from '../components/OwnershipsTable';
+import OwnershipsTable from '../components/admin/OwnershipsTable';
 
 const OwnershipsPage = () => {
   return (

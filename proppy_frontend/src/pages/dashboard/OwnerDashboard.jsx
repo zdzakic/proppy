@@ -33,7 +33,7 @@ const OwnerDashboard = () => {
   return (
     <section className="py-6 px-4">
       <h1 className="text-3xl font-semibold mb-6 text-primary dark:text-white">
-        Owner Dashboard
+      {stats?.owner_name ? `Welcome ${stats.owner_name} – Owner Dashboard` : 'Owner Dashboard'}
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -42,8 +42,8 @@ const OwnerDashboard = () => {
         {stats && (
           <>
             <SummaryCard title="Total Properties" value={stats.total_properties} />
-            <SummaryCard title="Total Rent Collected" value={`$${stats.total_rent}`} />
-            <SummaryCard title="Pending Maintenance" value={stats.pending_maintenance} />
+            <SummaryCard title="Companies" value={stats.companies_count} />
+            <SummaryCard title="Blocks" value={stats.blocks_count} />
           </>
         )}
       </div>

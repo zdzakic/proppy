@@ -1,4 +1,4 @@
-import PropertiesTable from '../components/PropertiesTable';
+import PropertiesTable from '../components/admin/PropertiesTable';
 
 const PropertiesPage = () => {
   return (

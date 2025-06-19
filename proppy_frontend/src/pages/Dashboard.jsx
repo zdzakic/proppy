@@ -2,7 +2,7 @@ const Dashboard = () => {
   const cards = [
     {
       title: 'Total Properties',
-      value: 12,
+      value: 134,
     },
     {
       title: 'Total Rent Collected',

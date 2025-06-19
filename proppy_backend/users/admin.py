@@ -6,7 +6,7 @@ from .models import User
 class UserAdmin(BaseUserAdmin):
     model = User
     list_display = ('email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'is_staff')
-    ordering = ('email',)
+    ordering = ('id',)
     list_filter = ('role', 'is_staff', 'is_active')
 
     fieldsets = (
