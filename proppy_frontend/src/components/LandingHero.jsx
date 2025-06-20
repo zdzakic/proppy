@@ -6,10 +6,10 @@ const LandingHero = () => {
      <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 px-4">
         {/* Tekst lijevo */}
         <div className="max-w-xl text-left">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+          <h1 className="font-heading text-4xl md:text-6xl font-bold mb-4 leading-tight">
             Simplify Your <span className="text-primary">Property Management</span>
           </h1>
-          <p className="text-lg text-grayText dark:text-gray-300 mb-8 max-w-md">
+          <p className="font-sans text-lg text-grayText dark:text-gray-300 mb-8 max-w-md">
             Proppy gives you a smarter, faster way to manage real estate — from ownership structure to daily operations.
           </p>
           <a href="/login" className="bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition">

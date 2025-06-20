@@ -15,6 +15,11 @@ module.exports = {
         grayText: '#64748b',
         borderGray: '#cbd5e1'
       },
+      fontFamily: {
+        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+        heading: ['Poppins', 'sans-serif'],
+        accent: ['DM Sans', 'sans-serif'],
+      },
     },
   },
   plugins: [require("daisyui")],

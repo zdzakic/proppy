@@ -54,3 +54,27 @@ class OwnerSummaryAPIView(APIView):
             "companies_count": Company.objects.filter(id__in=owned_company_ids).count(),
             "blocks_count": Block.objects.filter(id__in=owned_block_ids).count(),
         }
+
+
+class TenantSummaryAPIView(APIView):
+    """
+    Returns summary metrics for tenant dashboard.
+    For now returns static values.
+    Only accessible to users with role='tenant'.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if getattr(user, 'role', '') != 'tenant':
+            return Response({"detail": "Forbidden"}, status=403)
+
+        return Response({
+            "tenant_name": user.first_name or user.email,
+            "total_properties": 0,
+            "rent_paid": 0,
+            "open_maintenance_requests": 0
+        })
+

@@ -1,5 +1,3 @@
-// src/components/LoginCard.jsx
-
 import { useState, useContext } from 'react';
 import axios from '../util/axios';
 import { AuthContext } from '../context/AuthContext';
@@ -56,21 +54,19 @@ const LoginCard = () => {
   };
 
   return (
-    <div className="relative w-full max-w-md bg-white dark:bg-[#1a2538] p-8 rounded-2xl shadow-xl">
+    <div className="relative w-full max-w-md bg-white dark:bg-[#1a2538] p-8 rounded-2xl shadow-xl font-sans">
       {loading && <Loader />}
-      <h2 className="text-2xl font-bold text-navy dark:text-white mb-6 text-center">
+      <h2 className="text-3xl font-heading font-bold text-navy dark:text-white mb-6 text-center">
         Sign in to Proppy
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
         {/* EMAIL */}
         <div>
           <input
             type="email"
             placeholder="you@example.com"
             autoFocus
-            className={`input input-bordered w-full bg-white dark:bg-[#1e2d45] text-navy dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border ${
-              emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-            }`}
+            className={`w-full input input-bordered bg-white dark:bg-[#1e2d45] text-navy dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border ${emailError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
@@ -84,9 +80,7 @@ const LoginCard = () => {
           <input
             type={showPassword ? 'text' : 'password'}
             placeholder="••••••••"
-            className={`input input-bordered w-full pr-10 bg-white dark:bg-[#1e2d45] text-navy dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border ${
-              passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-            }`}
+            className={`w-full input input-bordered pr-10 bg-white dark:bg-[#1e2d45] text-navy dark:text-white placeholder-gray-400 dark:placeholder-gray-500 border ${passwordError ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'}`}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
@@ -94,7 +88,7 @@ const LoginCard = () => {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 dark:text-gray-400 text-sm"
           >
-            {showPassword ? '👁️' : '👁️'}
+            {showPassword ? '🙈' : '👁️'}
           </span>
           {passwordError && (
             <p className="text-sm text-red-500 mt-2">{passwordError}</p>
@@ -108,7 +102,7 @@ const LoginCard = () => {
 
         <button
           type="submit"
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-lg transition"
+          className="w-full bg-primary hover:opacity-90 text-white font-accent font-semibold py-2.5 px-4 rounded-lg transition"
           disabled={loading}
         >
           {loading ? 'Logging in...' : 'LOGIN'}
