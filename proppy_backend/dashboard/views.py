@@ -1,7 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from users.permissions import IsOwnerOrAdmin
+from users.permissions import IsOwnerOrAdmin, IsTenantOnly
 from properties.models import Property, Ownership, Company, Block
 from django.contrib.auth import get_user_model
 from django.db.models import Count
@@ -63,7 +63,7 @@ class TenantSummaryAPIView(APIView):
     Only accessible to users with role='tenant'.
     """
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsTenantOnly,IsAuthenticated]
 
     def get(self, request):
         user = request.user

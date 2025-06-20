@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Company, Block, Property, Ownership
+from .models import Company, Block, Property, Ownership, Insurance, HealthSafety
 from django.conf import settings
 
 @admin.register(Company)
@@ -33,3 +33,16 @@ class OwnershipAdmin(admin.ModelAdmin):
     def get_block_name(self, obj):
         return obj.property.block.name if obj.property.block else "-"
     get_block_name.short_description = 'Block Name'
+
+
+@admin.register(Insurance)
+class InsuranceAdmin(admin.ModelAdmin):
+    list_display = ('company', 'insurance_type', 'start_date', 'end_date', 'provider')
+    search_fields = ('insurance_type', 'provider', 'provider_reference')
+    list_filter = ('company', 'insurance_type')
+
+@admin.register(HealthSafety)
+class HealthSafetyAdmin(admin.ModelAdmin):
+    list_display = ('company', 'document_type', 'start_date', 'end_date', 'amount')
+    search_fields = ('document_type', 'provider', 'provider_reference')
+    list_filter = ('company', 'document_type')
