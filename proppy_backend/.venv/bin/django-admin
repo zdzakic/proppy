@@ -1,4 +1,4 @@
-#!/Users/zdz/Desktop/proppy/proppy_backend/.venv/bin/python3.11
+#!/Users/zdzakic/Desktop/web_apps/proppy/proppy_backend/.venv/bin/python3.12
 # -*- coding: utf-8 -*-
 import re
 import sys
