@@ -10,7 +10,7 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white dark:bg-navy text-navy dark:text-white shadow-lg sticky top-0 z-50">
-  <div className="container mx-auto flex justify-between items-center px-4 py-3">
+  <div className="max-w-7xl mx-auto flex justify-between items-center px-4 py-3">
     {/* Logo */}
     <div className="text-xl font-bold text-navy dark:text-white">
       <Link to="/">Proppy</Link>

@@ -36,14 +36,14 @@ const Footer = () => {
           <h3 className="text-base font-accent font-semibold mb-3">Contact</h3>
           <ul className="space-y-2 text-gray-300">
             <li><a href="mailto:hello@proppy.com" className="hover:text-white transition">hello@proppy.com</a></li>
-            <li><span className="text-gray-500">Switzerland, EU</span></li>
+            <li><span className="text-gray-500">Switzerland</span></li>
           </ul>
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="mt-12 pt-6 border-t border-gray-700 text-center text-gray-500 text-xs">
-        © {new Date().getFullYear()} Proppy. All rights reserved.
+      <div className="max-w-7xl mx-auto mt-12 pt-6 border-t border-gray-700 text-center text-gray-500 text-xs">
+        ©{new Date().getFullYear()} Proppy. All rights reserved.
       </div>
     </footer>
   );
