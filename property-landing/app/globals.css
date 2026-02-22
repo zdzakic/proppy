@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&display=swap');
+
 @import "tailwindcss";
 
-
 @theme {
+  --color-brand-hero: var(--hero-heading);
   --color-brand-bg: var(--bg);
   --color-brand-surface: var(--surface);
   --color-brand-primary: var(--primary);
@@ -9,7 +11,9 @@
   --color-brand-border: var(--border);
   --color-brand-text: var(--text);
   --color-brand-muted: var(--muted);
-  --font-family-display: "Playfair Display", Georgia, serif;
+
+  /* --font-family-display: "Playfair Display", Georgia, serif; */
+  --font-family-display: var(--font-display);
   --box-shadow-premium: 0 20px 50px rgba(0,0,0,0.08);
   --border-radius-xl: 1rem;
   --border-radius-2xl: 1.5rem;
@@ -20,6 +24,7 @@
    ===================================== */
 
 :root {
+  --hero-heading: #F1E8DA;
   --bg: #F6F4EF;
   --surface: #FFFFFF;
   --text: #1C1C1C;
@@ -52,28 +57,43 @@ html, body {
 }
 
 body {
-  background: var(--primary);
+  background: var(--bg);
   color: var(--text);
 }
 
-
-.site-hero-bg {
-  position: relative;
-  min-height: 100vh;
-  background-image: url("/hero-house.png");
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: 70% center;
+font-display {
+  font-family: 'Cormorant Garamond', serif;
 }
 
-.site-hero-bg::after {
-  content: "";
+.hero-bg-layer {
   position: absolute;
-  inset: 0;
-  pointer-events: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 55vh;          /* mobile default */
+  z-index: -1;
 
-  background-image: url("/noise.png");
-  background-size: 300px 300px;
-  opacity: 0.015;
-  mix-blend-mode: soft-light;
+  background-image: url("/bg-hero-croped.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.hero-title-shadow {
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* Tablet */
+@media (min-width: 640px) {
+  .hero-bg-layer {
+    height: 70vh;
+    background-position: center 10%;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  .hero-bg-layer {
+    height: 85vh;
+    background-position: center 15%;
+  }
 }

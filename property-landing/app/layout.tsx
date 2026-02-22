@@ -4,6 +4,7 @@ import "./globals.css";
 import  Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 
+
 export default function RootLayout({
   children,
 }: {
@@ -11,11 +12,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
-        <div className="site-hero-bg">
+      <body className="relative overflow-x-hidden">
+        <div className="hero-bg-layer" />
             <Header />
             {children}
-        </div>   
         <Footer />
       </body>
     </html>
