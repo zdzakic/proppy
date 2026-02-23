@@ -1,30 +1,70 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { navigationLinks } from "@/constants/links";
 
 export default function Header() {
-  const [open, setOpen] = useState(false);
 
-  const links = ["Home", "About Us", "Our Services", "Properties"];
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 80);
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => window.removeEventListener("scroll", handleScroll);
+    }, []);
+
 
   return (
-    <header className="sticky top-0 z-50 bg-transparent">
-      <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+    <header
+        className={`
+              fixed top-0 left-0 w-full h-24 z-[9999]
+            transition-all duration-300
+            ${scrolled
+            ? "bg-primary/60 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.08)] border-b border-white/5"
+            : "bg-transparent"
+            }
+        `}
+        >
+      <div className="max-w-6xl mx-auto px-6 py-5 md:py-8 flex items-center justify-between">
 
         {/* Logo */}
-        <span className="font-display text-[1.65rem] tracking-[0.04em] text-brand-hero">
-          ProppyCO
-        </span>
+        <span
+            className={`
+                font-display text-[1.65rem] tracking-[0.04em]
+                transition-colors duration-300
+                text-brand-hero
+                ${scrolled ? "text-brand-accent" : "text-brand-hero"}
+            `}
+            >
+            ProppyCO
+            </span>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-12 text-[0.95rem]">
-          {links.map((t) => (
+          {navigationLinks.map((t) => (
             <a
-              key={t}
-              href="#"
-              className="relative text-white/70 hover:text-white transition duration-300 after:absolute after:left-0 after:-bottom-1 after:h-[1px] after:w-0 after:bg-brand-accent after:transition-all after:duration-300 hover:after:w-full"
-            >
-              {t}
-            </a>
+                key={t.href}
+                href={t.href}
+                className={`
+                    relative
+                    transition duration-300
+                    ${
+                    scrolled
+                        ? "text-brand-accent hover:text-brand-accent-light"
+                        : "text-white/70 hover:text-white"
+                    }
+                    after:absolute after:left-0 after:-bottom-1
+                    after:h-[1px] after:w-0
+                    after:bg-brand-accent
+                    after:transition-all after:duration-300
+                    hover:after:w-full
+                `}
+                >
+                {t.label}
+                </a>
           ))}   
         </nav>
 
@@ -75,10 +115,10 @@ export default function Header() {
                 </button>
 
             <div className="pt-24 px-8 space-y-8 text-xl">
-            {links.map((t) => (
+            {navigationLinks.map((t) => (
                 <a
-                    key={t}
-                    href="#"
+                    key={t.href}
+                    href={t.href}
                     onClick={() => setOpen(false)}
                     className="block text-white/80 hover:text-white transition duration-300"
                     >
@@ -97,7 +137,7 @@ export default function Header() {
                         hover:after:w-full
                         "
                     >
-                        {t}
+                        {t.label}
                     </span>
                     </a>
             ))}
@@ -111,38 +151,3 @@ export default function Header() {
   );
 }
 
-// export default function Header() {
-//   return (
-//     <header className="sticky top-0 z-50 text-white bg-transparent">
-//       <div className="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
-        
-//         {/* Logo + Name */}
-//         <div className="flex items-center gap-3">
-//           <span className="font-display text-xl tracking-wide text-brand-">
-//             ProppyCO
-//           </span>
-//         </div>
-
-//         {/* Links */}
-//         <nav className="hidden md:flex gap-10 text-sm">
-//           {["Home", "About Us", "Our Services", "Properties"].map((t) => (
-//             <a
-//               key={t}
-//               href="#"
-//               className="opacity-75 hover:opacity-100 transition"
-//             >
-//               {t}
-//             </a>
-//           ))}
-//         </nav>
-
-//         {/* Contact button */}
-//         <button className="px-6 py-2 rounded-full bg-brand-accent text-brand-primary text-sm font-medium
-//           shadow-[0_10px_30px_rgba(184,155,94,0.25)] hover:opacity-95 transition border border-black/10">
-//           Contact
-//         </button>
-
-//       </div>
-//     </header>
-//   );
-// }

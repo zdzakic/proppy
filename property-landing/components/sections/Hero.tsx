@@ -22,11 +22,11 @@ export default function Hero() {
             mb-6
             hero-title-shadow
           ">
-            Exceptional Property
+            Rethinking Property Management 
             <br />
-            Management Across
+            for Residential Blocks
             <br />
-            <span className="opacity-80">the UK</span>
+            {/* <span className="opacity-80">the UK</span> */}
           </h1>
 
           <p className="
@@ -38,9 +38,9 @@ export default function Hero() {
             mb-10
             max-w-[34rem]
           ">
-            Trusted by property owners and investors across the UK,
-            we provide bespoke management services that ensure your
-            investments thrive.
+            Many flat owners lack visibility into how their buildings are managed. 
+            Greater transparency, collaboration, and oversight can significantly 
+            improve outcomes and reduce unnecessary costs.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
@@ -55,7 +55,7 @@ export default function Hero() {
               hover:opacity-95 
               transition
             ">
-              Get a Free Consultation
+              Learn More
             </button>
 
             <button className="
@@ -66,7 +66,7 @@ export default function Hero() {
               hover:bg-white/10 
               transition
             ">
-              Our Services
+              Get Involved
             </button>
 
           </div>
