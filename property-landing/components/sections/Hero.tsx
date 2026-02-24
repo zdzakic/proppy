@@ -2,6 +2,7 @@ export default function Hero() {
   return (
     <section className="
       relative 
+      pt-24 md:pt-0
       min-h-[70vh] 
       md:min-h-[80vh] 
       md:flex 
