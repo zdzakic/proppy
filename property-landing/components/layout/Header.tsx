@@ -41,7 +41,7 @@ return (
                 ${scrolled ? "text-brand-primary" : "text-brand-hero"}
             `}
             >
-            ProppyCO
+            ROOKerys
             </span>
 
         {/* Desktop Nav */}
@@ -108,7 +108,7 @@ return (
     {/* Mobile Menu */}
     <div
         className={`
-            fixed inset-0 z-[60]
+            fixed inset-0 z-[9999]
             bg-primary/90 backdrop-blur-xl
             transition-all duration-300
             ${open ? "opacity-100" : "opacity-0 pointer-events-none"}
