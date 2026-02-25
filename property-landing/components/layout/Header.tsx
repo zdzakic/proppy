@@ -1,6 +1,8 @@
 "use client";
 import { useState, useEffect } from "react";
 import { navigationLinks } from "@/constants/links";
+import { User } from "lucide-react";
+import Link from "next/link";
 
 export default function Header() {
 
@@ -71,11 +73,27 @@ return (
         </nav>
 
         {/* Desktop Button */}
-        <div className="hidden md:block">
-        <button className="px-6 py-2.5 rounded-full bg-brand-accent text-brand-primary text-sm font-medium
+        {/* <div className="hidden md:block"> */}
+        {/* <button className="px-6 py-2.5 rounded-full bg-brand-accent text-brand-primary text-sm font-medium
             shadow-[0_15px_35px_rgba(184,155,94,0.35)] hover:scale-[1.03] transition-transform duration-300 hover:opacity-95 transition">
             Contact
         </button>
+        </div> */}
+        {/* Desktop User Icon */}
+        <div className="hidden md:flex items-center">
+        <Link
+            href="/login"
+            className={`
+            transition-colors duration-300
+            ${
+                scrolled
+                ? "text-brand-primary hover:text-brand-accent"
+                : "text-white/70 hover:text-white"
+            }
+            `}
+        >
+            <User size={22} strokeWidth={1.5} />
+        </Link>
         </div>
 
         {/* Mobile Hamburger */}
@@ -166,9 +184,25 @@ return (
                     </a>
             ))}
 
-            <button className="mt-6 w-full px-6 py-3 rounded-full bg-brand-accent text-brand-primary font-medium">
+            {/* <button className="mt-6 w-full px-6 py-3 rounded-full bg-brand-accent text-brand-primary font-medium">
                 Contact
-            </button>
+            </button> */}
+            <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className={`
+                    flex items-center gap-3 mt-8
+                    transition duration-300
+                    ${
+                    scrolled
+                        ? "text-brand-primary hover:text-brand-accent"
+                        : "text-white/80 hover:text-white"
+                    }
+                `}
+                >
+                <User size={22} strokeWidth={1.5} />
+                <span>Login</span>
+                </Link>
             </div>
         </div>
     </header>
