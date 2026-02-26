@@ -1,74 +1,107 @@
+/**
+ * CostExampleSection
+ *
+ * Purpose:
+ * Demonstrates real-world financial comparison between
+ * self-managed and management company scenarios.
+ *
+ * Design goals:
+ * - Clear narrative progression
+ * - Strong contrast between options
+ * - Maintain premium minimal aesthetic
+ */
+
+import CostCard from "@/components/ui/CostCard"
+
 export default function CostExampleSection() {
   return (
     <section id="cost-example" className="py-24 bg-brand-bg">
       <div className="max-w-6xl mx-auto px-6">
 
+        {/* Section Label */}
         <div className="text-brand-accent uppercase tracking-[0.2em] text-sm mb-6">
           Cost Example
         </div>
 
+        {/* Section Title */}
         <h2 className="font-display text-4xl md:text-5xl text-brand-primary mb-8">
           A Real-World Cost Comparison
         </h2>
 
-        <p className="max-w-3xl text-lg text-brand-text/80 mb-16">
+        {/* Section Intro */}
+        <p className="max-w-3xl text-lg text-brand-text/80 leading-relaxed mb-16">
           After transitioning to self-management, a project originally quoted
           significantly higher was completed at a much lower cost — without
           compromising quality.
         </p>
 
+        {/* Comparison Cards */}
         <div className="grid md:grid-cols-2 gap-12">
 
-          <div className="
-            p-10 rounded-2xl bg-white
-            shadow-[0_15px_50px_rgba(0,0,0,0.06)]
-            border border-black/5
-            hover:scale-[1.02]
-            transition-transform duration-300
-          ">
-            <div className="text-sm uppercase tracking-wider text-brand-accent mb-4">
-              Self-Managed
-            </div>
+          <CostCard
+            label="Self-Managed"
+            value="£97K"
+            savingsNote="£113K–£193K saved"
+            description="Independent quote obtained after taking control of the project."
+          />
 
-            <div className="text-5xl font-display text-brand-primary mb-4">
-              £97K
-            </div>
-
-            <p className="text-brand-text/70">
-              Independent quote obtained after taking control of the project.
-            </p>
-          </div>
-
-          <div className="
-            p-10 rounded-2xl
-            bg-gradient-to-br from-primary to-primary-dark
-            text-white
-            shadow-[0_20px_60px_rgba(0,0,0,0.25)]
-            border border-white/10
-            hover:scale-[1.02]
-            transition-transform duration-300
-            relative overflow-hidden
-          ">
-            <div className="absolute -top-20 -right-20 w-72 h-72 bg-brand-accent/10 blur-3xl rounded-full" />
-
-            <div className="relative z-10">
-              <div className="text-sm uppercase tracking-wider text-brand-accent-light mb-4">
-                Via Management Company
-              </div>
-
-              <div className="text-6xl font-display mb-4">
-                £210K – £290K
-              </div>
-
-              <p className="text-white/80">
-                Quotes sourced through standard management processes.
-              </p>
-            </div>
-          </div>
+          <CostCard
+            label="Via Management Company"
+            value="£210K – £290K"
+            description="Quotes sourced through standard management processes."
+            variant="highlight"
+          />
 
         </div>
 
       </div>
     </section>
-  );
+  )
 }
+// import CostCard from "@/components/ui/CostCard"
+
+// export default function CostExampleSection() {
+//   return (
+//     <section id="cost-example" className="py-28 bg-brand-bg">
+//       <div className="max-w-6xl mx-auto px-6">
+
+//         {/* Section Label */}
+//         <div className="text-brand-accent uppercase tracking-[0.2em] text-sm mb-6">
+//           Cost Example
+//         </div>
+
+//         {/* Section Title */}
+//         <h2 className="font-display text-4xl md:text-5xl text-brand-primary mb-8">
+//           A Real-World Cost Comparison
+//         </h2>
+
+//         {/* Section Intro */}
+//         <p className="max-w-3xl text-lg text-brand-text/80 mb-20 leading-relaxed">
+//           After transitioning to self-management, a project originally quoted
+//           significantly higher was completed at a much lower cost — without
+//           compromising quality.
+//         </p>
+
+//         {/* Cards */}
+//         <div className="grid md:grid-cols-2 gap-16 relative">
+
+//           <CostCard
+//             label="Self-Managed"
+//             value="£97K"
+//             savingsNote="Saved approximately £113K–£193K"
+//             description="Independent quote obtained after taking control of the project."
+//           />
+
+//           <CostCard
+//             label="Via Management Company"
+//             value="£210K – £290K"
+//             description="Quotes sourced through standard management processes."
+//             variant="highlight"
+//           />
+
+//         </div>
+
+//       </div>
+//     </section>
+//   )
+// }
