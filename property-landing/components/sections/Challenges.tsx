@@ -31,9 +31,11 @@ export default function ChallengesSection() {
               Owners
             </h3>
             <ul className="space-y-3 text-brand-muted leading-relaxed">
-              <li>• Limited visibility into operational decisions</li>
-              <li>• Often unaware of cost breakdowns</li>
-              <li>• Minimal participation in governance</li>
+              <li>• Rely on the Directors to represent them</li>
+              <li>• May or maybe not have interest on how things work</li>
+              <li>• Some are not even aware that there are Directors representing them.</li>
+              <li>• They get the bill and pay.</li>
+              <li>Often left with the feeling the bills are high and not sure what they are paying for.</li>
             </ul>
           </div>
 
@@ -42,9 +44,9 @@ export default function ChallengesSection() {
               Directors
             </h3>
             <ul className="space-y-3 text-brand-muted leading-relaxed">
-              <li>• Heavy reliance on management advice</li>
-              <li>• Limited technical validation of works</li>
-              <li>• Constrained time and resources</li>
+              <li>• Rely on the Property Management Company to take care of things</li>
+              <li>• Very often dont question what or why things are done</li>
+              <li>• Attend AGMs and make decisions on advise of the Property Management Company</li>
             </ul>
           </div>
 
@@ -53,9 +55,10 @@ export default function ChallengesSection() {
               Management Companies
             </h3>
             <ul className="space-y-3 text-brand-muted leading-relaxed">
-              <li>• Commercial incentive structures</li>
-              <li>• Process-driven rather than outcome-driven</li>
-              <li>• Administrative complexity over clarity</li>
+              <li>• The Property Management Company may prioritise financial outcomes</li>
+              <li>• Service charges for administrative functions can be high</li>
+              <li>• Building work may be overvalued</li>
+              <li>• Quality assurance for building work may be not done or inconsistent</li>
             </ul>
           </div>
 
