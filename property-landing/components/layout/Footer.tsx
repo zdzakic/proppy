@@ -10,6 +10,14 @@
 
 import Link from "next/link";
 import { navigationLinks } from "@/constants/links";
+import {
+  brandInfo,
+  platformLinks,
+  contactInfo,
+  legalLinks,companyInfo,
+  institutionalTagline,
+  complianceInfo,
+} from "@/constants/footer";
 
 export default function Footer() {
   return (
@@ -42,11 +50,16 @@ export default function Footer() {
         {/* Brand */}
         <div>
           <h2 className="font-display text-2xl text-brand-accent mb-4">
-            ROOKerys
+            {brandInfo.name}
           </h2>
           <p className="text-white/70 leading-relaxed max-w-xs">
-            Modern property management platform designed for owners,
-            directors and tenants.
+           {brandInfo.description}
+          </p>
+          <p className="mt-6 text-xs uppercase tracking-[0.2em] text-white/40">
+             {institutionalTagline}
+          </p>
+          <p className="mt-4 text-xs text-white/30 tracking-wide">
+             {complianceInfo}
           </p>
         </div>
 
@@ -75,23 +88,17 @@ export default function Footer() {
             Platform
           </h3>
           <ul className="space-y-3 text-white/60">
-            <li>
-              <Link
-                href="/login"
-                className="hover:text-brand-accent transition-colors duration-300"
-              >
-                Owner Login
-              </Link>
-            </li>
-            <li>
-              <a
-                href="#features"
-                className="hover:text-brand-accent transition-colors duration-300"
-              >
-                Features
-              </a>
-            </li>
-          </ul>
+            {platformLinks.map((link) => (
+                <li key={link.href}>
+                <Link
+                    href={link.href}
+                    className="hover:text-brand-accent transition-colors duration-300"
+                >
+                    {link.label}
+                </Link>
+                </li>
+            ))}
+            </ul>
         </div>
 
         {/* Contact */}
@@ -99,19 +106,43 @@ export default function Footer() {
           <h3 className="font-medium mb-4 text-white">
             Contact
           </h3>
-          <ul className="space-y-3 text-white/60">
-            <li>
-              <a
-                href="mailto:hello@proppy.co"
-                className="hover:text-brand-accent transition-colors duration-300"
-              >
-                hello@proppy.co
-              </a>
-            </li>
-            <li className="text-white/40">
-              Switzerland
-            </li>
-          </ul>
+
+            <ul className="space-y-3 text-white/60">
+
+                {/* Email */}
+                <li>
+                    <a
+                    href={`mailto:${contactInfo.email}`}
+                    className="hover:text-brand-accent transition-colors duration-300"
+                    >
+                    {contactInfo.email}
+                    </a>
+                </li>
+
+                {/* Phone */}
+                <li>
+                    <a
+                    href={`tel:${contactInfo.phone}`}
+                    className="hover:text-brand-accent transition-colors duration-300"
+                    >
+                    {contactInfo.phone}
+                    </a>
+                </li>
+
+                {/* Location */}
+                <li className="text-white/40">
+                    {contactInfo.location}
+                </li>
+
+                    {/* Company Info */}
+                <div className="mt-8 pt-6 border-t border-white/10 space-y-1 text-white/40 text-xs tracking-wide">
+                    <p>{companyInfo.legalName}</p>
+                    <p>{companyInfo.companyNumber}</p>
+                    <p>{companyInfo.registration}</p>
+                </div>
+
+                </ul>
+
         </div>
       </div>
 
@@ -119,17 +150,21 @@ export default function Footer() {
       <div className="relative border-t border-white/10">
         <div className="max-w-6xl mx-auto px-6 py-6 text-xs text-white/40 flex flex-col md:flex-row justify-between items-center gap-4">
           <span>
-            ©{new Date().getFullYear()} ROOKerys. All rights reserved.
+            ©{new Date().getFullYear()} Rookerys Ltd. All rights reserved.
           </span>
 
           <div className="flex gap-6">
-            <a href="#" className="hover:text-brand-accent transition-colors">
-              Privacy
-            </a>
-            <a href="#" className="hover:text-brand-accent transition-colors">
-              Terms
-            </a>
-          </div>
+            {legalLinks.map((link) => (
+                <Link
+                key={link.href}
+                href={link.href}
+                className="hover:text-brand-accent transition-colors"
+                >
+                {link.label}
+                </Link>
+            ))}
+            </div>
+
         </div>
       </div>
     </footer>
