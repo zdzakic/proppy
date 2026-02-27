@@ -10,6 +10,8 @@ import Hero from "@/components/sections/Hero";
 import Overview from "@/components/sections/Overview";
 import Challenges from "@/components/sections/Challenges";
 import CostExample from "@/components/sections/CostExample";
+import BetterApproach from "@/components/sections/BetterApproach";
+import WhoWeAre from "@/components/sections/WhoWeAre";
 
 export default function HomePage() {
   return (
@@ -18,6 +20,8 @@ export default function HomePage() {
       <Overview />
       <Challenges />
       <CostExample />
+      <BetterApproach />
+      <WhoWeAre />
     </main>
   );
 }
