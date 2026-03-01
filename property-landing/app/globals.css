@@ -59,7 +59,7 @@ html, body {
 }
 
 body {
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
 }
 
