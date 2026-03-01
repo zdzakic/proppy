@@ -19,7 +19,7 @@ export default function HomePage() {
       <Hero />
       <Overview />
       <Challenges />
-      <CostExample />
+      {/* <CostExample /> */}
       <BetterApproach />
       <WhoWeAre />
     </main>

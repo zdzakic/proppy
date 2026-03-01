@@ -15,7 +15,7 @@ export default function BetterApproachSection() {
   return (
     <section
       id="better-approach"
-      className="bg-brand-surface text-brand-text py-24"
+      className="bg-brand-bg text-brand-text py-24"
     >
       <div className="max-w-6xl mx-auto px-6">
 

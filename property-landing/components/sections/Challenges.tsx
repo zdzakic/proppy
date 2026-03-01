@@ -13,6 +13,7 @@
 
 import ChallengeColumn from "@/components/ui/ChallengeColumn";
 import { ChallengeItem } from "@/components/ui/ChallengeItem";
+import CostCard from "@/components/ui/CostCard";
 
 export default function ChallengesSection() {
   return (
@@ -74,6 +75,50 @@ export default function ChallengesSection() {
             <ChallengeItem text="Quality assurance for building work may be inconsistent." />
           </ChallengeColumn>
 
+        </div>
+
+        {/* ========================================= */}
+        {/* REAL COST CASE */}
+        {/* ========================================= */}
+        {/* <div className="mt-16 border-t border-brand-border pt-16"> */}
+        {/* Separator */}
+        <div className="mt-24 mb-16 flex justify-center">
+          <div className="w-32 h-px bg-brand-border"></div>
+        </div>
+
+        <div>
+        <p className="text-sm uppercase tracking-[0.2em] text-brand-accent mb-4">
+            Real Case
+        </p>
+
+        <h3 className="font-display text-3xl md:text-4xl mb-6">
+            What Financial Oversight Can Change
+        </h3>
+
+        <p className="max-w-3xl text-lg text-brand-muted leading-relaxed mb-16">
+            After transitioning to self-management, a project originally quoted for between £210K - £290K in 3 quotes was completed for £100K.
+        </p>
+
+        <div className="grid md:grid-cols-2 gap-12">
+            <CostCard
+            label="Self-Managed"
+            value="£100K"
+            savingsNote="£113K–£193K saved"
+            description="Independent quote obtained after taking control of the project."
+            />
+
+            <CostCard
+            label="Via Management Company"
+            value="£210K – £290K"
+            description="Quotes sourced through standard management processes."
+            variant="highlight"
+            />
+        </div>
+
+        <p className="text-sm text-brand-muted mt-10">
+            This reflects a real project comparison between traditional management and self-management.
+        </p>
+        
         </div>
       </div>
     </section>
