@@ -46,7 +46,7 @@ export default function OverviewCard({
       </div>
 
       {/* Body */}
-      <div className="relative space-y-4 text-brand-muted leading-relaxed">
+      <div className="relative space-y-2 text-brand-muted leading-relaxed">
         {children}
       </div>
 

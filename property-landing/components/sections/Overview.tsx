@@ -87,8 +87,11 @@ export default function OverviewSection() {
             title="Management Company"
             emphasis="Their primary obligation is to deliver the service profitably."
             >
-            <p>Operates the block on a contractual basis.</p>
-            <p>Owners and Directors rely on them for financial management, maintenance coordination and compliance.</p>
+            <p>Prioritize financial outcomes.</p>
+            <p>Administrative Charges.</p>
+            <p>Often Building Work is overpriced.</p>
+            <p>Building Work quality assurance may not be done.</p>
+
             </OverviewCard>
 
         </div>

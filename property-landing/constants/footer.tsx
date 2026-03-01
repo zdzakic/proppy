@@ -28,7 +28,7 @@ export const companyInfo = {
 export const platformLinks = [
   { label: "Owner Login", href: "/login" },
   { label: "Register", href: "/register" }, // added
-  { label: "Features", href: "#features" },
+//   { label: "Features", href: "#features" },
 ];
 
 export const contactInfo = {
