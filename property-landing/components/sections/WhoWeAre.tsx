@@ -12,7 +12,7 @@ export default function WhoWeAreSection() {
   return (
     <section
       id="who-we-are"
-      className="bg-brand-surface text-brand-text py-28"
+      className="bg-brand-surface text-brand-text pt-24 pb-8"
     >
       <div className="max-w-6xl mx-auto px-6">
 
