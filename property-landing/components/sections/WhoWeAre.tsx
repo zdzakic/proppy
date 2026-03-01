@@ -27,9 +27,9 @@ export default function WhoWeAreSection() {
         </h2>
 
         {/* Lead Paragraph */}
-        <p className="text-xl text-brand-text leading-relaxed mb-14 max-w-4xl">
-          We are leaseholders who collectively chose to take responsibility
-          for managing our own building.
+        <p className="text-xl text-brand-text font-thin leading-relaxed italic mb-14 max-w-4xl">
+          "We are leaseholders who collectively chose to take responsibility
+          for managing our own building."
         </p>
 
         {/* Editorial Content Wrapper */}

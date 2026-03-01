@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { navigationLinks } from "@/constants/links";
 import { User } from "lucide-react";
 import Link from "next/link";
+import HeaderLink from "@/components/ui/HeaderLink";
 
 export default function Header() {
 
@@ -20,6 +21,7 @@ const [scrolled, setScrolled] = useState(false);
 
 
 return (
+
     <header
         className={`
             fixed top-0 left-0 w-full h-24 z-[9999]
@@ -49,40 +51,28 @@ return (
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-12 text-[0.95rem]">
         {navigationLinks.map((t) => (
-            <a
+            <HeaderLink
                 key={t.href}
                 href={t.href}
-                className={`
-                    relative
-                    transition duration-300
-                    ${
-                    scrolled
-                        ? "text-brand-primary hover:text-brand-accent"
-                        : "text-white/70 hover:text-white"
-                    }
-                    after:absolute after:left-0 after:-bottom-1
-                    after:h-[1px] after:w-0
-                    after:bg-brand-accent
-                    after:transition-all after:duration-300
-                    hover:after:w-full
-                `}
-                >
+                scrolled={scrolled}
+                className="
+                relative
+                after:absolute after:left-0 after:-bottom-1
+                after:h-[1px] after:w-0
+                after:bg-brand-accent
+                after:transition-all after:duration-300
+                hover:after:w-full
+                "
+            >
                 {t.label}
-                </a>
-        ))}   
+            </HeaderLink>
+            ))}
         </nav>
 
-        {/* Desktop Button */}
-        {/* <div className="hidden md:block"> */}
-        {/* <button className="px-6 py-2.5 rounded-full bg-brand-accent text-brand-primary text-sm font-medium
-            shadow-[0_15px_35px_rgba(184,155,94,0.35)] hover:scale-[1.03] transition-transform duration-300 hover:opacity-95 transition">
-            Contact
-        </button>
-        </div> */}
         {/* Desktop User Icon */}
-        <div className="hidden md:flex items-center">
-        <Link
-            href="/login"
+        <div className="relative hidden md:flex items-center group">
+        <button
+            onClick={() => setOpen(false)}
             className={`
             transition-colors duration-300
             ${
@@ -93,7 +83,54 @@ return (
             `}
         >
             <User size={22} strokeWidth={1.5} />
-        </Link>
+        </button>
+        {/* Account Dropdown */}
+            <div
+            className="
+                absolute right-0 top-8 w-64
+                bg-white/95 backdrop-blur-md
+                rounded-xl
+                shadow-xl
+                border border-brand-border
+                p-4
+                opacity-0 invisible
+                translate-y-2
+                transition-all duration-200 ease-out
+                group-hover:opacity-100
+                group-hover:visible
+                group-hover:translate-y-0
+                group-focus-within:opacity-100
+                group-focus-within:visible
+                group-focus-within:translate-y-0
+            "
+            >
+            <div className="space-y-2 text-sm">
+
+                <Link
+                href="/register/owner"
+                className="block px-3 py-2 rounded-lg hover:bg-brand-surface transition"
+                >
+                Create Account – Flat Owner
+                </Link>
+
+                <Link
+                href="/register/manager"
+                className="block px-3 py-2 rounded-lg hover:bg-brand-surface transition"
+                >
+                Create Account – Property Manager
+                </Link>
+
+                <div className="h-px bg-brand-border my-2"></div>
+
+                <Link
+                href="/login"
+                className="block px-3 py-2 rounded-lg hover:bg-brand-surface transition"
+                >
+                Login
+                </Link>
+
+            </div>
+            </div>
         </div>
 
         {/* Mobile Hamburger */}
@@ -150,44 +187,34 @@ return (
 
             <div className="pt-24 px-8 space-y-8 text-xl">
             {navigationLinks.map((t) => (
-                <a
-                    key={t.href}
-                    href={t.href}
-                    onClick={() => setOpen(false)}
-                    // className="block text-white/80 hover:text-white transition duration-300"
-                    className={`
-                        block transition duration-300
-                        ${
-                            scrolled
-                            ? "text-brand-primary hover:text-brand-accent"
-                            : "text-white/80 hover:text-white"
-                        }
-                        `}
-                    >
-                    <span
-                        className="
-                        relative
-                        inline-block
-                        after:absolute
-                        after:left-0
-                        after:-bottom-1
-                        after:h-[1px]
-                        after:w-0
-                        after:bg-brand-accent
-                        after:transition-all
-                        after:duration-300
-                        hover:after:w-full
-                        "
-                    >
-                        {t.label}
-                    </span>
-                    </a>
+               <HeaderLink
+                key={t.href}
+                href={t.href}
+                scrolled={scrolled}
+                onClick={() => setOpen(false)}
+                className="block"
+                >
+                <span
+                    className="
+                    relative
+                    inline-block
+                    after:absolute
+                    after:left-0
+                    after:-bottom-1
+                    after:h-[1px]
+                    after:w-0
+                    after:bg-brand-accent
+                    after:transition-all
+                    after:duration-300
+                    hover:after:w-full
+                    "
+                >
+                    {t.label}
+                </span>
+                </HeaderLink>
             ))}
 
-            {/* <button className="mt-6 w-full px-6 py-3 rounded-full bg-brand-accent text-brand-primary font-medium">
-                Contact
-            </button> */}
-            <Link
+            {/* <Link
                 href="/login"
                 onClick={() => setOpen(false)}
                 className={`
@@ -202,7 +229,41 @@ return (
                 >
                 <User size={22} strokeWidth={1.5} />
                 <span>Login</span>
-                </Link>
+            </Link> */}
+            <div className="mt-12 space-y-6">
+
+                <div className="h-px bg-white/20"></div>
+
+                <HeaderLink
+                    href="/register/owner"
+                    scrolled={scrolled}
+                    onClick={() => setOpen(false)}
+                    className="block"
+                    >
+                    Create Account – Flat Owner
+                </HeaderLink>
+
+               <HeaderLink
+                    href="/register/manager"
+                    scrolled={scrolled}
+                    onClick={() => setOpen(false)}
+                    className="block"
+                    >
+                    Create Account – Property Manager
+                </HeaderLink>
+
+               <HeaderLink
+                href="/login"
+                scrolled={scrolled}
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-3"
+                >
+                <User size={20} strokeWidth={1.5} />
+                Login
+                </HeaderLink>
+
+            </div>
+            
             </div>
         </div>
     </header>
