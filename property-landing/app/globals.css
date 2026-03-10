@@ -94,7 +94,7 @@ section {
 /* Tablet */
 @media (min-width: 640px) {
   .hero-bg-layer {
-    height: 70vh;
+    min-height: 70vh;
     background-position: center 10%;
   }
 }

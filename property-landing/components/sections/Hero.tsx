@@ -4,7 +4,7 @@ export default function Hero() {
       relative 
       pt-16 md:pt-0
       pb-16
-        md:min-h-[80vh]
+      md:min-h-[80vh]
       md:flex 
       md:items-center
     ">
