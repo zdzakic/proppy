@@ -2,15 +2,14 @@ export default function Hero() {
   return (
     <section className="
       relative 
-      pt-24 md:pt-0
-      min-h-[70vh] 
-      md:min-h-[80vh] 
+      pt-16 md:pt-0
+      min-h-[55vh] md:min-h-[80vh]
       md:flex 
       md:items-center
     ">
       <div className="max-w-6xl mx-auto px-6 w-full">
 
-        <div className="max-w-xl text-white mt-20">
+        <div className="max-w-xl text-white mt-16 md:mt-20">
 
           <h1 className="
             font-display

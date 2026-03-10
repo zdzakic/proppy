@@ -213,23 +213,6 @@ return (
                 </span>
                 </HeaderLink>
             ))}
-
-            {/* <Link
-                href="/login"
-                onClick={() => setOpen(false)}
-                className={`
-                    flex items-center gap-3 mt-8
-                    transition duration-300
-                    ${
-                    scrolled
-                        ? "text-brand-primary hover:text-brand-accent"
-                        : "text-white/80 hover:text-white"
-                    }
-                `}
-                >
-                <User size={22} strokeWidth={1.5} />
-                <span>Login</span>
-            </Link> */}
             <div className="mt-12 space-y-6">
 
                 <div className="h-px bg-white/20"></div>
