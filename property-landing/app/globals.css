@@ -77,7 +77,9 @@ section {
   top: 0;
   left: 0;
   right: 0;
-  height: 55vh;          /* mobile default */
+  /* height: 55vh;           mobile default */
+  min-height: 55vh;
+  height: 100%;
   z-index: -1;
 
   background-image: url("/bg-hero-croped.png");

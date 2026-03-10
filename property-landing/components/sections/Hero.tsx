@@ -3,7 +3,8 @@ export default function Hero() {
     <section className="
       relative 
       pt-16 md:pt-0
-      min-h-[55vh] md:min-h-[80vh]
+      pb-16
+        md:min-h-[80vh]
       md:flex 
       md:items-center
     ">
