@@ -17,12 +17,12 @@
  */
 
 import { useState } from "react";
-import { validateRequired, validateEmailFormat } from "@/utils/auth/validators";
+import { validateLoginForm, type ValidationErrors } from "@/utils/auth/validators";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<ValidationErrors>({});
 
   /**
    * FORM SUBMIT
@@ -34,28 +34,18 @@ export default function LoginForm() {
    * Zašto:
    * - LoginForm ne treba znati detalje validacije
    */
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+ const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
 
-    const errors: Record<string, string> = {};
+  const validationErrors = validateLoginForm(email, password);
 
-    const requiredError = validateRequired(email);
-    if (requiredError) {
-        errors.email = requiredError;
-    } else {
-        const emailError = validateEmailFormat(email);
-        if (emailError) {
-        errors.email = emailError;
-        }
-    }
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
 
-    if (Object.keys(errors).length > 0) {
-        setErrors(errors);
-        return;
-    }
-
-    // kasnije login()
-    };
+  // login() dolazi kasnije
+};
 
   return (
     <div className="w-full max-w-md">
@@ -80,6 +70,7 @@ export default function LoginForm() {
           {/* EMAIL */}
           <input
             type="email"
+            autoComplete="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -108,23 +99,36 @@ export default function LoginForm() {
             )}
 
           {/* PASSWORD */}
-          <input
+            <input
             type="password"
+            autoComplete="current-password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="
-              w-full
-              border
-              border-brand-border
-              rounded-lg
-              px-4
-              py-2
-              focus:outline-none
-              focus:ring-1
-              focus:ring-brand-accent
-            "
-          />
+            onFocus={() =>
+                setErrors((prev) => ({ ...prev, password: "" }))
+            }
+            className={`
+                w-full
+                border
+                rounded-lg
+                px-4
+                py-2
+                focus:outline-none
+                focus:ring-1
+                ${
+                errors.password
+                    ? "border-error focus:ring-error/30"
+                    : "border-brand-border focus:ring-brand-accent"
+                }
+            `}
+            />
+
+            {errors.password && (
+            <p className="text-sm text-error mt-1">
+                {errors.password}
+            </p>
+            )}
          
 
           {/* BUTTON */}

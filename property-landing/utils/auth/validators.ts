@@ -12,7 +12,7 @@
  */
 export function validateRequired(value: string): string | null {
   if (!value || !value.trim()) {
-    return "This field is required";
+    return "This field is required!";
   }
 
   return null;
@@ -35,7 +35,7 @@ export function validateEmailFormat(email: string): string | null {
   const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   if (!re.test(email)) {
-    return "Invalid email format";
+    return "Invalid email format!";
   }
 
   return null;
@@ -56,6 +56,18 @@ export type ValidationErrors = Record<string, string>;
  * Problem koji rješava:
  * - validacija ostaje centralizovana
  */
+/**
+ * validateLoginForm
+ *
+ * Šta radi:
+ * - validira login formu
+ *
+ * Zašto postoji:
+ * - LoginForm ne treba znati validaciona pravila
+ *
+ * Problem koji rješava:
+ * - validacija ostaje centralizovana
+ */
 export function validateLoginForm(
   email: string,
   password: string
@@ -63,14 +75,20 @@ export function validateLoginForm(
 
   const errors: ValidationErrors = {};
 
-  const emailRequired = validateRequired(email);
-  if (emailRequired) errors.email = emailRequired;
+  const emailError =
+    validateRequired(email) || validateEmailFormat(email);
 
-  const emailFormat = !emailRequired ? validateEmailFormat(email) : null;
-  if (emailFormat) errors.email = emailFormat;
+  if (emailError) {
+    errors.email =
+      emailError === "This field is required!"
+        ? "Email is required!"
+        : emailError;
+  }
 
-  const passwordRequired = validateRequired(password);
-  if (passwordRequired) errors.password = passwordRequired;
+  const passwordError = validateRequired(password);
+  if (passwordError) {
+    errors.password = "Password is required!";
+  }
 
   return errors;
 }
