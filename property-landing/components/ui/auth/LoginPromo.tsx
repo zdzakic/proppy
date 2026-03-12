@@ -95,7 +95,7 @@ export default function LoginPromo() {
       <p className="text-sm text-white/60 text-center">
         Built by{" "}
         <a
-          href="https://zdzdigital.ch"
+          href="https://zdzdigital.com"
           target="_blank"
           className="underline underline-offset-4 hover:text-brand-accent transition"
         >
