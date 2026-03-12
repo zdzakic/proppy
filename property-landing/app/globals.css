@@ -17,6 +17,9 @@
   --box-shadow-premium: 0 20px 50px rgba(0,0,0,0.08);
   --border-radius-xl: 1rem;
   --border-radius-2xl: 1.5rem;
+
+  /* Error color */
+  --color-error: var(--error);
 }
  
 /* =====================================
@@ -36,6 +39,8 @@
   --accent-light: #D4B26A;
   --border: #E5E0D6;
   --accent-rgb: 184, 155, 94;
+  /* 🔴 ERROR COLOR */
+  --error: #DC2626;
   scroll-behavior: smooth;
 }
 
@@ -47,6 +52,8 @@
   --primary: #E5E7EB;
   --accent: #D4B26A;
   --border: #1F2937;
+  /* 🔴 ERROR COLOR */
+  --error: #EF4444;
 }
 
 /* =====================================

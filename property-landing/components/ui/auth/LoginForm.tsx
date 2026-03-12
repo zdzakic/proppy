@@ -17,10 +17,45 @@
  */
 
 import { useState } from "react";
+import { validateRequired, validateEmailFormat } from "@/utils/auth/validators";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  /**
+   * FORM SUBMIT
+   *
+   * Šta radi:
+   * - validira login formu
+   * - postavlja errors state
+   *
+   * Zašto:
+   * - LoginForm ne treba znati detalje validacije
+   */
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const errors: Record<string, string> = {};
+
+    const requiredError = validateRequired(email);
+    if (requiredError) {
+        errors.email = requiredError;
+    } else {
+        const emailError = validateEmailFormat(email);
+        if (emailError) {
+        errors.email = emailError;
+        }
+    }
+
+    if (Object.keys(errors).length > 0) {
+        setErrors(errors);
+        return;
+    }
+
+    // kasnije login()
+    };
 
   return (
     <div className="w-full max-w-md">
@@ -40,7 +75,7 @@ export default function LoginForm() {
         </div>
 
         {/* FORM */}
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
 
           {/* EMAIL */}
           <input
@@ -48,18 +83,29 @@ export default function LoginForm() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="
-              w-full
-              border
-              border-brand-border
-              rounded-lg
-              px-4
-              py-2
-              focus:outline-none
-              focus:ring-2
-              focus:ring-brand-accent
-            "
+            onFocus={() =>
+                setErrors((prev) => ({ ...prev, email: "" }))
+            }
+            className={`
+                w-full
+                border
+                rounded-lg
+                px-4
+                py-2
+                focus:outline-none
+                focus:ring-1
+                ${
+                errors.email
+                    ? "border-error focus:ring-error/30"
+                    : "border-brand-border focus:ring-brand-accent"
+                }
+            `}
           />
+           {errors.email && (
+            <p className="text-sm text-error mt-1">
+                {errors.email}
+            </p>
+            )}
 
           {/* PASSWORD */}
           <input
@@ -75,10 +121,11 @@ export default function LoginForm() {
               px-4
               py-2
               focus:outline-none
-              focus:ring-2
+              focus:ring-1
               focus:ring-brand-accent
             "
           />
+         
 
           {/* BUTTON */}
           <button
