@@ -18,6 +18,8 @@
 
 import { useState } from "react";
 import { validateLoginForm, type ValidationErrors } from "@/utils/auth/validators";
+import apiPublic from "@/utils/api/apiPublic";
+import apiClient from "@/utils/api/apiClient";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -34,7 +36,7 @@ export default function LoginForm() {
    * Zašto:
    * - LoginForm ne treba znati detalje validacije
    */
- const handleSubmit = (e: React.FormEvent) => {
+ const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
 
   const validationErrors = validateLoginForm(email, password);
@@ -44,7 +46,39 @@ export default function LoginForm() {
     return;
   }
 
-  // login() dolazi kasnije
+  // login() 
+   try {
+    const response = await apiPublic.post("token/", {
+      email,
+      password,
+    });
+
+    const { access, refresh } = response.data;
+
+    console.log("LOGIN SUCCESS");
+    console.log(response.data);
+
+    // spremi token i user 
+    localStorage.setItem("accessToken", access);
+    localStorage.setItem("refreshToken", refresh);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
+
+  } catch (error: any) {
+
+    console.error("LOGIN ERROR");
+
+    if (error.response?.data) {
+      console.log(error.response.data);
+    }
+  }
+
+  // test user/me
+    //   const testAuth = async () => {
+    //     const response = await apiClient.get("users/me/");
+    //     console.log("AUTH ME TEST", response.data);
+    //   };
+    
+    //   testAuth();
 };
 
   return (
