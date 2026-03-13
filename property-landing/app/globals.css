@@ -11,7 +11,6 @@
   --color-brand-border: var(--border);
   --color-brand-text: var(--text);
   --color-brand-muted: var(--muted);
-
   /* --font-family-display: "Playfair Display", Georgia, serif; */
   --font-family-display: var(--font-display);
   --box-shadow-premium: 0 20px 50px rgba(0,0,0,0.08);
@@ -20,6 +19,17 @@
 
   /* Error color */
   --color-error: var(--error);
+  
+  /* =====================================
+     DASHBOARD COLOR ALIASES
+     ===================================== */
+  --color-dashboard-bg: var(--dashboard-bg);
+  --color-dashboard-surface: var(--dashboard-surface);
+  --color-dashboard-sidebar: var(--dashboard-sidebar);
+  --color-dashboard-header: var(--dashboard-header);
+  --color-dashboard-border: var(--dashboard-border);
+  --color-dashboard-text: var(--dashboard-text);
+  --color-dashboard-accent: var(--dashboard-accent);
 }
  
 /* =====================================
@@ -39,8 +49,22 @@
   --accent-light: #D4B26A;
   --border: #E5E0D6;
   --accent-rgb: 184, 155, 94;
+
   /* 🔴 ERROR COLOR */
   --error: #DC2626;
+
+  /* ========================================
+     DASHBOARD TOKENS
+     central place for dashboard colors
+     ======================================== */
+  --dashboard-bg: #F4F6F9;
+  --dashboard-surface: #FFFFFF;
+  --dashboard-sidebar: #0D1B2A;
+  --dashboard-header: #0D1B2A;
+  --dashboard-border: #E5E7EB;
+  --dashboard-accent: #D4AF37;
+  --dashboard-text: #0F172A;
+
   scroll-behavior: smooth;
 }
 
@@ -54,6 +78,17 @@
   --border: #1F2937;
   /* 🔴 ERROR COLOR */
   --error: #EF4444;
+
+  /* ========================================
+     DASHBOARD TOKENS (DARK MODE)
+     ======================================== */
+  --dashboard-bg: #0F172A;
+  --dashboard-surface: #1E293B;
+  --dashboard-sidebar: #020617;
+  --dashboard-header: #020617;
+  --dashboard-border: #334155;
+  --dashboard-accent: #D4AF37;
+  --dashboard-text: #F8FAFC;
 }
 
 /* =====================================

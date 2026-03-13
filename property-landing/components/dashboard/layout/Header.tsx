@@ -1,34 +1,44 @@
 "use client";
 
 /**
-Header
+ * Path: components/dashboard/Header.tsx
+ *
+ * Dashboard top header.
+ *
+ * Šta radi:
+ * - prikazuje naslov sekcije
+ * - sadrži dashboard actions zonu
+ * - trenutno uključuje ThemeToggle
+ *
+ * Zašto ovako:
+ * - header treba ostati lagan i fokusiran
+ * - dodatne akcije (notifications, user menu, search) mogu se lako dodati kasnije
+ *
+ * Šta rješava:
+ * - uspostavlja gornju navigacionu zonu dashboarda
+ * - drži theme switch na očekivanom mjestu
+ */
 
-Top navigation dashboarda.
-
-Dizajn:
-- navy background
-- tanak border
-- clean SaaS stil
-*/
+import ThemeToggle from "@/components/theme/ThemeToggle";
 
 export default function Header() {
   return (
-    <header className="h-16 bg-brand-primary border-b border-brand-border flex items-center px-6">
-
-      <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
-
-        {/* Logo */}
-        <div className="font-semibold text-white text-lg">
-          Rookerys
-        </div>
-
-        {/* User */}
-        <div className="text-sm text-white/80">
-          Account
-        </div>
-
+    <header className="flex h-16 items-center justify-between border-b border-dashboard-border bg-dashboard-header px-6">
+      {/* 
+        Lijeva strana headera.
+        Za sada samo title trenutne dashboard zone.
+      */}
+      <div className="text-sm font-semibold text-white">
+        Dashboard
       </div>
 
+      {/* 
+        Desna strana headera.
+        Ovdje će kasnije ići user menu, notifications, search itd.
+      */}
+      <div className="flex items-center gap-3">
+        <ThemeToggle />
+      </div>
     </header>
   );
 }
