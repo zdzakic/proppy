@@ -116,7 +116,7 @@ apiClient.interceptors.response.use(
      * Ovdje NE radimo redirect.
      * Greška ide nazad u LoginForm.
      */
-    if (status === 401 && url.includes("/auth/login")) {
+    if (status === 401 && url.includes("/api/token/")) {
       return Promise.reject(error);
     }
 

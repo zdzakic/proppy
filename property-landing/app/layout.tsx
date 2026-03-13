@@ -16,6 +16,8 @@
  */
 
 import "./globals.css";
+import { Toaster } from "sonner";
+import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata = {
   title: "Rookerys",
@@ -32,7 +34,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="relative">{children}</body>
+      <body className="relative">
+        <AuthProvider>
+          {children}
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
+      </body>
     </html>
   );
 }

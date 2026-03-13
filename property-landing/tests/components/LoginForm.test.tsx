@@ -5,6 +5,20 @@ import { vi, describe, it, expect } from "vitest";
 import LoginForm from "@/components/ui/auth/LoginForm";
 import apiPublic from "@/utils/api/apiPublic";
 
+/**
+ * MOCK NEXT ROUTER
+ *
+ * Problem koji rješava:
+ * Next.js App Router ne postoji u test environmentu
+ */
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
 vi.mock("@/utils/api/apiPublic");
 
 describe("LoginForm", () => {

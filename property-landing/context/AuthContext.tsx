@@ -3,230 +3,142 @@
 /**
  * Path: src/context/AuthContext.tsx
  *
- * CENTRALNI AUTH KONTEKST ZA APLIKACIJU
+ * CENTRALNI AUTH KONTEKST
  *
  * Šta radi:
- * - drži auth stanje (user, token, loading)
- * - izlaže login i logout funkcije
+ * - drži user state
+ * - login / logout funkcije
+ * - restore session iz localStorage
  *
- * Zašto postoji:
- * - centralizuje auth logiku
- * - UI komponente ne rade direktno sa tokenima
+ * Zašto:
+ * - jedno centralno mjesto za auth logiku
+ * - UI komponente ne zovu direktno API
  *
- * Problem koji rješava:
- * - auth logika ne bude rasuta po komponentama
- * - login/logout flow je kontrolisan
+ * KISS princip:
+ * - samo ono što je potrebno za MVP
  */
 
-import React,
-{
-  createContext,
-  useContext,
-  useState,
-  useEffect
-} from "react";
-
-import apiClient from "@/utils/api/apiClient";
+import { createContext, useContext, useEffect, useState } from "react";
+import apiPublic from "@/utils/api/apiPublic";
 import { useRouter } from "next/navigation";
 
-/**
- * AUTH CONTEXT TYPE
- *
- * Javni ugovor koji ostatak aplikacije koristi.
- */
-type AuthContextType =
-{
-  user: any;
-  token: string | null;
-  isLoading: boolean;
+type User = {
+  id: number;
+  email?: string;
+};
 
+type AuthContextType = {
+  user: User | null;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 };
 
-/**
- * CONTEXT INSTANCE
- *
- * Omogućava dijeljenje auth state-a kroz cijelu aplikaciju.
- */
 const AuthContext = createContext<AuthContextType | null>(null);
 
-/**
- * AUTH PROVIDER
- *
- * Šta radi:
- * - drži kompletno auth stanje
- * - omotava aplikaciju
- */
-export const AuthProvider = ({ children }: { children: React.ReactNode }) =>
-{
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+
+  /**
+   * AUTH STATE
+   *
+   * Ako user postoji → korisnik je logovan
+   */
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
 
   /**
-   * USER STATE
+   * RESTORE SESSION
    *
-   * Informacije o trenutno logovanom korisniku.
+   * Nakon refresh-a stranice
+   * učitava user iz localStorage
    */
-  const [user, setUser] = useState<any>(null);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
 
-  /**
-   * TOKEN STATE
-   *
-   * JWT access token.
-   */
-  const [token, setToken] = useState<string | null>(null);
-
-  /**
-   * LOADING STATE
-   *
-   * signalizira auth operacije
-   */
-  const [isLoading, setIsLoading] = useState(false);
-
-  /**
-   * INIT TOKEN LOAD
-   *
-   * Šta radi:
-   * - čita token iz localStorage
-   *
-   * Zašto:
-   * - localStorage ne postoji na serveru
-   */
-  useEffect(() =>
-  {
-    const storedToken = localStorage.getItem("accessToken");
-
-    if (storedToken)
-    {
-      setToken(storedToken);
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
     }
-
   }, []);
 
   /**
-   * TOKEN GUARD
+   * LOGIN
    *
-   * Ako token nestane → resetuj user.
-   *
-   * Problem koji rješava:
-   * - UI ne ostaje u "ghost login" stanju.
+   * Poziva Django SimpleJWT endpoint
+   * Sprema access + refresh token
    */
-  useEffect(() =>
-  {
-    if (!token)
-    {
-      setUser(null);
-    }
+  const login = async (email: string, password: string) => {
 
-  }, [token]);
-
-  /**
-   * LOGIN FUNKCIJA
-   *
-   * Šta radi:
-   * - poziva backend login endpoint
-   * - sprema access token
-   * - postavlja user state
-   * - redirectuje na dashboard
-   */
-  const login = async (email: string, password: string) =>
-  {
     setIsLoading(true);
 
-    try
-    {
-      const response = await apiClient.post("/auth/login/",
-      {
+    try {
+
+      const response = await apiPublic.post("/api/token/", {
         email,
-        password
+        password,
       });
 
-      const { access, user } = response.data;
+      const { access, refresh, user } = response.data;
 
-      /**
-       * KISS token storage
-       */
       localStorage.setItem("accessToken", access);
+      localStorage.setItem("refreshToken", refresh);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      setToken(access);
       setUser(user);
 
       /**
-       * Redirect nakon uspješnog login-a
+       * redirect na dashboard
        */
       router.replace("/dashboard");
-    }
 
-    catch (error)
-    {
-      /**
-       * Ako login ne uspije
-       * očisti auth stanje.
-       */
-      setToken(null);
-      setUser(null);
-      localStorage.removeItem("accessToken");
-
-      throw error;
-    }
-
-    finally
-    {
+    } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * LOGOUT FUNKCIJA
+   * LOGOUT
    *
-   * Šta radi:
-   * - briše auth stanje
-   * - briše token
-   * - redirect na login
+   * briše auth stanje
+   * briše storage
    */
-  const logout = () =>
-  {
+  const logout = () => {
+
     setUser(null);
-    setToken(null);
 
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
 
     router.replace("/login");
   };
 
-  /**
-   * CONTEXT VALUE
-   *
-   * Sve što aplikacija koristi.
-   */
-  const value: AuthContextType =
-  {
-    user,
-    token,
-    login,
-    logout,
-    isLoading
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        login,
+        logout,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
 /**
- * useAuth HOOK
+ * useAuth
  *
- * Siguran pristup AuthContext-u.
+ * Siguran pristup AuthContextu
  */
-export const useAuth = () =>
-{
+export const useAuth = () => {
+
   const ctx = useContext(AuthContext);
 
-  if (!ctx)
-  {
-    throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) {
+    throw new Error("useAuth must be used inside AuthProvider");
   }
 
   return ctx;

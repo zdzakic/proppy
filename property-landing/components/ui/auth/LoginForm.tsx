@@ -19,12 +19,22 @@
 import { useState } from "react";
 import { validateLoginForm, type ValidationErrors } from "@/utils/auth/validators";
 import apiPublic from "@/utils/api/apiPublic";
-import apiClient from "@/utils/api/apiClient";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<ValidationErrors>({});
+  const router = useRouter();
+
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    };
+
+const clearFormError = () =>
+  setErrors((prev) => ({ ...prev, form: "" }));
 
   /**
    * FORM SUBMIT
@@ -63,22 +73,27 @@ export default function LoginForm() {
     localStorage.setItem("refreshToken", refresh);
     localStorage.setItem("user", JSON.stringify(response.data.user));
 
+    //Toast success
+    toast.success("Login successful");
+    // Redirect to dashboard
+    // router.push("/dashboard");
+
+    resetForm();
+
   } catch (error: any) {
 
-    console.error("LOGIN ERROR");
+      const message =
+        error.response?.data?.detail ||
+        "Invalid email or password!";
 
-    if (error.response?.data) {
-      console.log(error.response.data);
-    }
-  }
+    toast.error(message);
 
-  // test user/me
-    //   const testAuth = async () => {
-    //     const response = await apiClient.get("users/me/");
-    //     console.log("AUTH ME TEST", response.data);
-    //   };
+    setErrors({
+        form: message,
+    });
     
-    //   testAuth();
+    resetForm();
+  }
 };
 
   return (
@@ -108,9 +123,7 @@ export default function LoginForm() {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            onFocus={() =>
-                setErrors((prev) => ({ ...prev, email: "" }))
-            }
+            onFocus={clearFormError}
             className={`
                 w-full
                 border
@@ -139,9 +152,7 @@ export default function LoginForm() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onFocus={() =>
-                setErrors((prev) => ({ ...prev, password: "" }))
-            }
+            onFocus={clearFormError}
             className={`
                 w-full
                 border
@@ -181,6 +192,12 @@ export default function LoginForm() {
           >
             Sign in
           </button>
+
+          {errors.form && (
+            <p className="text-sm text-error text-center">
+              {errors.form}
+            </p>
+          )}
 
         </form>
 

@@ -12,8 +12,6 @@
  * postao grid item.
  */
 
-import { Toaster } from "sonner";
-
 export default function AuthLayout({
   children,
 }: {
@@ -26,9 +24,6 @@ export default function AuthLayout({
       <div className="grid h-full w-full grid-cols-1 lg:grid-cols-2">
         {children}
       </div>
-
-      {/* GLOBAL TOASTER */}
-      <Toaster position="top-right" richColors />
 
     </div>
   );
