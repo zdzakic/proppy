@@ -1,58 +1,42 @@
 "use client";
 
-import Link from "next/link";
-
 /**
- * Path: components/dashboard/layout/SideBar.tsx
- *
- * DASHBOARD SIDEBAR
- *
- * Šta radi:
- * - Prikazuje glavnu navigaciju dashboard aplikacije
- *
- * Sadrži:
- * - linkove prema dashboard sekcijama
- *
- * Zašto postoji:
- * - Sidebar je primarna navigacija u dashboard aplikaciji
- *
- * Koji problem rješava:
- * - Centralizuje navigaciju
- * - Omogućava brzo kretanje između sekcija
- *
- * Napomena:
- * - Za sada je statičan
- * - Kasnije će koristiti:
- *   - role based navigation (owner / tenant / admin)
- *   - centralni config iz lib/links.ts
- */
+SideBar
+
+Dashboard navigacija.
+
+Dizajn:
+- tamniji navy
+- vertikalni menu
+- mobile collapse kasnije
+*/
 
 export default function SideBar() {
   return (
-    <aside className="w-64 bg-brand-surface border-r border-brand-border p-4">
+    <aside className="w-64 bg-brand-primary-dark border-r border-brand-border hidden md:block">
 
-      <nav className="flex flex-col gap-2">
+      <nav className="p-6 space-y-3">
 
-        <Link
+        <a
           href="/dashboard"
-          className="px-3 py-2 rounded-md hover:bg-brand-primary/20 transition"
+          className="block text-white/80 hover:text-white transition"
         >
           Dashboard
-        </Link>
+        </a>
 
-        <Link
-          href="/dashboard/properties"
-          className="px-3 py-2 rounded-md hover:bg-brand-primary/20 transition"
+        <a
+          href="/properties"
+          className="block text-white/80 hover:text-white transition"
         >
           Properties
-        </Link>
+        </a>
 
-        <Link
-          href="/dashboard/works"
-          className="px-3 py-2 rounded-md hover:bg-brand-primary/20 transition"
+        <a
+          href="/tenants"
+          className="block text-white/80 hover:text-white transition"
         >
-          Works
-        </Link>
+          Tenants
+        </a>
 
       </nav>
 
