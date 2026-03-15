@@ -30,6 +30,11 @@
   --color-dashboard-border: var(--dashboard-border);
   --color-dashboard-text: var(--dashboard-text);
   --color-dashboard-accent: var(--dashboard-accent);
+  /* NEW */
+--color-dashboard-muted: var(--dashboard-muted);
+--color-dashboard-hover: var(--dashboard-hover);
+--color-dashboard-active: var(--dashboard-active);
+--color-dashboard-ring: var(--dashboard-ring);
 }
  
 /* =====================================
@@ -64,6 +69,10 @@
   --dashboard-border: #E5E7EB;
   --dashboard-accent: #D4AF37;
   --dashboard-text: #0F172A;
+  --dashboard-muted: #6B7280;
+  --dashboard-hover: #F1F5F9;
+  --dashboard-active: #E2E8F0;
+  --dashboard-ring: #CBD5F5;
 
   scroll-behavior: smooth;
 }
@@ -89,6 +98,10 @@
   --dashboard-border: #334155;
   --dashboard-accent: #D4AF37;
   --dashboard-text: #F8FAFC;
+  --dashboard-muted: #94A3B8;
+  --dashboard-hover: #334155;
+  --dashboard-active: #334155;
+  --dashboard-ring: #475569;    
 }
 
 /* =====================================

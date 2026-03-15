@@ -28,12 +28,12 @@ import {
 
 export default function SideBar() {
   return (
-    <aside className="hidden w-64 shrink-0 flex-col bg-dashboard-sidebar text-white md:flex">
+    <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-dashboard-border bg-dashboard-surface md:flex">
       {/* 
         Gornji brand / logo dio sidebara.
         Za sada je tekstualni placeholder.
       */}
-      <div className="flex h-16 items-center border-b border-white/10 px-6 text-lg font-semibold">
+      <div className="mt-4 flex h-16 items-center justify-center px-6 text-2xl font-semibold text-dashboard-text">
         Rookerys
       </div>
 
@@ -41,10 +41,10 @@ export default function SideBar() {
         Glavna navigacija.
         Linkovi su trenutno statični da prvo stabilizujemo layout UI.
       */}
-      <nav className="flex-1 space-y-2 p-4">
+      <nav className="flex-1 space-y-2 p-4 mt-8">
         <a
           href="/dashboard"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-white/90 hover:bg-white/10"
+          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
         >
           <LayoutDashboard className="h-5 w-5" />
           <span>Dashboard</span>
@@ -52,7 +52,7 @@ export default function SideBar() {
 
         <a
           href="/dashboard/properties"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-white/90 hover:bg-white/10"
+          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
         >
           <Building2 className="h-5 w-5" />
           <span>Properties</span>
@@ -60,7 +60,7 @@ export default function SideBar() {
 
         <a
           href="/dashboard/tenants"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-white/90 hover:bg-white/10"
+          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
         >
           <Users className="h-5 w-5" />
           <span>Tenants</span>
@@ -68,7 +68,7 @@ export default function SideBar() {
 
         <a
           href="/dashboard/settings"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-white/90 hover:bg-white/10"
+          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
         >
           <Settings className="h-5 w-5" />
           <span>Settings</span>

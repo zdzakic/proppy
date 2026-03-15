@@ -32,62 +32,24 @@ export default function DashboardLayout({
   return (
     <ThemeProvider>
       <div className="flex min-h-screen bg-dashboard-bg text-dashboard-text">
-        {/* 
-          Sidebar je stalna navigacija dashboarda.
-          Ostaje odvojena od content dijela.
-        */}
+
+        {/* Sidebar */}
         <SideBar />
 
-        {/* 
-          Desna strana layouta:
-          - header gore
-          - page content ispod
-        */}
-        <div className="flex flex-1 flex-col">
+        {/* Main wrapper */}
+        <div className="ml-64 flex flex-1 flex-col">
+
           <Header />
 
-          {/* 
-            Main content area.
-            max-w-7xl drži sadržaj urednim i preglednim na velikim ekranima.
-          */}
-          <main className="flex-1 p-6">
-            <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <main className="flex-1 p-6 overflow-y-auto">
+            <div className="mx-auto w-full ">
+              {children}
+            </div>
           </main>
+
         </div>
+
       </div>
     </ThemeProvider>
   );
 }
-
-// "use client";
-
-// import Header from "@/components/dashboard/layout/Header";
-// import SideBar from "@/components/dashboard/layout/SideBar";
-
-// export default function DashboardLayout({
-//   children,
-// }: {
-//   children: React.ReactNode;
-// }) {
-//   return (
-//     <div className="flex flex-col min-h-screen bg-brand-background text-white">
-
-//       {/* TOP HEADER */}
-//       <Header />
-
-//       {/* BODY */}
-//       <div className="flex flex-1">
-
-//         {/* SIDEBAR */}
-//         <SideBar />
-
-//         {/* MAIN */}
-//         <main className="flex-1 p-6 overflow-y-auto">
-//           {children}
-//         </main>
-
-//       </div>
-
-//     </div>
-//   );
-// }

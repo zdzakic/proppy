@@ -28,24 +28,26 @@ export default function ThemeToggle() {
       type="button"
       onClick={toggleTheme}
       className="
-        inline-flex items-center gap-2
-        rounded-lg border border-dashboard-border
-        bg-dashboard-surface px-3 py-2
-        text-sm font-medium
-        hover:opacity-90
+        flex
+        h-10
+        w-10
+        items-center
+        justify-center
+        rounded-full
+        text-dashboard-text 
+        hover:bg-dashboard-hover
         transition
+        cursor-pointer
       "
       aria-label="Toggle dashboard theme"
     >
       {theme === "light" ? (
         <>
-          <Moon className="h-4 w-4" />
-          Dark
+          <Moon className="h-5 w-5" />
         </>
       ) : (
         <>
-          <Sun className="h-4 w-4" />
-          Light
+          <Sun className="h-5 w-5" />
         </>
       )}
     </button>
