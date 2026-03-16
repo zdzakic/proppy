@@ -23,6 +23,7 @@
 import ThemeProvider from "@/components/theme/ThemeProvider";
 import SideBar from "@/components/dashboard/layout/SideBar";
 import Header from "@/components/dashboard/layout/Header";
+import ProtectedRoute from "@/components/ui/auth/ProtectedRoute";
 
 export default function DashboardLayout({
   children,
@@ -30,26 +31,28 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ThemeProvider>
-      <div className="flex min-h-screen bg-dashboard-bg text-dashboard-text">
+    <ProtectedRoute>
+        <ThemeProvider>
+        <div className="flex min-h-screen bg-dashboard-bg text-dashboard-text">
 
-        {/* Sidebar */}
-        <SideBar />
+            {/* Sidebar */}
+            <SideBar />
 
-        {/* Main wrapper */}
-        <div className="ml-64 flex flex-1 flex-col">
+            {/* Main wrapper */}
+            <div className="ml-64 flex flex-1 flex-col">
 
-          <Header />
+            <Header />
 
-          <main className="flex-1 p-6 overflow-y-auto">
-            <div className="mx-auto w-full ">
-              {children}
+            <main className="flex-1 p-6 overflow-y-auto">
+                <div className="mx-auto w-full ">
+                {children}
+                </div>
+            </main>
+
             </div>
-          </main>
 
         </div>
-
-      </div>
-    </ThemeProvider>
+        </ThemeProvider>
+    </ProtectedRoute>
   );
 }

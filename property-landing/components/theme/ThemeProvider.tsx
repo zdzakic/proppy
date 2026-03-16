@@ -37,21 +37,14 @@ export default function ThemeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [theme, setTheme] = useState<Theme>("light");
+    //   const [theme, setTheme] = useState<Theme>("light");
+    const [theme, setTheme] = useState<Theme>(() => {
+        if (typeof window === "undefined") return "light";
 
-  /**
-   * Inicijalno čitanje teme iz localStorage.
-   *
-   * Zašto:
-   * - da korisnik zadrži prethodno odabrani izgled dashboarda
-   */
-  useEffect(() => {
-    const storedTheme = localStorage.getItem("theme") as Theme | null;
+        const stored = localStorage.getItem("theme");
 
-    if (storedTheme === "light" || storedTheme === "dark") {
-      setTheme(storedTheme);
-    }
-  }, []);
+        return stored === "dark" ? "dark" : "light";
+    });
 
   /**
    * Sinhronizacija:

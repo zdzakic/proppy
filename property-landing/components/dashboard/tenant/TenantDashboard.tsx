@@ -7,21 +7,21 @@
  * Renders a header and example dashboard card with styling.
  * 
  * @component
- * @returns {JSX.Element} The owner dashboard layout
+ * @returns {JSX.Element} The tenant dashboard layout
  * 
  * @example
- * return <OwnerDashboard />
+ * return <TenantDashboard />
  */
-export default function OwnerDashboard() {
+export default function TenantDashboard() {
   return (
     <div className="space-y-6">
 
       <h1 className="text-2xl font-semibold">
-        Owner Dashboard
+        Tenant Dashboard
       </h1>
 
       <div className="bg-brand-surface border border-brand-border rounded-xl p-6">
-        Example owner dashboard card
+        Example tenant dashboard card
       </div>
 
     </div>

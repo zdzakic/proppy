@@ -21,12 +21,14 @@
 
 import { User, Settings, LogOut } from "lucide-react";
 import { useState, useRef } from "react";
+import {useAuth} from "@/context/AuthContext";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<NodeJS.Timeout | null>(null);
+  const { logout } = useAuth();
 
   const handleEnter = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -145,6 +147,7 @@ export default function Header() {
                 <div className="my-1 border-t border-dashboard-border"></div>
 
                 <button
+                onClick={logout}
                 className="
                     flex
                     w-full

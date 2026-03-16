@@ -21,12 +21,14 @@ import { validateLoginForm, type ValidationErrors } from "@/utils/auth/validator
 import apiPublic from "@/utils/api/apiPublic";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<ValidationErrors>({});
   const router = useRouter();
+  const { login } = useAuth();
 
   const resetForm = () => {
     setEmail("");
@@ -58,26 +60,8 @@ const clearFormError = () =>
 
   // login() 
    try {
-    const response = await apiPublic.post("token/", {
-      email,
-      password,
-    });
 
-    const { access, refresh } = response.data;
-
-    console.log("LOGIN SUCCESS");
-    console.log(response.data);
-
-    // spremi token i user 
-    localStorage.setItem("accessToken", access);
-    localStorage.setItem("refreshToken", refresh);
-    localStorage.setItem("user", JSON.stringify(response.data.user));
-
-    //Toast success
-    toast.success("Login successful");
-    // Redirect to dashboard
-    // router.push("/dashboard");
-
+    await login(email, password);  
     resetForm();
 
   } catch (error: any) {
@@ -86,8 +70,7 @@ const clearFormError = () =>
         error.response?.data?.detail ||
         "Invalid email or password!";
 
-    toast.error(message);
-
+    // toast.error(message);
     setErrors({
         form: message,
     });

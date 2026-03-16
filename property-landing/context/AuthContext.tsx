@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 type User = {
   id: number;
   email?: string;
+  role?: "owner" | "tenant" | "admin";
 };
 
 type AuthContextType = {
@@ -44,7 +45,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    * Ako user postoji → korisnik je logovan
    */
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const router = useRouter();
 
@@ -55,12 +56,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
    * učitava user iz localStorage
    */
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
 
-    if (storedUser) {
+  const token = localStorage.getItem("accessToken");
+  const storedUser = localStorage.getItem("user");
+
+  if (token && storedUser) {
+    try {
       setUser(JSON.parse(storedUser));
+    } catch {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
     }
-  }, []);
+  }
+
+    //   setIsLoading(false);
+    setTimeout(() => {
+     setIsLoading(false);
+    }, 5000);
+
+}, []);
 
   /**
    * LOGIN
@@ -74,7 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     try {
 
-      const response = await apiPublic.post("/api/token/", {
+      const response = await apiPublic.post("/token/", {
         email,
         password,
       });
@@ -88,11 +103,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(user);
 
       /**
-       * redirect na dashboard
+       * redirect na dashboard zavisno od tipa korisnika
        */
-      router.replace("/dashboard");
+        //   if (user.role === "owner") {
+        //     // router.replace("/dashboard/owner");
+        //     router.replace("/dashboard/");
+        //   } else if (user.role === "tenant") {
+        //     // router.replace("/dashboard/tenant");
+        //     router.replace("/dashboard/");
+        //   } else if (user.role === "admin") {
+        //     router.replace("/dashboard/");
+        //     // router.replace("/dashboard/admin");
+        //   }      
 
-    } finally {
+      router.replace("/dashboard/");
+  
+    } catch (error) {
+      console.error("Login error:", error);
+      throw error;
+    }
+    finally {
       setIsLoading(false);
     }
   };

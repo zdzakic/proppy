@@ -33,8 +33,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="relative">
+    <html lang="en" suppressHydrationWarning>
+  <head>
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `
+        (function () {
+        try {
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            }
+        } catch (e) {}
+        })();
+                `,
+            }}
+            />
+  </head>
+
+  <body className="relative">
         <AuthProvider>
           {children}
           <Toaster position="top-right" richColors />

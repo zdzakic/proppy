@@ -116,7 +116,7 @@ apiClient.interceptors.response.use(
      * Ovdje NE radimo redirect.
      * Greška ide nazad u LoginForm.
      */
-    if (status === 401 && url.includes("/api/token/")) {
+    if (status === 401 && url.includes("/token/")) {
       return Promise.reject(error);
     }
 
@@ -133,10 +133,13 @@ apiClient.interceptors.response.use(
      */
     if (status === 401) {
       if (typeof window !== "undefined") {
-        const isLoginPage = window.location.pathname.includes("/login");
+        
+        if (window.location.pathname !== "/login") {
 
-        if (!isLoginPage) {
           localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          localStorage.removeItem("user");
+
           window.location.href = "/login";
         }
       }
