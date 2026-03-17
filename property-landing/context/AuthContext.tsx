@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     //   setIsLoading(false);
     setTimeout(() => {
      setIsLoading(false);
-    }, 5000);
+    }, 200);
 
 }, []);
 
@@ -120,7 +120,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   
     } catch (error) {
       console.error("Login error:", error);
-      throw error;
+    //   throw error;
     }
     finally {
       setIsLoading(false);

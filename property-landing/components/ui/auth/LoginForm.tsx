@@ -18,10 +18,10 @@
 
 import { useState } from "react";
 import { validateLoginForm, type ValidationErrors } from "@/utils/auth/validators";
-import apiPublic from "@/utils/api/apiPublic";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import Spinner from "../Spinner";
+import Button from "../Button";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -29,6 +29,7 @@ export default function LoginForm() {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const router = useRouter();
   const { login } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
     setEmail("");
@@ -60,7 +61,7 @@ const clearFormError = () =>
 
   // login() 
    try {
-
+    setIsSubmitting(true);
     await login(email, password);  
     resetForm();
 
@@ -76,6 +77,8 @@ const clearFormError = () =>
     });
     
     resetForm();
+  } finally {
+    setIsSubmitting(false);
   }
 };
 
@@ -160,8 +163,13 @@ const clearFormError = () =>
          
 
           {/* BUTTON */}
-          <button
+          <Button type="submit" loading={isSubmitting}>
+            Sign in
+          </Button>
+          {/* <button
             type="submit"
+            disabled={isSubmitting}
+            aria-busy={isSubmitting}
             className="
               w-full
               py-3
@@ -171,10 +179,23 @@ const clearFormError = () =>
               bg-brand-primary
               hover:bg-brand-primary-dark
               transition
+              disabled:opacity-50
+                disabled:cursor-not-allowed
+                
+                flex
+                items-center
+                justify-center
+                gap-2
             "
           >
-            Sign in
-          </button>
+            <span>Sign in</span>
+                {isSubmitting && (
+                    <Spinner
+                    size="md"
+                    className="border-white border-t-transparent"
+                    />
+                )}
+          </button> */}
 
           {errors.form && (
             <p className="text-sm text-error text-center">

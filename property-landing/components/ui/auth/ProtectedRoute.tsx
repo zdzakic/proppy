@@ -36,13 +36,18 @@ export default function ProtectedRoute({ children }: Props) {
    * Dok traje auth restore
    * ništa ne renderujemo
    */
-   if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-dashboard-bg">
-        <Spinner />
-      </div>
-    );
+  if (isLoading) {
+    return null;
   }
+
+   // sppinner 
+//    if (isLoading) {
+//     return (
+//       <div className="fixed inset-0 flex min-h-screen items-center justify-center bg-dashboard-bg">
+//         <Spinner />
+//       </div>
+//     );
+//   }
 
     /**
    * Ako nema usera
