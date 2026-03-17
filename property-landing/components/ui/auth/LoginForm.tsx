@@ -87,7 +87,16 @@ const clearFormError = () =>
     <div className="w-full max-w-md">
 
       {/* CARD */}
-      <div className="bg-brand-surface border border-brand-border rounded-2xl shadow-premium p-8 space-y-6">
+      <div className="
+        bg-brand-surface 
+        border border-brand-border 
+        rounded-2xl 
+        shadow-premium 
+        p-8 
+        space-y-6
+        dark:shadow-none
+        dark:ring-1 dark:ring-brand-border
+        ">
 
         {/* Title */}
         <div className="text-center space-y-2">
