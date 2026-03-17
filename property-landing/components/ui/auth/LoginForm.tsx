@@ -62,7 +62,7 @@ const clearFormError = () =>
   // login() 
    try {
     setIsSubmitting(true);
-    await login(email, password);  
+   await login(email, password);  
     resetForm();
 
   } catch (error: any) {
@@ -75,8 +75,9 @@ const clearFormError = () =>
     setErrors({
         form: message,
     });
-    
-    resetForm();
+
+    // resetForm();
+
   } finally {
     setIsSubmitting(false);
   }
@@ -90,7 +91,7 @@ const clearFormError = () =>
 
         {/* Title */}
         <div className="text-center space-y-2">
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-2xl font-semibold text-brand-text">
             Sign in
           </h1>
 
@@ -108,7 +109,11 @@ const clearFormError = () =>
             autoComplete="email"
             placeholder="Email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            // onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+            setEmail(e.target.value);
+            setErrors((prev) => ({ ...prev, email: "" }));
+            }}
             onFocus={clearFormError}
             className={`
                 w-full
@@ -118,6 +123,9 @@ const clearFormError = () =>
                 py-2
                 focus:outline-none
                 focus:ring-1
+                 bg-transparent
+                text-brand-text
+                placeholder:text-brand-muted
                 ${
                 errors.email
                     ? "border-error focus:ring-error/30"
@@ -137,7 +145,11 @@ const clearFormError = () =>
             autoComplete="current-password"
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            // onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+            setPassword(e.target.value);
+            setErrors((prev) => ({ ...prev, password: "" }));
+            }}
             onFocus={clearFormError}
             className={`
                 w-full
@@ -147,6 +159,9 @@ const clearFormError = () =>
                 py-2
                 focus:outline-none
                 focus:ring-1
+                 bg-transparent
+                text-brand-text
+                placeholder:text-brand-muted
                 ${
                 errors.password
                     ? "border-error focus:ring-error/30"
@@ -166,36 +181,6 @@ const clearFormError = () =>
           <Button type="submit" loading={isSubmitting}>
             Sign in
           </Button>
-          {/* <button
-            type="submit"
-            disabled={isSubmitting}
-            aria-busy={isSubmitting}
-            className="
-              w-full
-              py-3
-              rounded-lg
-              font-medium
-              text-white
-              bg-brand-primary
-              hover:bg-brand-primary-dark
-              transition
-              disabled:opacity-50
-                disabled:cursor-not-allowed
-                
-                flex
-                items-center
-                justify-center
-                gap-2
-            "
-          >
-            <span>Sign in</span>
-                {isSubmitting && (
-                    <Spinner
-                    size="md"
-                    className="border-white border-t-transparent"
-                    />
-                )}
-          </button> */}
 
           {errors.form && (
             <p className="text-sm text-error text-center">
