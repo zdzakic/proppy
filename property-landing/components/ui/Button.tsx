@@ -45,7 +45,8 @@ export default function Button({
         hover:bg-brand-primary-dark
         transition-colors duration-200
         flex items-center justify-center gap-2
-        disabled:opacity-70 disabled:cursor-not-allowed
+        cursor-pointer
+
         ${className}
       `}
     >
