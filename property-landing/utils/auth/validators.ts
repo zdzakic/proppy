@@ -122,46 +122,77 @@ export function validateLoginForm(
   return errors;
 }
 
+
 /**
- * Register form validation
+ * validateRegisterForm
  *
  * ZAŠTO:
- * - prati isti pattern kao login validator
- * - centralizuje validaciju
+ * - koristi postojeće reusable validatore
+ * - prati isti pattern kao validateLoginForm
  *
  * ŠTA RJEŠAVA:
- * - dupliranje logike u komponentama
- * - nekonzistentne error poruke
+ * - uklanja dupliranje logike
+ * - osigurava konzistentnu validaciju kroz aplikaciju
  */
 export function validateRegisterForm(
   email: string,
   password: string,
   passwordConfirm: string,
   companyName: string
-) {
-  const errors: Record<string, string> = {};
+): ValidationErrors {
 
-  if (!email) {
-    errors.email = "Email is required";
-  } else if (!email.includes("@")) {
-    errors.email = "Invalid email";
+  const errors: ValidationErrors = {};
+
+  /**
+   * EMAIL
+   */
+  const emailError =
+    validateRequired(email) || validateEmailFormat(email);
+
+  if (emailError) {
+    errors.email = "Email is required!";
   }
 
-  if (!companyName) {
-    errors.company_name = "Company name is required";
+  /**
+   * COMPANY NAME
+   */
+  const companyError = validateRequired(companyName);
+  if (companyError) {
+    errors.company_name = "Company name is required!";
   }
 
-  if (!password) {
-    errors.password = "Password is required";
-  }
+    /**
+     * PASSWORD
+     */
+    const passwordError =
+    validateRequired(password) || validatePasswordComplexity(password);
 
-  if (!passwordConfirm) {
-    errors.password_confirm = "Confirm your password";
-  }
+    if (passwordError) {
+    errors.password = passwordError;
+    }
 
-  if (password && passwordConfirm && password !== passwordConfirm) {
-    errors.password_confirm = "Passwords do not match";
-  }
+    /**
+     * PASSWORD CONFIRM
+     */
+    const passwordConfirmError = validateRequired(passwordConfirm);
+    if (passwordConfirmError) {
+    errors.password_confirm = "Confirm your password!";
+    }
+
+    /**
+     * MATCH
+     */
+    if (!errors.password && !errors.password_confirm) {
+    const matchError = validateMatch(
+        passwordConfirm,
+        password,
+        "Password"
+    );
+
+    if (matchError) {
+        errors.password_confirm = matchError;
+    }
+    }
 
   return errors;
 }

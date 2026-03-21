@@ -18,6 +18,7 @@
 
 import { useState } from "react";
 import Button from "../Button";
+import { validateRegisterForm } from "@/utils/auth/validators";
 
 type ValidationErrors = {
   email?: string;
@@ -45,38 +46,11 @@ export default function RegisterCompanyForm() {
     setPasswordConfirm("");
   };
 
-  const validate = () => {
-    const newErrors: ValidationErrors = {};
-
-    if (!email) {
-      newErrors.email = "Email is required";
-    } else if (!email.includes("@")) {
-      newErrors.email = "Invalid email";
-    }
-
-    if (!companyName) {
-      newErrors.company_name = "Company name is required";
-    }
-
-    if (!password) {
-      newErrors.password = "Password is required";
-    }
-
-    if (!passwordConfirm) {
-      newErrors.password_confirm = "Confirm your password";
-    }
-
-    if (password && passwordConfirm && password !== passwordConfirm) {
-      newErrors.password_confirm = "Passwords do not match";
-    }
-
-    return newErrors;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const validationErrors = validate();
+    const validationErrors = validateRegisterForm(email, password, passwordConfirm, companyName);
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -231,11 +205,16 @@ export default function RegisterCompanyForm() {
                 }
             `}
             />
-          {errors.password && (
+            {!errors.password && (
+            <p className="text-xs text-brand-muted">
+                Must be at least 8 characters, include uppercase, lowercase, number and special character.
+            </p>
+            )}
+          {/* {errors.password && (
             <p className="text-sm text-error mt-1">
               {errors.password}
             </p>
-          )}
+          )} */}
 
           {/* CONFIRM PASSWORD */}
           <input
@@ -274,7 +253,7 @@ export default function RegisterCompanyForm() {
 
           {/* BUTTON */}
           <Button type="submit" loading={isSubmitting}>
-            Create account
+            Register Company
           </Button>
 
           {errors.form && (
