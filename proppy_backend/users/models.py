@@ -30,8 +30,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     )
 
     email = models.EmailField(unique=True)
+    
+    # ⚠️ DEPRECATED
+    # This field is no longer used for business logic.
+    # Roles are now handled via:
+    # - CompanyMembership (company_admin)
+    # - Ownership (owner / tenant)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='tenant')
-
+        
     first_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=50, blank=True)
     address = models.CharField(max_length=255, blank=True)

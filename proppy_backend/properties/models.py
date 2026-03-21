@@ -31,15 +31,58 @@ class Property(models.Model):
         return self.name
 
 
+# class Ownership(models.Model):
+#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ownerships')
+#     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='ownerships')
+#     start_date = models.DateField(null=True, blank=True)
+#     end_date = models.DateField(null=True, blank=True)  # null znači da je još uvijek aktivno
+#     comment = models.TextField(blank=True)
+
+#     def __str__(self):
+#         return f"{self.user.email} → {self.property.name} ({self.start_date} to {self.end_date or 'present'})"
+
 class Ownership(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ownerships')
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='ownerships')
+    """
+    Represents relationship between user and property.
+
+    ZAŠTO:
+    - jedan user može imati više stanova
+    - jedan stan može imati više usera
+    - mora postojati kontekst (owner ili tenant)
+
+    ŠTA RJEŠAVA:
+    - zamjenjuje ownerrole iz Access baze
+    - omogućava više role-a za istog usera
+    """
+
+    ROLE_CHOICES = (
+        ("owner", "Owner"),
+        ("tenant", "Tenant"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='ownerships'
+    )
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name='ownerships'
+    )
+
+    role = models.CharField(              
+        max_length=20,
+        choices=ROLE_CHOICES
+    )
+
     start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)  # null znači da je još uvijek aktivno
+    end_date = models.DateField(null=True, blank=True)
     comment = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.user.email} → {self.property.name} ({self.start_date} to {self.end_date or 'present'})"
+        return f"{self.user.email} → {self.property.name} ({self.role})"
 
 
 class Insurance(models.Model):
