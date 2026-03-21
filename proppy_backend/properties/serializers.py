@@ -1,7 +1,11 @@
 # serializers.py
 from rest_framework import serializers
-from .models import Property, Ownership, Block, Company
-from users.models import User
+from django.db import transaction
+from .models import Property, Company, CompanyMembership
+from django.contrib.auth import get_user_model
+from users.validators import validate_password_match
+
+User = get_user_model()
 
 class OwnershipSerializer(serializers.Serializer):
     """
@@ -59,3 +63,91 @@ class OwnerListSerializer(serializers.Serializer):
             }
             for ownership in obj.ownerships.all()
         ]
+
+
+class CompanyRegistrationSerializer(serializers.Serializer):
+    """
+    Serializer for self-service company registration.
+
+    What it does:
+    - accepts the minimal data needed for onboarding
+    - creates a new user
+    - creates a new company
+    - links the user to that company as admin via CompanyMembership
+
+    Why this approach:
+    - we are creating multiple related models in one flow
+    - plain Serializer is a better fit than ModelSerializer here
+    - transaction.atomic() ensures all-or-nothing DB writes
+    """
+
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True)
+    company_name = serializers.CharField(max_length=255)
+
+    def validate_email(self, value):
+        """
+        Validate that the email is unique.
+        """
+        value = value.lower()
+
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("User with this email already exists.")
+        return value
+
+    def validate_password(self, value):
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        try:
+            validate_password(value)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(list(e.messages))
+
+        return value
+
+    def validate(self, data):
+        validate_password_match(
+            data["password"],
+            data["password_confirm"]
+        )
+        return data
+
+    @transaction.atomic
+    def create(self, validated_data):
+        """
+        Create user + company + company membership in a single transaction.
+
+        Why atomic:
+        - if any step fails, nothing is partially saved
+        - prevents half-created onboarding state
+        """
+        validated_data.pop("password_confirm")
+
+        email = validated_data["email"]
+        password = validated_data["password"]
+        company_name = validated_data["company_name"]
+
+        try:
+            user = User.objects.create_user(
+                email=email,
+                password=password,
+            )
+        except IntegrityError:
+            raise serializers.ValidationError(
+                {"email": "User with this email already exists."}
+            )
+             
+
+        company = Company.objects.create(
+            name=company_name,
+        )
+
+        CompanyMembership.objects.create(
+            user=user,
+            company=company,
+            role="admin",
+        )
+
+        return user

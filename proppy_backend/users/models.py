@@ -36,7 +36,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Roles are now handled via:
     # - CompanyMembership (company_admin)
     # - Ownership (owner / tenant)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='tenant')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
         
     first_name = models.CharField(max_length=50, blank=True)
     last_name = models.CharField(max_length=50, blank=True)
@@ -59,4 +59,4 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.first_name} {self.last_name}".strip()
 
     def __str__(self):
-        return f"{self.email} ({self.role})"
+        return f"{self.email}"

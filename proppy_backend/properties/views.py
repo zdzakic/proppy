@@ -2,11 +2,13 @@
 from rest_framework.views import APIView
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework import status
 from .models import Ownership, Property
-from .serializers import OwnershipSerializer, PropertySerializer, OwnerListSerializer
-from rest_framework.permissions import IsAuthenticated
-from users.permissions import IsOwnerOnly, IsAdminOnly, IsTenantOnly, IsOwnerOrAdmin
+from .serializers import OwnershipSerializer, PropertySerializer, OwnerListSerializer, CompanyRegistrationSerializer
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from users.permissions import IsOwnerOrAdmin
 from users.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 
 class OwnershipListAPIView(generics.ListAPIView):
     """
@@ -42,7 +44,6 @@ class OwnershipListAPIView(generics.ListAPIView):
             return Ownership.objects.select_related('user', 'property').filter(user=user)
         else:
             return Ownership.objects.none()
-
 
 
 class PropertyListAPIView(generics.ListAPIView):
@@ -97,3 +98,47 @@ class OwnerListAPIView(generics.ListAPIView):
         if user.role == 'owner':
             return qs.filter(id=user.id)
         return qs
+
+
+
+class CompanyRegistrationView(APIView):
+    """
+    API endpoint for self-service company registration.
+
+    What it does:
+    - receives registration data
+    - delegates creation logic to serializer
+    - returns JWT tokens immediately after successful registration
+
+    Why APIView:
+    - this is a custom onboarding flow, not standard model CRUD
+    - APIView keeps the logic explicit and easy to extend later
+    """
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        """
+        Register a new company admin account and issue JWT tokens.
+        """
+        serializer = CompanyRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.save()
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response(
+            {
+                "message": "Registration successful.",
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                },
+                "tokens": {
+                    "refresh": str(refresh),
+                    "access": str(refresh.access_token),
+                },
+            },
+            status=status.HTTP_201_CREATED,
+        )
