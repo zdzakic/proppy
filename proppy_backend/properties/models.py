@@ -76,3 +76,52 @@ class HealthSafety(models.Model):
     def __str__(self):
         return f"{self.document_type} ({self.company.name})"
 
+
+class CompanyMembership(models.Model):
+    """
+    Connects a user with a company and stores the user's role inside that company.
+
+    Why this exists:
+    - Django auth user represents identity/login only.
+    - Company-level access must be modeled separately because one company can have
+      multiple admins, and one user may belong to multiple companies later.
+
+    What this solves:
+    - introduces company_admin role cleanly
+    - prepares the backend for company-scoped permissions
+    - keeps the design scalable without changing current auth flow yet
+    """
+
+    ROLE_CHOICES = (
+        ("admin", "Company Admin"),
+    )
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="company_memberships",
+    )
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default="admin",
+    )
+
+    # Optional metadata, useful later if you want Access-like history/comments.
+    display_name = models.CharField(max_length=255, blank=True)
+    date_from = models.DateField(null=True, blank=True)
+    date_to = models.DateField(null=True, blank=True)
+    comment = models.TextField(blank=True)
+    order_index = models.PositiveIntegerField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ("user", "company", "role")
+
+    def __str__(self):
+        return f"{self.user.email} -> {self.company.name} ({self.role})"
+

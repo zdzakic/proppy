@@ -1,6 +1,8 @@
+# users/urls.py
+
 from django.urls import path
-from .views import CustomTokenObtainPairView
+from .views import CurrentUserView
 
 urlpatterns = [
-    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path("me/", CurrentUserView.as_view(), name="current_user"),
 ]

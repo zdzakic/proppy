@@ -1,7 +1,41 @@
 # users/serializers.py
+
+"""
+Serializers for user authentication and representation.
+
+Why:
+- JWT login needs CustomTokenObtainPairSerializer
+- API endpoints (like /users/me/) need a UserSerializer
+"""
+
+
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Basic serializer for returning user data via API.
+
+    Why:
+    - Used by /users/me/ endpoint
+    - Avoids repeating user fields in multiple places
+    """
+
+    class Meta:
+        model = User
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+            "is_staff",
+            "is_active",
+        ]
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'email'  # koristi email kao username
