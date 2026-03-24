@@ -1,11 +1,21 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 
-# 👇 Koristimo svoj manager jer default Django manager traži username
+# =========================================================
+# USER MANAGER
+# =========================================================
+
 class CustomUserManager(BaseUserManager):
+    """
+    Custom manager for User model.
+
+    WHY:
+    - Django default expects username
+    - We use email as unique identifier
+
+    SOLVES:
+    - authentication using email + password
+    """
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email is required")
@@ -18,45 +28,66 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("role", "admin")
         return self.create_user(email, password, **extra_fields)
 
-# 👇 Glavni custom User model
+# =========================================================
+# USER (tblPerson equivalent)
+# =========================================================
 class User(AbstractBaseUser, PermissionsMixin):
-    ROLE_CHOICES = (
-        ('owner', 'Owner'),
-        ('tenant', 'Tenant'),
-        ('admin', 'Admin'),
-    )
+    """
+    Central user entity.
 
+    WHY:
+    - Represents a real person in the system
+    - Based on Access tblPerson structure
+
+    IMPORTANT:
+    - NO role field here (roles handled via relations)
+    - Email is used for authentication
+    """
+
+    # AUTH
     email = models.EmailField(unique=True)
-    
-    # ⚠️ DEPRECATED
-    # This field is no longer used for business logic.
-    # Roles are now handled via:
-    # - CompanyMembership (company_admin)
-    # - Ownership (owner / tenant)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, null=True, blank=True)
-        
-    first_name = models.CharField(max_length=50, blank=True)
-    last_name = models.CharField(max_length=50, blank=True)
-    address = models.CharField(max_length=255, blank=True)
 
-    phone = models.CharField(max_length=20, blank=True)
+    # BASIC INFO
+    title = models.CharField(max_length=50, blank=True)
+    first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
+
+    # ADDRESS
+    address_1 = models.CharField(max_length=255, blank=True)
+    address_2 = models.CharField(max_length=255, blank=True)
+    postcode = models.CharField(max_length=20, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+
+    # CONTACT
+    phone = models.CharField(max_length=50, blank=True)
+
+    # EXTRA
+    gender = models.CharField(max_length=20, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
     date_left = models.DateField(null=True, blank=True)
+
     comment = models.TextField(blank=True)
 
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    # DJANGO FLAGS
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
-    USERNAME_FIELD = 'email'  # ⬅️ umjesto username-a koristimo email
-    REQUIRED_FIELDS = []       # ⬅️ ne tražimo dodatna polja
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = []
 
     objects = CustomUserManager()
+
+    def __str__(self):
+        return self.email
 
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
-    def __str__(self):
-        return f"{self.email}"
+    

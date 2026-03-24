@@ -5,13 +5,13 @@ from .models import User
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
     model = User
-    list_display = ('email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'is_staff')
+    list_display = ('email', 'first_name', 'last_name', 'phone', 'is_active', 'is_staff')
     ordering = ('id',)
-    list_filter = ('role', 'is_staff', 'is_active')
+    list_filter = ('is_staff', 'is_active')
 
     fieldsets = (
         (None, {
-            'fields': ('email', 'password', 'first_name', 'last_name', 'address', 'phone', 'date_left', 'comment', 'role')
+            'fields': ('email', 'password', 'first_name', 'last_name', 'address', 'phone', 'date_left', 'comment')
         }),
         ('Permissions', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
@@ -23,7 +23,7 @@ class UserAdmin(BaseUserAdmin):
             'classes': ('wide',),
             'fields': (
                 'email', 'first_name', 'last_name', 'address', 'phone', 'date_left', 'comment',
-                'role', 'password1', 'password2', 'is_active', 'is_staff'
+                'password1', 'password2', 'is_active', 'is_staff'
             )}
         ),
     )
