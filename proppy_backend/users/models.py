@@ -90,4 +90,29 @@ class User(AbstractBaseUser, PermissionsMixin):
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
 
+
+class Role(models.Model):
+    """
+    Role model
+
+    Purpose:
+    - Represents a catalog of all application roles (e.g. OWNER, COMPANYADMIN, ADMIN)
+
+    Why this exists:
+    - Replaces hardcoded string roles with a normalized database table
+    - Enables validation, consistency, and easier querying
+
+    Design decision:
+    - `code` is used as a stable identifier (e.g. "OWNER")
+    - `name` is human-readable (e.g. "Owner")
+
+    Future extensibility:
+    - Can be extended with permissions, scopes, flags, etc.
+    """
+
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.code} ({self.name})"
     

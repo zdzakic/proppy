@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from users.models import Role
 
 User = get_user_model()
 
@@ -118,24 +119,33 @@ class PropertyOwner(models.Model):
 # =========================================================
 # USER ROOKERY ROLE (ACCESS CONTROL)
 # =========================================================
-
 class UserRookeryRole(models.Model):
     """
-    Defines access to the system.
+    UserRookeryRole
 
-    WHY:
-    - Central table from Access DB
-    - Controls who can access which company
+    Purpose:
+    - Defines application-level access for a user within a specific company
 
-    IMPORTANT:
-    - OWNER requires property_owner
+    This is NOT ownership:
+    - Ownership is handled via PropertyOwner model
+
+    This IS access control:
+    - Determines whether a user can access the application
+    - Defines what role they have (OWNER, COMPANYADMIN, ADMIN)
+
+    Key relationships:
+    - user → who
+    - company → where
+    - role → how (permissions level)
+    - property_owner → optional link (required only for OWNER role)
+
+    Example:
+    - User A is COMPANYADMIN in Company X
+    - User B is OWNER in Company Y (linked to PropertyOwner)
+
+    Design note:
+    - Role is a ForeignKey → avoids hardcoded strings and ensures consistency
     """
-
-    ROLE_CHOICES = [
-        ("OWNER", "Owner"),
-        ("COMPANYADMIN", "Company Admin"),
-        ("ADMIN", "System Admin"),
-    ]
 
     user = models.ForeignKey(
         User,
@@ -149,7 +159,13 @@ class UserRookeryRole(models.Model):
         related_name="user_roles"
     )
 
-    role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    # role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name="user_roles",
+        help_text="Defines the role of the user within a company context"
+    )
 
     property_owner = models.ForeignKey(
         PropertyOwner,
@@ -160,17 +176,54 @@ class UserRookeryRole(models.Model):
 
     def clean(self):
         """
-        Business rule from Access:
+        Business validation for role assignment.
 
-        OWNER must be linked to a PropertyOwner record.
+        Rules:
+        - OWNER must have property_owner
+        - property_owner must belong to the same user
+        - property_owner must belong to the same company
+
+        Why:
+        - Prevents inconsistent data (wrong ownership links)
         """
+
         from django.core.exceptions import ValidationError
 
-        if self.role == "OWNER" and not self.property_owner:
-            raise ValidationError("OWNER must have property_owner assigned")
+        # Rule 1: OWNER must have property_owner
+        if self.role and self.role.code == "OWNER" and not self.property_owner:
+            raise ValidationError("OWNER role must have a related PropertyOwner.")
+
+        # Rule 2: property_owner must match user
+        if self.property_owner and self.property_owner.user != self.user:
+            raise ValidationError("PropertyOwner must belong to the same user.")
+
+        # Rule 3: property_owner must match company
+        if self.property_owner:
+            property_company = self.property_owner.property.block.company
+            if property_company != self.company:
+                raise ValidationError("PropertyOwner must belong to the same company.")
 
     def __str__(self):
-        return f"{self.user.email} - {self.role}"
+        return f"{self.user.email} - {self.role} ({self.company.name})"
+
+    def save(self, *args, **kwargs):
+        """
+        Ensure model validation is always executed.
+
+        Why:
+        - Django does NOT call clean() automatically on save()
+        - Without this, invalid data can be inserted via API or scripts
+        """
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "company", "role"],
+                name="unique_user_company_role"
+            )
+        ]
 
 
 # =========================================================
@@ -214,170 +267,3 @@ class UserService(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.service.name}"
-
-# class Company(models.Model):
-#     name = models.CharField(max_length=255)         
-#     address = models.TextField()                    
-#     is_valid = models.BooleanField(default=True)    
-#     comment = models.TextField(blank=True)          
-
-#     def __str__(self):
-#         return self.name
-
-
-# class Block(models.Model):
-#     name = models.CharField(max_length=255)            
-#     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='blocks') 
-#     comment = models.TextField(blank=True)         
-
-#     def __str__(self):
-#         return self.name
-
-
-# class Property(models.Model):
-#     name = models.CharField(max_length=255)  # propertyname
-#     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='properties')
-#     block = models.ForeignKey(Block, on_delete=models.SET_NULL, null=True, blank=True)
-#     comment = models.TextField(blank=True)
-
-#     def __str__(self):
-#         return self.name
-
-
-# # class Ownership(models.Model):
-# #     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ownerships')
-# #     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='ownerships')
-# #     start_date = models.DateField(null=True, blank=True)
-# #     end_date = models.DateField(null=True, blank=True)  # null znači da je još uvijek aktivno
-# #     comment = models.TextField(blank=True)
-
-# #     def __str__(self):
-# #         return f"{self.user.email} → {self.property.name} ({self.start_date} to {self.end_date or 'present'})"
-
-# class Ownership(models.Model):
-#     """
-#     Represents relationship between user and property.
-
-#     ZAŠTO:
-#     - jedan user može imati više stanova
-#     - jedan stan može imati više usera
-#     - mora postojati kontekst (owner ili tenant)
-
-#     ŠTA RJEŠAVA:
-#     - zamjenjuje ownerrole iz Access baze
-#     - omogućava više role-a za istog usera
-#     """
-
-#     ROLE_CHOICES = (
-#         ("owner", "Owner"),
-#         ("tenant", "Tenant"),
-#     )
-
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name='ownerships'
-#     )
-
-#     property = models.ForeignKey(
-#         Property,
-#         on_delete=models.CASCADE,
-#         related_name='ownerships'
-#     )
-
-#     role = models.CharField(              
-#         max_length=20,
-#         choices=ROLE_CHOICES
-#     )
-
-#     start_date = models.DateField(null=True, blank=True)
-#     end_date = models.DateField(null=True, blank=True)
-#     comment = models.TextField(blank=True)
-
-#     def __str__(self):
-#         return f"{self.user.email} → {self.property.name} ({self.role})"
-
-
-# class Insurance(models.Model):
-#     """
-#     Represents an insurance record associated with a specific insurance company.
-#     The company field is a foreign key to the Company model (tblCompanies),
-#     matching the structure shown in the Access DB diagram (inscompanyid → companyid).
-#     """
-#     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='insurances')
-#     insurance_type = models.CharField(max_length=100)
-#     start_date = models.DateField()
-#     end_date = models.DateField(null=True, blank=True)
-#     provider = models.CharField(max_length=255)
-#     provider_reference = models.CharField(max_length=100, blank=True) 
-
-#     def __str__(self):
-#         return f"{self.insurance_type} ({self.company.name})"
-
-
-
-# class HealthSafety(models.Model):
-#     """
-#     Represents a Health & Safety record linked to a specific company.
-#     Follows structure from MS Access table 'tblHanS'.
-#     """
-#     company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='health_safety_docs')
-#     document_type = models.CharField(max_length=100)  # hanstype
-#     start_date = models.DateField()  # hansdtstart
-#     end_date = models.DateField(null=True, blank=True)  # hansdtend
-#     provider = models.TextField()  # hansprovider
-#     provider_reference = models.CharField(max_length=100, blank=True)  # provnumber
-#     amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # hansamount
-
-#     def __str__(self):
-#         return f"{self.document_type} ({self.company.name})"
-
-
-# class CompanyMembership(models.Model):
-#     """
-#     Connects a user with a company and stores the user's role inside that company.
-
-#     Why this exists:
-#     - Django auth user represents identity/login only.
-#     - Company-level access must be modeled separately because one company can have
-#       multiple admins, and one user may belong to multiple companies later.
-
-#     What this solves:
-#     - introduces company_admin role cleanly
-#     - prepares the backend for company-scoped permissions
-#     - keeps the design scalable without changing current auth flow yet
-#     """
-
-#     ROLE_CHOICES = (
-#         ("admin", "Company Admin"),
-#     )
-
-#     user = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,
-#         on_delete=models.CASCADE,
-#         related_name="company_memberships",
-#     )
-#     company = models.ForeignKey(
-#         Company,
-#         on_delete=models.CASCADE,
-#         related_name="memberships",
-#     )
-#     role = models.CharField(
-#         max_length=20,
-#         choices=ROLE_CHOICES,
-#         default="admin",
-#     )
-
-#     # Optional metadata, useful later if you want Access-like history/comments.
-#     display_name = models.CharField(max_length=255, blank=True)
-#     date_from = models.DateField(null=True, blank=True)
-#     date_to = models.DateField(null=True, blank=True)
-#     comment = models.TextField(blank=True)
-#     order_index = models.PositiveIntegerField(null=True, blank=True)
-
-#     class Meta:
-#         unique_together = ("user", "company", "role")
-
-#     def __str__(self):
-#         return f"{self.user.email} -> {self.company.name} ({self.role})"
-
