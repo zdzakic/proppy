@@ -12,7 +12,6 @@ class AuthTests(TestCase):
             password='securepass123',
             first_name='Test',
             last_name='User',
-            role='admin'
         )
 
     def test_login_returns_token_pair(self):
