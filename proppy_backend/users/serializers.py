@@ -27,6 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
     - Used by /users/me/ endpoint
     - Avoids repeating user fields in multiple places
     """
+    roles = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -37,7 +38,16 @@ class UserSerializer(serializers.ModelSerializer):
             "last_name",
             "is_staff",
             "is_active",
+            "roles"
         ]
+
+    def get_roles(self, obj):
+        return list(
+            obj.rookery_roles
+            .select_related("role")
+            .values_list("role__code", flat=True)
+        )
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = 'email'  # koristi email kao username
@@ -63,7 +73,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_active': user.is_active,    
         }
         return data
-
 
 
 class RegisterCompanySerializer(serializers.Serializer):

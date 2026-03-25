@@ -1,6 +1,8 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from django.contrib.auth import get_user_model
+from users.models import Role
+from properties.models import Company, UserRookeryRole
 
 User = get_user_model()
 
@@ -47,3 +49,38 @@ class AuthTests(TestCase):
 
         self.assertIn('access', data)
         self.assertTrue(len(data['access']) > 0)
+
+    def test_me_endpoint_returns_roles(self):
+        """
+        Debug test – print roles iz /me endpointa
+        """
+
+        # create role
+        role = Role.objects.create(code="COMPANYADMIN", name="Company Admin")
+
+        # create user
+        user = User.objects.create_user(
+            email="me@test.com",
+            password="Test123!"
+        )
+
+        # create company
+        company = Company.objects.create(name="Test Company")
+
+        # link role
+        UserRookeryRole.objects.create(
+            user=user,
+            company=company,
+            role=role
+        )
+
+        # authenticate
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get("/api/users/me/")
+
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+
+        print("\nROLES:", data["roles"])

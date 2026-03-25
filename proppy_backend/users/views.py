@@ -31,6 +31,7 @@ class CurrentUserView(RetrieveAPIView):
     - Frontend refresh
     - Dashboard initialization
     """
+    
 
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
