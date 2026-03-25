@@ -266,4 +266,12 @@ class UserService(models.Model):
     comment = models.TextField(blank=True)
 
     def __str__(self):
-        return f"{self.user.email} - {self.service.name}"
+        return f"{self.user.email} - {self.service}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "service"],
+                name="unique_user_service"
+            )
+        ]
