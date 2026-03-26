@@ -1,10 +1,11 @@
 from django.urls import path
 # from .views import  OwnershipListAPIView, PropertyListAPIView, OwnerListAPIView, CompanyRegistrationView
-from .views import BlockListAPIView, BlockCreateAPIView
+from .views import BlockListAPIView, BlockCreateAPIView, BlockDeleteAPIView
 
 urlpatterns = [
     path('blocks/', BlockListAPIView.as_view(), name='block-list'),
     path('blocks/create/', BlockCreateAPIView.as_view(), name='block-create'),
+    path('blocks/<int:pk>/delete/', BlockDeleteAPIView.as_view(), name='block-delete'),
 ]
 
 # urlpatterns = [

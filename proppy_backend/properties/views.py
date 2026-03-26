@@ -1,16 +1,21 @@
 # properties/views.py
 
 from rest_framework import generics, permissions
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from rest_framework import status
 from .models import Block, UserRookeryRole
 from .serializers import BlockSerializer
 from .permissions import IsCompanyAdmin
+
+
 
 
 class BlockListAPIView(generics.ListAPIView):
     """
     Returns blocks for companies where user is COMPANYADMIN.
 
-    WHY ListAPIView:
+    WHY ListAPIView:    
     - read-only endpoint
     - minimal code
     - DRF handles everything else
@@ -50,6 +55,43 @@ class BlockCreateAPIView(generics.CreateAPIView):
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
 
 
+class BlockDeleteAPIView(generics.DestroyAPIView):
+    """
+    Delete Block.
+
+    RULES:
+    - only COMPANYADMIN
+    - only within user's company
+    """
+
+    queryset = Block.objects.all()
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def get_object(self):
+        obj = super().get_object()
+        user = self.request.user
+
+        is_admin = UserRookeryRole.objects.filter(
+            user=user,
+            company=obj.company,
+            role__code="COMPANYADMIN"
+        ).exists()
+
+        if not is_admin:
+            raise PermissionDenied("You cannot delete this block.")
+
+        return obj
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        block_id = instance.id
+        
+        self.perform_destroy(instance)
+
+        return Response(
+            {"message": f"Block {block_id} deleted successfully"}, 
+            status=status.HTTP_200_OK
+        )
 
 
 
