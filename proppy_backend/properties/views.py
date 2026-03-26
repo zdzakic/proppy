@@ -1,4 +1,79 @@
-# # views.py
+# properties/views.py
+
+from rest_framework import generics, permissions
+from .models import Block, UserRookeryRole
+from .serializers import BlockSerializer
+from .permissions import IsCompanyAdmin
+
+
+class BlockListAPIView(generics.ListAPIView):
+    """
+    Returns blocks for companies where user is COMPANYADMIN.
+
+    WHY ListAPIView:
+    - read-only endpoint
+    - minimal code
+    - DRF handles everything else
+    """
+
+    serializer_class = BlockSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        company_ids = UserRookeryRole.objects.filter(
+            user=user,
+            role__code="COMPANYADMIN"
+        ).values_list("company_id", flat=True)
+
+        return Block.objects.filter(
+            company_id__in=company_ids
+        ).prefetch_related("properties")
+
+
+class BlockCreateAPIView(generics.CreateAPIView):
+    """
+    Create Block.
+
+    WHY CreateAPIView:
+    - standard DRF create flow
+    - minimal code
+    - serializer handles validation
+
+    RULES:
+    - only COMPANYADMIN
+    - only inside own company
+    """
+
+    serializer_class = BlockSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # from rest_framework.views import APIView
 # from rest_framework import generics
 # from rest_framework.response import Response

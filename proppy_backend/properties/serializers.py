@@ -1,5 +1,71 @@
-# # serializers.py
-# from rest_framework import serializers
+# properties/serializers.py
+from rest_framework import serializers
+from .models import Block, Property, UserRookeryRole
+
+
+
+class PropertySerializer(serializers.ModelSerializer):
+    """
+    Simple serializer for Property.
+
+    WHY:
+    - used inside Block
+    - no logic yet (KISS)
+    """
+
+    class Meta:
+        model = Property
+        fields = ["id", "name", "comment"]
+
+
+class BlockSerializer(serializers.ModelSerializer):
+    """
+    Block serializer with nested properties.
+
+    WHY:
+    - CompanyAdmin gets full structure in one call
+    """
+
+    properties = PropertySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Block
+        fields = ["id", "name", "company", "properties"]
+
+    def validate_company(self, company):
+        user = self.context["request"].user
+
+        is_admin = UserRookeryRole.objects.filter(
+            user=user,
+            company=company,
+            role__code="COMPANYADMIN"
+        ).exists()
+
+        if not is_admin:
+            raise serializers.ValidationError(
+                "You cannot create block in this company."
+            )
+
+        return company
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # from django.db import transaction
 # from .models import Property, Company, CompanyMembership
 # from django.contrib.auth import get_user_model

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import User, Role
 
 
 @admin.register(User)
@@ -37,3 +37,9 @@ class UserAdmin(BaseUserAdmin):
     )
 
     search_fields = ("email",)
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ("code", "name")
+    search_fields = ("code", "name")

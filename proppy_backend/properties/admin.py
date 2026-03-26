@@ -4,20 +4,20 @@ from .models import Company, Block, Property, PropertyOwner, UserRookeryRole
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ("name", "is_valid")
+    list_display = ("id", "name", "is_valid")
     search_fields = ("name",)
 
 
 @admin.register(Block)
 class BlockAdmin(admin.ModelAdmin):
-    list_display = ("name", "company")
+    list_display = ("id", "name", "company")
     search_fields = ("name", "company__name")
     list_filter = ("company",)
 
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ("name", "block")
+    list_display = ("id", "name", "block")
     search_fields = ("name", "block__name", "block__company__name")
     list_filter = ("block__company",)
 
