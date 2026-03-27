@@ -194,3 +194,37 @@ def test_delete_non_existing_block():
     response = client.delete("/api/properties/blocks/999/delete/")
 
     assert response.status_code == 404
+
+@pytest.mark.django_db
+def test_company_admin_can_create_multiple_blocks():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+
+    company = Company.objects.create(name="Test Company")
+
+    UserRookeryRole.objects.create(
+        user=user,
+        company=company,
+        role=role
+    )
+
+    client.force_authenticate(user=user)
+
+    # prvi block
+    response1 = client.post("/api/properties/blocks/create/", {
+        "name": "Block A",
+        "company": company.id
+    })
+
+    # drugi block
+    response2 = client.post("/api/properties/blocks/create/", {
+        "name": "Block B",
+        "company": company.id
+    })
+
+    assert response1.status_code == 201
+    assert response2.status_code == 201
+
+    assert Block.objects.count() == 2
