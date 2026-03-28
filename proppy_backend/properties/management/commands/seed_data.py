@@ -82,7 +82,7 @@ class Command(BaseCommand):
                     )
 
                     user = User.objects.create_user(
-                        email=f"seed_admin_{i}@test.com",
+                        email=f"admin_{i}@test.com",
                         password="1234"
                     )
 

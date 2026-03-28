@@ -2,7 +2,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from properties.models import Company, Block, UserRookeryRole
+from properties.models import Company, Block, Property, UserRookeryRole
 from users.models import Role
 
 User = get_user_model()
@@ -228,3 +228,94 @@ def test_company_admin_can_create_multiple_blocks():
     assert response2.status_code == 201
 
     assert Block.objects.count() == 2
+
+
+@pytest.mark.django_db
+def test_company_admin_can_list_and_create_properties():
+    client = APIClient()
+    user = User.objects.create_user(email="admin@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    company = Company.objects.create(name="Test Company")
+    UserRookeryRole.objects.create(user=user, company=company, role=role)
+    block = Block.objects.create(name="Block A", company=company)
+
+    client.force_authenticate(user=user)
+
+    r = client.get(f"/api/properties/blocks/{block.id}/properties/")
+    assert r.status_code == 200
+    assert r.data == []
+
+    r = client.post(
+        f"/api/properties/blocks/{block.id}/properties/create/",
+        {"name": "Stan 1", "comment": ""},
+        format="json",
+    )
+    assert r.status_code == 201
+    assert r.data["name"] == "Stan 1"
+
+    r = client.get(f"/api/properties/blocks/{block.id}/properties/")
+    assert len(r.data) == 1
+    assert r.data[0]["name"] == "Stan 1"
+
+
+@pytest.mark.django_db
+def test_admin_gets_404_for_block_in_other_company():
+    client = APIClient()
+    user = User.objects.create_user(email="admin@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    c1 = Company.objects.create(name="C1")
+    c2 = Company.objects.create(name="C2")
+    UserRookeryRole.objects.create(user=user, company=c1, role=role)
+    block = Block.objects.create(name="B", company=c2)
+
+    client.force_authenticate(user=user)
+
+    r = client.post(
+        f"/api/properties/blocks/{block.id}/properties/create/",
+        {"name": "X"},
+        format="json",
+    )
+    assert r.status_code == 404
+
+
+@pytest.mark.django_db
+def test_non_admin_cannot_create_property():
+    client = APIClient()
+    user = User.objects.create_user(email="u@test.com", password="1234")
+    company = Company.objects.create(name="C")
+    block = Block.objects.create(name="B", company=company)
+    client.force_authenticate(user=user)
+
+    r = client.post(
+        f"/api/properties/blocks/{block.id}/properties/create/",
+        {"name": "X"},
+        format="json",
+    )
+    assert r.status_code == 403
+
+
+@pytest.mark.django_db
+def test_company_admin_can_update_and_delete_property():
+    client = APIClient()
+    user = User.objects.create_user(email="admin@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    company = Company.objects.create(name="C")
+    UserRookeryRole.objects.create(user=user, company=company, role=role)
+    block = Block.objects.create(name="B", company=company)
+    prop = Property.objects.create(name="Old", block=block)
+
+    client.force_authenticate(user=user)
+
+    r = client.patch(
+        f"/api/properties/blocks/{block.id}/properties/{prop.id}/",
+        {"name": "New"},
+        format="json",
+    )
+    assert r.status_code == 200
+    assert r.data["name"] == "New"
+
+    r = client.delete(
+        f"/api/properties/blocks/{block.id}/properties/{prop.id}/delete/",
+    )
+    assert r.status_code == 200
+    assert Property.objects.count() == 0
