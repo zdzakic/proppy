@@ -23,3 +23,26 @@ class IsCompanyAdmin(BasePermission):
             user=user,
             role__code="COMPANYADMIN"
         ).exists()
+
+    def has_object_permission(self, request, view, obj):
+        """
+        Check if user is admin for the specific object's company.
+        """
+        user = request.user
+        
+        if not user or not user.is_authenticated:
+            return False
+            
+        # Get company from object (block or property)
+        if hasattr(obj, 'company'):
+            company = obj.company
+        elif hasattr(obj, 'block') and hasattr(obj.block, 'company'):
+            company = obj.block.company
+        else:
+            return False
+            
+        return UserRookeryRole.objects.filter(
+            user=user,
+            company=company,
+            role__code="COMPANYADMIN"
+        ).exists()

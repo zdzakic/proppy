@@ -173,7 +173,7 @@ def test_admin_cannot_delete_block_from_other_company():
     response = client.delete(f"/api/properties/blocks/{block.id}/delete/")
 
     assert response.status_code == 403
-    assert response.data["detail"] == "You cannot delete this block."
+    assert response.data["detail"] == "Only company admins allowed."
 
 @pytest.mark.django_db
 def test_delete_non_existing_block():
@@ -275,7 +275,8 @@ def test_admin_gets_404_for_block_in_other_company():
         {"name": "X"},
         format="json",
     )
-    assert r.status_code == 404
+    assert r.status_code == 403
+    assert r.data["detail"] == "You cannot create property in this block."
 
 
 @pytest.mark.django_db
@@ -319,3 +320,53 @@ def test_company_admin_can_update_and_delete_property():
     )
     assert r.status_code == 200
     assert Property.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_admin_cannot_update_property_from_other_company():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+
+    c1 = Company.objects.create(name="C1")
+    c2 = Company.objects.create(name="C2")
+
+    # admin only in c1
+    UserRookeryRole.objects.create(user=user, company=c1, role=role)
+
+    block_other = Block.objects.create(name="B", company=c2)
+    prop_other = Property.objects.create(name="Old", block=block_other)
+
+    client.force_authenticate(user=user)
+
+    r = client.patch(
+        f"/api/properties/blocks/{block_other.id}/properties/{prop_other.id}/",
+        {"name": "New"},
+        format="json",
+    )
+    assert r.status_code == 404
+
+
+@pytest.mark.django_db
+def test_admin_cannot_delete_property_from_other_company():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+
+    c1 = Company.objects.create(name="C1")
+    c2 = Company.objects.create(name="C2")
+
+    # admin only in c1
+    UserRookeryRole.objects.create(user=user, company=c1, role=role)
+
+    block_other = Block.objects.create(name="B", company=c2)
+    prop_other = Property.objects.create(name="Old", block=block_other)
+
+    client.force_authenticate(user=user)
+
+    r = client.delete(
+        f"/api/properties/blocks/{block_other.id}/properties/{prop_other.id}/delete/",
+    )
+    assert r.status_code == 404

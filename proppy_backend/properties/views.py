@@ -4,14 +4,34 @@ from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Block, UserRookeryRole
-from .serializers import BlockSerializer
+from .models import Block, UserRookeryRole, Property
+from .serializers import BlockSerializer, PropertySerializer
 from .permissions import IsCompanyAdmin
 
 
+class CompanyAdminScopedMixin:
+    """
+    Centralize: "COMPANYADMIN => which companies user can act on".
+    """
+
+    def get_admin_company_ids(self):
+        user = self.request.user
+        return UserRookeryRole.objects.filter(
+            user=user,
+            role__code="COMPANYADMIN"
+        ).values_list("company_id", flat=True)
+
+    def get_properties_queryset(self, *, block_id=None, with_owners_prefetch=True):
+        company_ids = self.get_admin_company_ids()
+        qs = Property.objects.filter(block__company_id__in=company_ids)
+        if with_owners_prefetch:
+            qs = qs.prefetch_related("owners")
+        if block_id:
+            qs = qs.filter(block_id=block_id)
+        return qs
 
 
-class BlockListAPIView(generics.ListAPIView):
+class BlockListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
     """
     Returns blocks for companies where user is COMPANYADMIN.
 
@@ -25,16 +45,8 @@ class BlockListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
 
     def get_queryset(self):
-        user = self.request.user
-
-        company_ids = UserRookeryRole.objects.filter(
-            user=user,
-            role__code="COMPANYADMIN"
-        ).values_list("company_id", flat=True)
-
-        return Block.objects.filter(
-            company_id__in=company_ids
-        ).prefetch_related("properties")
+        company_ids = self.get_admin_company_ids()
+        return Block.objects.filter(company_id__in=company_ids).prefetch_related("properties")
 
 
 class BlockCreateAPIView(generics.CreateAPIView):
@@ -43,7 +55,7 @@ class BlockCreateAPIView(generics.CreateAPIView):
 
     WHY CreateAPIView:
     - standard DRF create flow
-    - minimal code
+    - minimal codes
     - serializer handles validation
 
     RULES:
@@ -67,21 +79,6 @@ class BlockDeleteAPIView(generics.DestroyAPIView):
     queryset = Block.objects.all()
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
 
-    def get_object(self):
-        obj = super().get_object()
-        user = self.request.user
-
-        is_admin = UserRookeryRole.objects.filter(
-            user=user,
-            company=obj.company,
-            role__code="COMPANYADMIN"
-        ).exists()
-
-        if not is_admin:
-            raise PermissionDenied("You cannot delete this block.")
-
-        return obj
-
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         block_id = instance.id
@@ -94,168 +91,68 @@ class BlockDeleteAPIView(generics.DestroyAPIView):
         )
 
 
+class PropertyListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
+    """
+    Returns properties for blocks where user is COMPANYADMIN.
+    """
+    serializer_class = PropertySerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def get_queryset(self):
+        block_id = self.kwargs.get('block_id')
+        return self.get_properties_queryset(block_id=block_id)
 
 
+class PropertyCreateAPIView(CompanyAdminScopedMixin, generics.CreateAPIView):
+    """
+    Create Property.
+    """
+    serializer_class = PropertySerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def perform_create(self, serializer):
+        block_id = self.kwargs.get('block_id')
+
+        company_ids = self.get_admin_company_ids()
+        try:
+            # Ensure the block belongs to a company where the user is COMPANYADMIN.
+            block = Block.objects.get(id=block_id, company_id__in=company_ids)
+        except Block.DoesNotExist:
+            raise PermissionDenied("You cannot create property in this block.")
+
+        serializer.save(block=block)
 
 
+class PropertyUpdateAPIView(CompanyAdminScopedMixin, generics.UpdateAPIView):
+    """
+    Update Property.
+    """
+    serializer_class = PropertySerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def get_queryset(self):
+        block_id = self.kwargs.get('block_id')
+        return self.get_properties_queryset(block_id=block_id, with_owners_prefetch=False)
 
 
+class PropertyDestroyAPIView(CompanyAdminScopedMixin, generics.DestroyAPIView):
+    """
+    Delete Property.
+    """
+    serializer_class = PropertySerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
 
+    def get_queryset(self):
+        block_id = self.kwargs.get('block_id')
+        return self.get_properties_queryset(block_id=block_id, with_owners_prefetch=False)
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        property_id = instance.id
+        
+        self.perform_destroy(instance)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-# from rest_framework.views import APIView
-# from rest_framework import generics
-# from rest_framework.response import Response
-# from rest_framework import status
-# from .models import Ownership, Property
-# from .serializers import OwnershipSerializer, PropertySerializer, OwnerListSerializer, CompanyRegistrationSerializer
-# from rest_framework.permissions import IsAuthenticated, AllowAny
-# from users.permissions import IsOwnerOrAdmin
-# from users.models import User
-# from rest_framework_simplejwt.tokens import RefreshToken
-
-# class OwnershipListAPIView(generics.ListAPIView):
-#     """
-#     Returns ownership records:
-#     - Admins see all ownerships
-#     - Owners see only their own
-
-#     Why ListAPIView:
-#     - Enables pagination, filtering, and ordering
-#     - Cleaner than APIView (no need for custom `get()` method)
-#     - Works seamlessly with DRF's ecosystem
-
-#     Why get_queryset():
-#     - Filters data based on authenticated user's role
-#     - Ensures modular and testable access control logic
-#     - Keeps data exposure safe and controlled
-
-#     Why RolePermission (IsOwnerOrAdmin):
-#     - Ensures only users with role 'owner' or 'admin' can access this view
-#     - Easily extendable for future roles (e.g. manager, support)
-#     - Prevents unauthorized access before any DB queries are executed
-#     """
-
-#     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
-#     serializer_class = OwnershipSerializer
-
-#     def get_queryset(self):
-#         user = self.request.user
-
-#         if user.role == 'admin':
-#             return Ownership.objects.select_related('user', 'property')
-#         elif user.role == 'owner':
-#             return Ownership.objects.select_related('user', 'property').filter(user=user)
-#         else:
-#             return Ownership.objects.none()
-
-
-# class PropertyListAPIView(generics.ListAPIView):
-#     """
-#     Returns all property records:
-#     - Admins and Owners can access the full list
-
-#     Why ListAPIView:
-#     - Inherits built-in pagination, filtering and ordering
-#     - Avoids manual query logic, leverages DRF capabilities
-
-#     Why get_queryset():
-#     - Clean separation of filtering logic from view behavior
-#     - Only users with roles 'admin' or 'owner' can access
-#     - Future filtering rules can be easily injected per role
-
-#     Why RolePermission (IsOwnerOrAdmin):
-#     - Ensures role-based access control at the permission level
-#     - Centralized and consistent across all views
-#     """
-
-#     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
-#     serializer_class = PropertySerializer
-
-#     def get_queryset(self):
-#         user = self.request.user
-
-#         if user.role in ['admin', 'owner']:
-#             return Property.objects.select_related('company', 'block')
-#         else:
-#             return Property.objects.none()
-
-
-# class OwnerListAPIView(generics.ListAPIView):
-#     """
-#     Returns a list of owners with their properties.
-
-#     - Admins see all owners
-#     - Owners see only themselves
-#     """
-
-#     permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
-#     serializer_class = OwnerListSerializer
-
-#     def get_queryset(self):
-#         qs = User.objects.filter(role='owner').prefetch_related(
-#             'ownerships__property',
-#             'ownerships__property__block'
-#         )
-
-#         user = self.request.user
-#         if user.role == 'owner':
-#             return qs.filter(id=user.id)
-#         return qs
-
-
-
-# class CompanyRegistrationView(APIView):
-#     """
-#     API endpoint for self-service company registration.
-
-#     What it does:
-#     - receives registration data
-#     - delegates creation logic to serializer
-#     - returns JWT tokens immediately after successful registration
-
-#     Why APIView:
-#     - this is a custom onboarding flow, not standard model CRUD
-#     - APIView keeps the logic explicit and easy to extend later
-#     """
-
-#     permission_classes = [AllowAny]
-
-#     def post(self, request, *args, **kwargs):
-#         """
-#         Register a new company admin account and issue JWT tokens.
-#         """
-#         serializer = CompanyRegistrationSerializer(data=request.data)
-#         serializer.is_valid(raise_exception=True)
-
-#         user = serializer.save()
-
-#         refresh = RefreshToken.for_user(user)
-
-#         return Response(
-#             {
-#                 "message": "Registration successful.",
-#                 "user": {
-#                     "id": user.id,
-#                     "email": user.email,
-#                 },
-#                 "tokens": {
-#                     "refresh": str(refresh),
-#                     "access": str(refresh.access_token),
-#                 },
-#             },
-#             status=status.HTTP_201_CREATED,
-#         )
+        return Response(
+            {"message": f"Property {property_id} deleted successfully"}, 
+            status=status.HTTP_200_OK
+        )
