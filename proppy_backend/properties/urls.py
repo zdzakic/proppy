@@ -8,6 +8,11 @@ from .views import (
     PropertyCreateAPIView,
     PropertyUpdateAPIView,
     PropertyDestroyAPIView,
+    PropertyOwnerListAPIView,
+    PropertyOwnerCreateAPIView,
+    PropertyOwnerRetrieveAPIView,
+    PropertyOwnerUpdateAPIView,
+    PropertyOwnerDestroyAPIView,
 )
 
 urlpatterns = [
@@ -34,11 +39,30 @@ urlpatterns = [
         PropertyListAPIView.as_view(),
         name='property-list',
     ),
+    path(
+        'blocks/<int:block_id>/properties/<int:property_id>/owners/',
+        PropertyOwnerListAPIView.as_view(),
+        name='property-owner-list',
+    ),
+    path(
+        'blocks/<int:block_id>/properties/<int:property_id>/owners/create/',
+        PropertyOwnerCreateAPIView.as_view(),
+        name='property-owner-create',
+    ),
+    path(
+        'blocks/<int:block_id>/properties/<int:property_id>/owners/<int:pk>/',
+        PropertyOwnerRetrieveAPIView.as_view(),
+        name='property-owner-detail',
+    ),
+    path(
+        'blocks/<int:block_id>/properties/<int:property_id>/owners/<int:pk>/update/',
+        PropertyOwnerUpdateAPIView.as_view(),
+        name='property-owner-update',
+    ),
+    path(
+        'blocks/<int:block_id>/properties/<int:property_id>/owners/<int:pk>/delete/',
+        PropertyOwnerDestroyAPIView.as_view(),
+        name='property-owner-delete',
+    ),
 ]
 
-# urlpatterns = [
-#     path('', PropertyListAPIView.as_view(), name='property-list'),
-#     # path('owners/', OwnerListAPIView.as_view(), name='owner-list'),
-#     # path('ownerships/', OwnershipListAPIView.as_view(), name='ownership-list'),
-#     # path('register-company/', CompanyRegistrationView.as_view(), name='company-registration'),
-# ]

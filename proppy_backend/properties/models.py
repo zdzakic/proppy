@@ -100,7 +100,9 @@ class PropertyOwner(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="owned_properties"
+        related_name="owned_properties",
+        null=True,
+        blank=True,
     )
 
     display_name = models.CharField(max_length=255, blank=True)
@@ -113,8 +115,8 @@ class PropertyOwner(models.Model):
     order = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.user.email} → {self.property.name}"
-
+        owner_label = self.user.email if self.user else self.display_name or "Unknown owner"
+        return f"{owner_label} → {self.property.name}"
 
 # =========================================================
 # USER ROOKERY ROLE (ACCESS CONTROL)

@@ -1,7 +1,47 @@
 # properties/serializers.py
 from rest_framework import serializers
-from .models import Block, Property, UserRookeryRole
+from .models import Block, Property, PropertyOwner, UserRookeryRole
 
+
+class PropertyOwnerSerializer(serializers.ModelSerializer):
+    """
+    PropertyOwner CRUD (company admin). `property` comes from URL, not body.
+    """
+
+    email = serializers.EmailField(write_only=True)
+    user_email = serializers.EmailField(source="user.email", read_only=True)
+
+    class Meta:
+        model = PropertyOwner
+        fields = [
+            "id",
+            "email",
+            "user_email",
+            "display_name",
+            "date_from",
+            "date_to",
+            "comment",
+            "order",
+        ]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        if self.instance is not None:
+            fields["user"].read_only = True
+        return fields
+
+    def validate(self, data):
+        """
+        Ensure at least:
+        - email exists (always required now)
+        """
+
+        if not data.get("email"):
+            raise serializers.ValidationError(
+                "Email is required."
+            )
+
+        return data
 
 
 class PropertySerializer(serializers.ModelSerializer):
@@ -10,12 +50,14 @@ class PropertySerializer(serializers.ModelSerializer):
 
     WHY:
     - used inside Block
-    - no logic yet (KISS)
+    - owners nested read-only for list/detail
     """
+
+    owners = PropertyOwnerSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property
-        fields = ["id", "name", "comment"]
+        fields = ["id", "name", "comment", "owners"]
 
 
 class BlockSerializer(serializers.ModelSerializer):
