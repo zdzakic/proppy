@@ -169,9 +169,9 @@ class UserRookeryRole(models.Model):
 
     property_owner = models.ForeignKey(
         PropertyOwner,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
-        blank=True
+        blank=True,
     )
 
     def clean(self):
@@ -221,8 +221,14 @@ class UserRookeryRole(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "company", "role"],
-                name="unique_user_company_role"
-            )
+                condition=models.Q(property_owner__isnull=True),
+                name="unique_user_company_role_no_property_owner",
+            ),
+            models.UniqueConstraint(
+                fields=["property_owner"],
+                condition=models.Q(property_owner__isnull=False),
+                name="unique_userrookeryrole_per_property_owner",
+            ),
         ]
 
 
