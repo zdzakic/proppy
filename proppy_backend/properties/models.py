@@ -283,3 +283,56 @@ class UserService(models.Model):
                 name="unique_user_service"
             )
         ]
+
+# =========================================================
+# PROPERTY TENANT (occupancy history)
+# =========================================================
+class PropertyTenant(models.Model):
+    """
+    Links tenant ↔ Property (who lives in the unit).
+
+    WHY:
+    - Tracks occupancy over time (not ownership)
+    - Supports multiple tenants per property
+    - Supports tenants without user account
+
+    IMPORTANT:
+    - This is NOT access control (handled via UserRookeryRole)
+    - This is purely domain data (who lives where)
+
+    DESIGN DECISIONS:
+    - user is optional → supports real-life cases (no account)
+    - display_name is fallback if no user exists
+    - date_from / date_to → supports history tracking
+    """
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="tenants"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        related_name="tenant_properties",
+        null=True,
+        blank=True,
+    )
+
+    display_name = models.CharField(max_length=255, blank=True)
+
+    date_from = models.DateField(null=True, blank=True)
+    date_to = models.DateField(null=True, blank=True)
+
+    comment = models.TextField(blank=True)
+
+    order = models.IntegerField(default=0)
+
+    def __str__(self):
+        tenant_label = (
+            self.user.email
+            if self.user
+            else self.display_name or "Unknown tenant"
+        )
+        return f"{tenant_label} → {self.property.name}"
