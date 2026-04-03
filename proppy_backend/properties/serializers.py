@@ -26,20 +26,16 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        if self.instance is not None:
-            fields["user"].read_only = True
+        # On update allow changing only metadata fields (display_name/comment/etc),
+        # while 'email' is an input-only field for create.
+        if self.instance is not None and "email" in fields:
+            fields["email"].read_only = True
         return fields
 
     def validate(self, data):
-        """
-        Ensure at least:
-        - email exists (always required now)
-        """
-
-        if not data.get("email"):
-            raise serializers.ValidationError(
-                "Email is required."
-            )
+        # Email is required only on create requests (when there is no instance yet).
+        if self.instance is None and not data.get("email"):
+            raise serializers.ValidationError("Email is required.")
 
         return data
 

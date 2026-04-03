@@ -436,11 +436,11 @@ def test_company_admin_property_owner_crud_and_owner_role():
 
     r = client.post(
         f"/api/properties/blocks/{block.id}/properties/{prop.id}/owners/create/",
-        {"user": owner_user.id, "display_name": "Vlasnik", "comment": ""},
+        {"email": owner_user.email, "display_name": "Vlasnik", "comment": ""},
         format="json",
     )
     assert r.status_code == 201
-    assert r.data["user"] == owner_user.id
+    assert r.data["user_email"] == owner_user.email
     assert r.data["display_name"] == "Vlasnik"
 
     po = PropertyOwner.objects.get(id=r.data["id"])
@@ -485,7 +485,7 @@ def test_non_admin_cannot_create_property_owner():
 
     r = client.post(
         f"/api/properties/blocks/{block.id}/properties/{prop.id}/owners/create/",
-        {"user": owner_target.id},
+        {"email": owner_target.email},
         format="json",
     )
     assert r.status_code == 403
@@ -512,7 +512,7 @@ def test_admin_cannot_create_property_owner_in_other_company():
     client.force_authenticate(user=admin)
     r = client.post(
         f"/api/properties/blocks/{block.id}/properties/{prop.id}/owners/create/",
-        {"user": owner_user.id},
+        {"email": owner_user.email},
         format="json",
     )
     assert r.status_code == 404
