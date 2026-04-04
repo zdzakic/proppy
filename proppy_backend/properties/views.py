@@ -202,7 +202,7 @@ class PropertyOwnerCreateAPIView(CompanyAdminScopedMixin, generics.CreateAPIView
 
     def perform_create(self, serializer):
         prop = self.get_property_for_scope()
-        email = serializer.validated_data.pop("email")
+        email = serializer.validated_data.pop("email").lower()
         user = User.objects.filter(email=email).first()
 
         if not user:
