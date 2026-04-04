@@ -252,6 +252,7 @@ class PropertyOwnerDestroyAPIView(CompanyAdminScopedMixin, generics.DestroyAPIVi
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         owner_id = instance.id
+        UserRookeryRole.objects.filter(property_owner=instance).delete()
         self.perform_destroy(instance)
         return Response(
             {"message": f"Property owner {owner_id} deleted successfully"},
