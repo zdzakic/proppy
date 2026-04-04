@@ -15,6 +15,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class CompanyAdminScopedMixin:
     """
     Centralize: "COMPANYADMIN => which companies user can act on".
@@ -256,3 +257,4 @@ class PropertyOwnerDestroyAPIView(CompanyAdminScopedMixin, generics.DestroyAPIVi
             {"message": f"Property owner {owner_id} deleted successfully"},
             status=status.HTTP_200_OK,
         )
+

@@ -12,8 +12,8 @@ from .views import (
     PropertyOwnerCreateAPIView,
     PropertyOwnerRetrieveAPIView,
     PropertyOwnerUpdateAPIView,
-    PropertyOwnerDestroyAPIView,
-)
+    PropertyOwnerDestroyAPIView, )
+
 
 urlpatterns = [
     path('blocks/', BlockListAPIView.as_view(), name='block-list'),
@@ -65,4 +65,3 @@ urlpatterns = [
         name='property-owner-delete',
     ),
 ]
-
