@@ -101,8 +101,8 @@ class PropertyOwner(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="owned_properties",
-        null=True,
-        blank=True,
+        null=False,
+        blank=False,
     )
 
     display_name = models.CharField(max_length=255, blank=True)

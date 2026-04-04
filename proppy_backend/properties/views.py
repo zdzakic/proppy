@@ -215,7 +215,7 @@ class PropertyOwnerCreateAPIView(CompanyAdminScopedMixin, generics.CreateAPIView
                 code="OWNER",
                 defaults={"name": "Owner"},
             )
-            UserRookeryRole.objects.create(
+            UserRookeryRole.objects.get_or_create(
                 user=user,
                 company=prop.block.company,
                 role=role_owner,
