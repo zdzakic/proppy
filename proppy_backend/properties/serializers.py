@@ -1,6 +1,6 @@
 # properties/serializers.py
 from rest_framework import serializers
-from .models import Block, Property, PropertyOwner, UserRookeryRole
+from .models import Block, Property, PropertyOwner, UserRookeryRole, PropertyTenant
 
 
 class PropertyOwnerSerializer(serializers.ModelSerializer):
@@ -88,6 +88,97 @@ class BlockSerializer(serializers.ModelSerializer):
 
 
 
+class PropertyTenantSerializer(serializers.ModelSerializer):
+    """
+    Serializer for PropertyTenant.
+
+    WHY:
+    - Handles tenant creation and update
+    - Supports email-based creation (same as PropertyOwner flow)
+
+    SOLVES:
+    - Auto-creates user if email does not exist
+    - Allows tenant without user (display_name only)
+    - Keeps logic centralized and reusable
+    """
+
+    # INPUT FIELD (not stored directly)
+    email = serializers.EmailField(required=False, allow_blank=True)
+
+    class Meta:
+        model = PropertyTenant
+        fields = [
+            "id",
+            "property",
+            "email",
+            "user",
+            "display_name",
+            "date_from",
+            "date_to",
+            "comment",
+            "order",
+        ]
+        read_only_fields = ["user"]
+
+    def create(self, validated_data):
+        """
+        Custom create logic.
+
+        WHY:
+        - We accept email instead of forcing user_id
+        - Reuse existing user if exists
+        - Create new user if needed
+        """
+
+        email = validated_data.pop("email", None)
+
+        user = None
+
+        # -------------------------------------------------
+        # CASE 1: email provided → find or create user
+        # -------------------------------------------------
+        if email:
+            user, _ = User.objects.get_or_create(email=email)
+
+        # -------------------------------------------------
+        # CASE 2: no email → fallback to display_name only
+        # -------------------------------------------------
+        tenant = PropertyTenant.objects.create(
+            user=user,
+            **validated_data
+        )
+
+        # -------------------------------------------------
+        # OPTIONAL: assign TENANT role (if user exists)
+        # -------------------------------------------------
+        if user:
+            try:
+                tenant_role = Role.objects.get(code="TENANT")
+
+                company = tenant.property.block.company
+
+                UserRookeryRole.objects.get_or_create(
+                    user=user,
+                    company=company,
+                    role=tenant_role,
+                )
+            except Role.DoesNotExist:
+                # fail silently (KISS)
+                pass
+
+        return tenant
+
+    def update(self, instance, validated_data):
+        """
+        Simple update (KISS).
+
+        NOTE:
+        - We do NOT change user via email on update (avoid complexity)
+        """
+
+        validated_data.pop("email", None)
+
+        return super().update(instance, validated_data)
 
 
 
