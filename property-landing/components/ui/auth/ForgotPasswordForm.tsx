@@ -20,6 +20,7 @@ import Link from "next/link";
 import Button from "../Button";
 import { ROUTES } from "@/config/routes";
 import { validateEmailFormat, validateRequired } from "@/utils/auth/validators";
+import apiPublic from "@/utils/api/apiPublic";
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
@@ -51,12 +52,13 @@ export default function ForgotPasswordForm() {
       setErrors({});
 
       // 👉 API ide kasnije
-      console.log("Reset link sent to:", email);
+      // console.log("Reset link sent to:", email);
+      await apiPublic.post("/users/password-reset/", { email });
 
       setIsSuccess(true);
 
     } catch (err: any) {
-      setErrors({ form: "An error occurred. Please try again." });
+      setErrors({ form: err.response?.data?.detail || "Failed to send reset link." });
     } finally {
       setIsSubmitting(false);
     }
