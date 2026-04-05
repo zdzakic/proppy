@@ -48,7 +48,7 @@ export default function ForgotPasswordForm() {
 
     try {
       setIsSubmitting(true);
-      setErrors("");
+      setErrors({});
 
       // 👉 API ide kasnije
       console.log("Reset link sent to:", email);
@@ -56,7 +56,7 @@ export default function ForgotPasswordForm() {
       setIsSuccess(true);
 
     } catch (err: any) {
-      setErrors("Something went wrong");
+      setErrors({ form: "An error occurred. Please try again." });
     } finally {
       setIsSubmitting(false);
     }
@@ -93,9 +93,11 @@ export default function ForgotPasswordForm() {
             Reset password
           </h1>
 
-          <p className="text-sm text-brand-muted">
-            Enter your email to receive reset link
-          </p>
+          {!isSuccess && (
+            <p className="text-sm text-brand-muted">
+              Enter your email to receive reset link
+            </p>
+          )}
         </div>
 
         {/* SUCCESS STATE */}
@@ -115,7 +117,9 @@ export default function ForgotPasswordForm() {
         ) : (
 
           /* FORM */
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+          <form onSubmit={handleSubmit} 
+          className={`space-y-4 ${isSubmitting ? "opacity-80" : ""}`}
+          noValidate>
 
             <input
               type="email"
@@ -124,7 +128,6 @@ export default function ForgotPasswordForm() {
               onChange={(e) => {
                 setEmail(e.target.value);
                 setErrors((prev) => ({ ...prev, email: "" }));
-                clearFormError();
               }}
               onFocus={clearFormError}
               className={`
@@ -155,12 +158,15 @@ export default function ForgotPasswordForm() {
             <Button
               type="submit"
               loading={isSubmitting}
-              disabled={isSubmitting || !email.trim()}
             >
-              Send Reset Link
+              {isSubmitting ? "Sending..." : "Send Reset Link"}
             </Button>
 
-            
+              {errors.form && (
+              <p className="text-sm text-error">
+                {errors.form}
+              </p>
+            )}
 
             {/* LOGIN LINK */}
             <p className="text-sm text-center text-brand-muted">
