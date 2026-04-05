@@ -23,6 +23,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import Spinner from "../Spinner";
 import Button from "../Button";
+import {ROUTES} from "@/config/routes";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -90,7 +91,7 @@ const clearFormError = () =>
       {/* BACK TO HOME */}
       <div className="mb-4 text-center">
         <Link
-          href="/"
+          href={ROUTES.HOME}
           className="
             text-sm 
             text-brand-muted 
@@ -204,7 +205,7 @@ const clearFormError = () =>
             {/* FORGOT PASSWORD */}
           <div className="flex justify-end">
             <Link
-              href="/forgot-password"
+              href={ROUTES.AUTH.FORGOT_PASSWORD}
               className="
                 text-sm 
                 text-brand-muted 
@@ -232,7 +233,7 @@ const clearFormError = () =>
         <p className="text-sm text-center text-brand-muted">
           Don’t have an account?{" "}
           <Link
-            href="/register"
+            href={ROUTES.AUTH.REGISTER}
             className="text-brand-accent hover:underline"
           >
             Create one
