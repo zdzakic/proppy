@@ -1,6 +1,18 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 import RegisterCompanyForm from "@/components/ui/auth/RegisterCompanyForm";
+import apiPublic from "@/utils/api/apiPublic";
+
+/**
+ * MOCK NEXT ROUTER
+ */
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
 
 /**
  * Mock Button (ako koristiš custom Button komponentu)
@@ -13,6 +25,8 @@ vi.mock("@/components/ui/Button", () => ({
   ),
 }));
 
+vi.mock("@/utils/api/apiPublic");
+
 describe("RegisterCompanyForm", () => {
 
   it("renders all fields", () => {
@@ -24,8 +38,12 @@ describe("RegisterCompanyForm", () => {
     expect(screen.getByPlaceholderText("Confirm password")).toBeInTheDocument();
   });
 
-  it("submits valid form and logs data", () => {
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation();
+  it("submits valid form and calls API", async () => {
+    const mockPost = vi.mocked(apiPublic.post);
+
+    mockPost.mockResolvedValue({
+      data: { success: true }
+    });
 
     render(<RegisterCompanyForm />);
 
@@ -47,13 +65,15 @@ describe("RegisterCompanyForm", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /register company/i }));
 
-    expect(consoleSpy).toHaveBeenCalledWith({
-      email: "test@test.com",
-      company_name: "TestCo",
-      password: "Password123!",
-    });
-
-    consoleSpy.mockRestore();
+    expect(mockPost).toHaveBeenCalledWith(
+      "/users/register-company/",
+      {
+        email: "test@test.com",
+        company_name: "TestCo",
+        password: "Password123!",
+        password_confirm: "Password123!",
+      }
+    );
   });
 
 });

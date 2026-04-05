@@ -18,8 +18,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Button from "../Button";
 import { validateRegisterForm } from "@/utils/auth/validators";
+import { ROUTES } from "@/config/routes";
+import apiPublic from "@/utils/api/apiPublic";
+import FormInput from "../FormInput";
 
 type ValidationErrors = {
   email?: string;
@@ -30,12 +34,15 @@ type ValidationErrors = {
 };
 
 export default function RegisterCompanyForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [emailExists, setEmailExists] = useState(false);
 
   const clearFormError = () =>
     setErrors((prev) => ({ ...prev, form: "" }));
@@ -47,6 +54,10 @@ export default function RegisterCompanyForm() {
     setPasswordConfirm("");
   };
 
+  const isEmailAlreadyRegisteredError = (message: string) => {
+    const normalized = String(message).toLowerCase();
+    return /email.*(exists|already|registered)|already.*registered|user.*exists/.test(normalized);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,26 +65,45 @@ export default function RegisterCompanyForm() {
     const validationErrors = validateRegisterForm(email, password, passwordConfirm, companyName);
 
     if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
+      setErrors(validationErrors as ValidationErrors);
       return;
     }
 
     try {
       setIsSubmitting(true);
+      setEmailExists(false);
+      setErrors({});
 
-      // 👉 za sada samo debug
-      console.log({
+      await apiPublic.post("/users/register-company/", {
         email,
         company_name: companyName,
         password,
+        password_confirm: passwordConfirm,
       });
 
-      resetForm();
+      setIsSuccess(true);
+
+      // Redirektuj na login nakon 2 sekunde
+      setTimeout(() => {
+        router.push(ROUTES.AUTH.LOGIN);
+      }, 3000);
 
     } catch (error: any) {
+      const responseData = error?.response?.data || {};
+      const rawMessage =
+        responseData.detail ||
+        responseData.message ||
+        (Array.isArray(responseData.email) ? responseData.email[0] : responseData.email) ||
+        "";
+
+      const emailAlreadyExists = isEmailAlreadyRegisteredError(rawMessage);
+
       setErrors({
-        form: "Something went wrong",
+        form: emailAlreadyExists
+          ? "Email already exists. Sign in to add another company from your account."
+          : rawMessage || "Registration failed. Please try again.",
       });
+      setEmailExists(emailAlreadyExists);
     } finally {
       setIsSubmitting(false);
     }
@@ -85,7 +115,7 @@ export default function RegisterCompanyForm() {
       {/* BACK TO HOME */}
       <div className="mb-4 text-center">
         <Link
-          href="/"
+          href={ROUTES.HOME}
           className="
             text-sm 
             text-brand-muted 
@@ -123,149 +153,77 @@ export default function RegisterCompanyForm() {
         {/* FORM */}
         <form onSubmit={handleSubmit} className="space-y-4" noValidate>
 
+          {/* SUCCESS STATE */}
+          {isSuccess ? (
+            <div className="text-center space-y-4">
+              <p className="text-sm text-green-600 dark:text-green-400 font-medium">
+                ✓ Registration successful! Redirecting to login...
+              </p>
+            </div>
+          ) : (
+            <>
+
           {/* COMPANY */}
-          <input
+          <FormInput
             type="text"
             placeholder="Company name"
             value={companyName}
             onChange={(e) => {
                 setCompanyName(e.target.value);
-                setErrors((prev) => ({ ...prev, company_name: "" }));
+                setErrors((prev) => ({ ...prev, company_name: undefined }));
             }}
             onFocus={clearFormError}
-            className={`
-                w-full
-                border
-                rounded-lg
-                px-4
-                py-2
-                focus:outline-none
-                focus:ring-1
-                bg-transparent
-                text-brand-text
-                placeholder:text-brand-muted
-                ${
-                errors.company_name
-                    ? "border-error focus:ring-error/30"
-                    : "border-brand-border focus:ring-brand-accent"
-                }
-            `}
-            />
-          {errors.company_name && (
-            <p className="text-sm text-error mt-1">
-              {errors.company_name}
-            </p>
-          )}
+            error={errors.company_name}
+          />
 
           {/* EMAIL */}
-          <input
+          <FormInput
             type="email"
             autoComplete="email"
             placeholder="Email"
             value={email}
             onChange={(e) => {
                 setEmail(e.target.value);
-                setErrors((prev) => ({ ...prev, email: "" }));
+                setErrors((prev) => ({ ...prev, email: undefined }));
             }}
             onFocus={clearFormError}
-            className={`
-                w-full
-                border
-                rounded-lg
-                px-4
-                py-2
-                focus:outline-none
-                focus:ring-1
-                bg-transparent
-                text-brand-text
-                placeholder:text-brand-muted
-                ${
-                errors.email
-                    ? "border-error focus:ring-error/30"
-                    : "border-brand-border focus:ring-brand-accent"
-                }
-            `}
-            />
-          {errors.email && (
-            <p className="text-sm text-error mt-1">
-              {errors.email}
-            </p>
-          )}
+            error={errors.email}
+          />
 
           {/* PASSWORD */}
-          <input
-            type="password"
-            autoComplete="new-password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => {
-                setPassword(e.target.value);
-                setErrors((prev) => ({ ...prev, password: "" }));
-            }}
-            onFocus={clearFormError}
-            className={`
-                w-full
-                border
-                rounded-lg
-                px-4
-                py-2
-                focus:outline-none
-                focus:ring-1
-                bg-transparent
-                text-brand-text
-                placeholder:text-brand-muted
-                ${
-                errors.password
-                    ? "border-error focus:ring-error/30"
-                    : "border-brand-border focus:ring-brand-accent"
-                }
-            `}
+          <div className="space-y-1">
+            <FormInput
+              type="password"
+              autoComplete="new-password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrors((prev) => ({ ...prev, password: undefined }));
+              }}
+              onFocus={clearFormError}
+              error={errors.password}
             />
             {!errors.password && (
-            <p className="text-xs text-brand-muted">
-                Must be at least 8 characters, include uppercase, lowercase, number and special character.
-            </p>
+              <p className="text-xs text-brand-muted">
+                  Must be at least 8 characters, include uppercase, lowercase, number and special character.
+              </p>
             )}
-          {/* {errors.password && (
-            <p className="text-sm text-error mt-1">
-              {errors.password}
-            </p>
-          )} */}
+          </div>
 
-          {/* CONFIRM PASSWORD */}
-          <input
+          {/* PASSWORD CONFIRM */}
+          <FormInput
             type="password"
             autoComplete="new-password"
             placeholder="Confirm password"
             value={passwordConfirm}
             onChange={(e) => {
                 setPasswordConfirm(e.target.value);
-                setErrors((prev) => ({ ...prev, password_confirm: "" }));
+                setErrors((prev) => ({ ...prev, password_confirm: undefined }));
             }}
             onFocus={clearFormError}
-            className={`
-                w-full
-                border
-                rounded-lg
-                px-4
-                py-2
-                focus:outline-none
-                focus:ring-1
-                bg-transparent
-                text-brand-text
-                placeholder:text-brand-muted
-                ${
-                errors.password_confirm
-                    ? "border-error focus:ring-error/30"
-                    : "border-brand-border focus:ring-brand-accent"
-                }
-            `}
-            />
-          {errors.password_confirm && (
-            <p className="text-sm text-error mt-1">
-              {errors.password_confirm}
-            </p>
-          )}
+            error={errors.password_confirm}
+          />
 
           {/* BUTTON */}
           <Button type="submit" loading={isSubmitting}>
@@ -282,12 +240,15 @@ export default function RegisterCompanyForm() {
         <p className="text-sm text-center text-brand-muted">
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={ROUTES.AUTH.LOGIN}
             className="text-brand-accent hover:underline"
           >
             Sign in
           </Link>
         </p>
+
+            </>
+          )}
 
         </form>
       </div>

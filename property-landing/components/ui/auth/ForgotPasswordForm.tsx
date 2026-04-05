@@ -37,13 +37,13 @@ export default function ForgotPasswordForm() {
 
     const requiredError = validateRequired(email);
     if (requiredError) {
-      setErrors({ email: requiredError });
+      setErrors({ email: "Email is required!" });
       return;
     }
 
     const emailFormatError = validateEmailFormat(email);
     if (emailFormatError) {
-      setErrors({ email: emailFormatError });
+      setErrors({ email: "Invalid email format!" });
       return;
     }
 

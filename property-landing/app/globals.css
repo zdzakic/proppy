@@ -20,6 +20,9 @@
   /* Error color */
   --color-error: var(--error);
   
+  /* Success color */
+  --color-success: var(--success);
+  
   /* =====================================
      DASHBOARD COLOR ALIASES
      ===================================== */
@@ -57,6 +60,9 @@
 
   /* 🔴 ERROR COLOR */
   --error: #DC2626;
+  
+  /* 🟢 SUCCESS COLOR */
+  --success: #16A34A;
 
   /* ========================================
      DASHBOARD TOKENS
@@ -87,6 +93,9 @@
   --border: #1F2937;
   /* 🔴 ERROR COLOR */
   --error: #EF4444;
+  
+  /* 🟢 SUCCESS COLOR */
+  --success: #22C55E;
 
   /* ========================================
      DASHBOARD TOKENS (DARK MODE)

@@ -41,7 +41,7 @@ describe("ForgotPasswordForm", () => {
 
     await userEvent.click(button);
 
-    expect(screen.getByText("This field is required!")).toBeInTheDocument();
+    expect(screen.getByText("Email is required!")).toBeInTheDocument();
   });
 
   it("shows validation error for invalid email on submit", async () => {
@@ -63,22 +63,10 @@ describe("ForgotPasswordForm", () => {
     const button = screen.getByRole("button", { name: /send reset link/i });
 
     await userEvent.click(button);
-    expect(screen.getByText("This field is required!")).toBeInTheDocument();
+    expect(screen.getByText("Email is required!")).toBeInTheDocument();
 
     await userEvent.type(email, "test@test.com");
-    expect(screen.queryByText("This field is required!")).not.toBeInTheDocument();
+    expect(screen.queryByText("Email is required!")).not.toBeInTheDocument();
   });
 
-  it("clears error on email change", async () => {
-    render(<ForgotPasswordForm />);
-
-    const email = screen.getByPlaceholderText("Email");
-    const button = screen.getByRole("button", { name: /send reset link/i });
-
-    await userEvent.click(button);
-    expect(screen.getByText("This field is required!")).toBeInTheDocument();
-
-    await userEvent.type(email, "test@test.com");
-    expect(screen.queryByText("This field is required!")).not.toBeInTheDocument();
-  });;
 });
