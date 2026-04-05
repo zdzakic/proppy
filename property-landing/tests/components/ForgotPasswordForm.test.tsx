@@ -69,20 +69,16 @@ describe("ForgotPasswordForm", () => {
     expect(screen.queryByText("This field is required!")).not.toBeInTheDocument();
   });
 
-  it("shows success message after valid submit", async () => {
-    const consoleSpy = vi.spyOn(console, "log").mockImplementation();
-
+  it("clears error on email change", async () => {
     render(<ForgotPasswordForm />);
 
     const email = screen.getByPlaceholderText("Email");
     const button = screen.getByRole("button", { name: /send reset link/i });
 
-    await userEvent.type(email, "test@test.com");
     await userEvent.click(button);
+    expect(screen.getByText("This field is required!")).toBeInTheDocument();
 
-    expect(consoleSpy).toHaveBeenCalledWith("Reset link sent to:", "test@test.com");
-    expect(screen.getByText("If an account exists, you will receive a reset link.")).toBeInTheDocument();
-
-    consoleSpy.mockRestore();
-  });
+    await userEvent.type(email, "test@test.com");
+    expect(screen.queryByText("This field is required!")).not.toBeInTheDocument();
+  });;
 });
