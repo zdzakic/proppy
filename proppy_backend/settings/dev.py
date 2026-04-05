@@ -21,3 +21,6 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
 }
+
+# Email backend for development - sends emails to console
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

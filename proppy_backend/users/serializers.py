@@ -17,7 +17,9 @@ from django.contrib.auth import get_user_model
 from properties.models import Company, UserRookeryRole
 from users.models import Role
 
+
 User = get_user_model()
+
 
 class UserSerializer(serializers.ModelSerializer):
     """
@@ -131,3 +133,9 @@ class RegisterCompanySerializer(serializers.Serializer):
             )
 
         return user
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Company
+        fields = ["id", "name"]

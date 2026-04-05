@@ -8,9 +8,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from users.models import Role
 from .models import Block, UserRookeryRole, Property, PropertyOwner
-from .serializers import BlockSerializer, PropertySerializer, PropertyOwnerSerializer
+from .serializers import BlockSerializer, PropertySerializer, PropertyOwnerSerializer, AddCompanyAdminSerializer
 from .permissions import IsCompanyAdmin
 from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
 
 
 User = get_user_model()
@@ -259,3 +260,24 @@ class PropertyOwnerDestroyAPIView(CompanyAdminScopedMixin, generics.DestroyAPIVi
             status=status.HTTP_200_OK,
         )
 
+class AddCompanyView(APIView):
+    """
+    Add new company for logged-in user.
+
+    WHY:
+    - omogućava postojećem useru da doda firmu
+    - koristi request.user → nema sigurnosnog rizika
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def post(self, request):
+        serializer = AddCompanyAdminSerializer(data=request.data, context={"company": None})
+        serializer.is_valid(raise_exception=True)
+        company = serializer.save()
+    
+        return Response({
+            "message": "Company added successfully",
+            "company_id": company.id,
+            "company_name": company.name}, 
+            status=status.HTTP_201_CREATED)

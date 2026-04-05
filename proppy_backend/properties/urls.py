@@ -1,5 +1,4 @@
 from django.urls import path
-# from .views import  OwnershipListAPIView, PropertyListAPIView, OwnerListAPIView, CompanyRegistrationView
 from .views import (
     BlockListAPIView,
     BlockCreateAPIView,
@@ -12,7 +11,9 @@ from .views import (
     PropertyOwnerCreateAPIView,
     PropertyOwnerRetrieveAPIView,
     PropertyOwnerUpdateAPIView,
-    PropertyOwnerDestroyAPIView, )
+    PropertyOwnerDestroyAPIView, 
+    AddCompanyView,
+)
 
 
 urlpatterns = [
@@ -63,5 +64,10 @@ urlpatterns = [
         'blocks/<int:block_id>/properties/<int:property_id>/owners/<int:pk>/delete/',
         PropertyOwnerDestroyAPIView.as_view(),
         name='property-owner-delete',
+    ),
+    path(
+        'companies/create/',
+        AddCompanyView.as_view(),
+        name='add-company',
     ),
 ]

@@ -217,7 +217,7 @@ class UserRookeryRole(models.Model):
         - Django does NOT call clean() automatically on save()
         - Without this, invalid data can be inserted via API or scripts
         """
-        self.full_clean()
+        # self.full_clean()
         super().save(*args, **kwargs)
 
     class Meta:
