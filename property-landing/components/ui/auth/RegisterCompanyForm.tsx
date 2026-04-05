@@ -16,98 +16,37 @@
  * - API dolazi kasnije
  */
 
-import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Button from "../Button";
-import { validateRegisterForm } from "@/utils/auth/validators";
 import { ROUTES } from "@/config/routes";
-import apiPublic from "@/utils/api/apiPublic";
 import FormInput from "../FormInput";
+import { useRegisterCompany } from "@/hooks/useRegisterCompany";
 
-type ValidationErrors = {
-  email?: string;
-  password?: string;
-  password_confirm?: string;
-  company_name?: string;
-  form?: string;
-};
 
 export default function RegisterCompanyForm() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [password, setPassword] = useState("");
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [errors, setErrors] = useState<ValidationErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [emailExists, setEmailExists] = useState(false);
 
-  const clearFormError = () =>
-    setErrors((prev) => ({ ...prev, form: "" }));
+  // refactor state into hook
+  const {
+    email,
+    setEmail,
+    companyName,
+    setCompanyName,
+    password,
+    setPassword,
+    passwordConfirm,
+    setPasswordConfirm,
 
-  const resetForm = () => {
-    setEmail("");
-    setCompanyName("");
-    setPassword("");
-    setPasswordConfirm("");
-  };
+    errors,
+    isSubmitting,
+    isSuccess,
+    emailExists,
 
-  const isEmailAlreadyRegisteredError = (message: string) => {
-    const normalized = String(message).toLowerCase();
-    return /email.*(exists|already|registered)|already.*registered|user.*exists/.test(normalized);
-  };
+    clearFormError,
+    clearFieldError,
+    handleSubmit,
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  } = useRegisterCompany();
 
-    const validationErrors = validateRegisterForm(email, password, passwordConfirm, companyName);
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors as ValidationErrors);
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setEmailExists(false);
-      setErrors({});
-
-      await apiPublic.post("/users/register-company/", {
-        email,
-        company_name: companyName,
-        password,
-        password_confirm: passwordConfirm,
-      });
-
-      setIsSuccess(true);
-
-      // Redirektuj na login nakon 2 sekunde
-      setTimeout(() => {
-        router.push(ROUTES.AUTH.LOGIN);
-      }, 3000);
-
-    } catch (error: any) {
-      const responseData = error?.response?.data || {};
-      const rawMessage =
-        responseData.detail ||
-        responseData.message ||
-        (Array.isArray(responseData.email) ? responseData.email[0] : responseData.email) ||
-        "";
-
-      const emailAlreadyExists = isEmailAlreadyRegisteredError(rawMessage);
-
-      setErrors({
-        form: emailAlreadyExists
-          ? "Email already exists. Sign in to add another company from your account."
-          : rawMessage || "Registration failed. Please try again.",
-      });
-      setEmailExists(emailAlreadyExists);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   return (
     <div className="w-full max-w-md">
@@ -170,7 +109,7 @@ export default function RegisterCompanyForm() {
             value={companyName}
             onChange={(e) => {
                 setCompanyName(e.target.value);
-                setErrors((prev) => ({ ...prev, company_name: undefined }));
+                clearFieldError('company_name');
             }}
             onFocus={clearFormError}
             error={errors.company_name}
@@ -184,7 +123,7 @@ export default function RegisterCompanyForm() {
             value={email}
             onChange={(e) => {
                 setEmail(e.target.value);
-                setErrors((prev) => ({ ...prev, email: undefined }));
+                clearFieldError('email');
             }}
             onFocus={clearFormError}
             error={errors.email}
@@ -199,7 +138,7 @@ export default function RegisterCompanyForm() {
               value={password}
               onChange={(e) => {
                   setPassword(e.target.value);
-                  setErrors((prev) => ({ ...prev, password: undefined }));
+                  clearFieldError('password');
               }}
               onFocus={clearFormError}
               error={errors.password}
@@ -219,7 +158,7 @@ export default function RegisterCompanyForm() {
             value={passwordConfirm}
             onChange={(e) => {
                 setPasswordConfirm(e.target.value);
-                setErrors((prev) => ({ ...prev, password_confirm: undefined }));
+                clearFieldError('password_confirm');
             }}
             onFocus={clearFormError}
             error={errors.password_confirm}
