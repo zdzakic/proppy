@@ -19,24 +19,36 @@ import { useState } from "react";
 import Link from "next/link";
 import Button from "../Button";
 import { ROUTES } from "@/config/routes";
+import { validateEmailFormat, validateRequired } from "@/utils/auth/validators";
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; form?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+ const clearFormError = () =>
+  setErrors((prev) => ({ ...prev, form: "" }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!email) {
-      setError("Email is required");
+    setErrors({});
+
+    const requiredError = validateRequired(email);
+    if (requiredError) {
+      setErrors({ email: requiredError });
+      return;
+    }
+
+    const emailFormatError = validateEmailFormat(email);
+    if (emailFormatError) {
+      setErrors({ email: emailFormatError });
       return;
     }
 
     try {
       setIsSubmitting(true);
-      setError("");
+      setErrors("");
 
       // 👉 API ide kasnije
       console.log("Reset link sent to:", email);
@@ -44,7 +56,7 @@ export default function ForgotPasswordForm() {
       setIsSuccess(true);
 
     } catch (err: any) {
-      setError("Something went wrong");
+      setErrors("Something went wrong");
     } finally {
       setIsSubmitting(false);
     }
@@ -111,8 +123,10 @@ export default function ForgotPasswordForm() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                setError("");
+                setErrors((prev) => ({ ...prev, email: "" }));
+                clearFormError();
               }}
+              onFocus={clearFormError}
               className={`
                 w-full
                 border
@@ -125,26 +139,28 @@ export default function ForgotPasswordForm() {
                 text-brand-text
                 placeholder:text-brand-muted
                 ${
-                  error
+                  errors.email
                     ? "border-error focus:ring-error/30"
                     : "border-brand-border focus:ring-brand-accent"
                 }
               `}
             />
 
-            {error && (
+            {errors.email && (
               <p className="text-sm text-error">
-                {error}
+                {errors.email}
               </p>
             )}
 
             <Button
               type="submit"
               loading={isSubmitting}
-              disabled={!email}
+              disabled={isSubmitting || !email.trim()}
             >
               Send Reset Link
             </Button>
+
+            
 
             {/* LOGIN LINK */}
             <p className="text-sm text-center text-brand-muted">
