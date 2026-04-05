@@ -17,6 +17,7 @@
  */
 
 import { useState } from "react";
+import Link from "next/link";
 import { validateLoginForm, type ValidationErrors } from "@/utils/auth/validators";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -85,6 +86,21 @@ const clearFormError = () =>
 
   return (
     <div className="w-full max-w-md">
+
+      {/* BACK TO HOME */}
+      <div className="mb-4 text-center">
+        <Link
+          href="/"
+          className="
+            text-sm 
+            text-brand-muted 
+            hover:text-brand-accent 
+            transition
+          "
+        >
+          ← Back to home
+        </Link>
+      </div>
 
       {/* CARD */}
       <div className="
@@ -184,6 +200,21 @@ const clearFormError = () =>
                 {errors.password}
             </p>
             )}
+
+            {/* FORGOT PASSWORD */}
+          <div className="flex justify-end">
+            <Link
+              href="/forgot-password"
+              className="
+                text-sm 
+                text-brand-muted 
+                hover:text-brand-accent 
+                transition
+              "
+            >
+              Forgot password?
+            </Link>
+          </div>
          
 
           {/* BUTTON */}
@@ -196,6 +227,18 @@ const clearFormError = () =>
               {errors.form}
             </p>
           )}
+
+          {/* REGISTER */}
+        <p className="text-sm text-center text-brand-muted">
+          Don’t have an account?{" "}
+          <Link
+            href="/register"
+            className="text-brand-accent hover:underline"
+          >
+            Create one
+          </Link>
+        </p>
+
 
         </form>
 

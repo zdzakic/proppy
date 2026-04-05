@@ -114,7 +114,7 @@ return (
                 </Link>
 
                 <Link
-                href="/register/manager"
+                href="/register"
                 className="block px-3 py-2 rounded-lg hover:bg-brand-surface transition"
                 >
                 Create Account – Property Manager

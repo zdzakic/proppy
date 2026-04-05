@@ -17,6 +17,7 @@
  */
 
 import { useState } from "react";
+import Link from "next/link";
 import Button from "../Button";
 import { validateRegisterForm } from "@/utils/auth/validators";
 
@@ -80,6 +81,21 @@ export default function RegisterCompanyForm() {
 
   return (
     <div className="w-full max-w-md">
+
+      {/* BACK TO HOME */}
+      <div className="mb-4 text-center">
+        <Link
+          href="/"
+          className="
+            text-sm 
+            text-brand-muted 
+            hover:text-brand-accent 
+            transition
+          "
+        >
+          ← Back to home
+        </Link>
+      </div>
 
       {/* CARD */}
       <div className="
@@ -261,6 +277,17 @@ export default function RegisterCompanyForm() {
               {errors.form}
             </p>
           )}
+
+          {/* LOGIN LINK */}
+        <p className="text-sm text-center text-brand-muted">
+          Already have an account?{" "}
+          <Link
+            href="/login"
+            className="text-brand-accent hover:underline"
+          >
+            Sign in
+          </Link>
+        </p>
 
         </form>
       </div>
