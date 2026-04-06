@@ -43,11 +43,11 @@ class UserSerializer(serializers.ModelSerializer):
             "roles"
         ]
 
-    def get_roles(self, obj):
-        return list(
+    def get_roles(self, obj):        
+        return list(set(
             obj.rookery_roles
             .select_related("role")
-            .values_list("role__code", flat=True)
+            .values_list("role__code", flat=True))
         )
 
 
@@ -63,6 +63,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not user:
             raise serializers.ValidationError("Invalid email or password")
 
+        roles = list(set(
+            user.rookery_roles.select_related("role").values_list("role__code", flat=True))) # list(set(user.rookery_roles.select_related("role").values_list("role__code", flat=True)))
+
         self.user = user
         data = super().validate(attrs)
         data['user'] = {
@@ -73,6 +76,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_admin': user.is_superuser,
             'is_staff': user.is_staff,
             'is_active': user.is_active,    
+            'roles': roles
         }
         return data
 

@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 type User = {
   id: number;
   email?: string;
-  role?: "owner" | "tenant" | "admin";
+  roles?: string[];
 };
 
 type AuthContextType = {
@@ -100,21 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("refreshToken", refresh);
       localStorage.setItem("user", JSON.stringify(user));
 
-      setUser(user);
-
-      /**
-       * redirect na dashboard zavisno od tipa korisnika
-       */
-        //   if (user.role === "owner") {
-        //     // router.replace("/dashboard/owner");
-        //     router.replace("/dashboard/");
-        //   } else if (user.role === "tenant") {
-        //     // router.replace("/dashboard/tenant");
-        //     router.replace("/dashboard/");
-        //   } else if (user.role === "admin") {
-        //     router.replace("/dashboard/");
-        //     // router.replace("/dashboard/admin");
-        //   }      
+      setUser(user);      
 
       router.replace("/dashboard/");
   

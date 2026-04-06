@@ -20,37 +20,36 @@
 import { useAuth } from "@/context/AuthContext";
 import OwnerDashboard from "@/components/dashboard/owner/OwnerDashboard";
 import TenantDashboard from "@/components/dashboard/tenant/TenantDashboard";
+import  CompanyAdminDashboard from "@/components/dashboard/companyAdmin/CompanyAdminDashboard";
 
 
 export default function DashboardPage() {
-
   const { user } = useAuth();
 
-  
+  console.log("User in DashboardPage:", user);
+
+  if (!user) return <div>No user found</div>;
 
   /**
-   * ako nema usera (nije logovan)
+   * 🔴 COMPANY ADMIN (PRVI!)
    */
-  if (!user) {
-    return <div>No user found</div>;
+  if (user.roles?.includes("COMPANYADMIN")) {
+    return <CompanyAdminDashboard />;
   }
 
   /**
    * OWNER
    */
-  if (user.role === "owner") {
+  if (user.roles?.includes("OWNER")) {
     return <OwnerDashboard />;
   }
 
   /**
    * TENANT
    */
-  if (user.role === "tenant") {
+  if (user.roles?.includes("TENANT")) {
     return <TenantDashboard />;
   }
 
-  /**
-   * fallback
-   */
   return <div>Unsupported role</div>;
 }
