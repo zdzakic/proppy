@@ -105,7 +105,7 @@ describe("ResetPasswordForm", () => {
 
     // Wait for async operation
     await vi.waitFor(() => {
-      expect(screen.getByText("Your password has been successfully updated.")).toBeInTheDocument();
+      expect(screen.getByText(/Your password has been successfully updated/)).toBeInTheDocument();
     });
   });
 

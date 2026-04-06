@@ -1,3 +1,14 @@
+/**
+ * useRegisterCompany
+ *
+ * ZAŠTO:
+ * - izdvaja logiku registracije kompanije iz komponente
+ *
+ * ŠTA RJEŠAVA:
+ * - reusable logika za registraciju
+ * - konzistentan error handling
+ */
+
 "use client";
 
 import { useState } from "react";
@@ -14,16 +25,6 @@ type ValidationErrors = {
   form?: string;
 };
 
-/**
- * useRegisterCompany
- *
- * ZAŠTO:
- * - izdvaja logiku registracije kompanije iz komponente
- *
- * ŠTA RJEŠAVA:
- * - reusable logika za registraciju
- * - konzistentan error handling
- */
 
 export function useRegisterCompany() {
 
@@ -37,7 +38,6 @@ export function useRegisterCompany() {
   const [errors, setErrors] = useState<ValidationErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [emailExists, setEmailExists] = useState(false);
 
   const clearFormError = () =>
     setErrors((prev) => ({ ...prev, form: "" }));
@@ -62,7 +62,6 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     try {
       setIsSubmitting(true);
-      setEmailExists(false);
       setErrors({});
 
       await apiPublic.post("/users/register-company/", {
@@ -94,7 +93,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           ? "Email already exists. Sign in to add another company from your account."
           : rawMessage || "Registration failed. Please try again.",
       });
-      setEmailExists(emailAlreadyExists);
     } finally {
       setIsSubmitting(false);
     }
@@ -113,7 +111,6 @@ const handleSubmit = async (e: React.FormEvent) => {
     errors,
     isSubmitting,
     isSuccess,
-    emailExists,
 
     clearFormError,
     clearFieldError,

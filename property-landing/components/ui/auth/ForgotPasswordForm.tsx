@@ -15,54 +15,24 @@
  * - API integracija dolazi kasnije
  */
 
-import { useState } from "react";
 import Link from "next/link";
 import Button from "../Button";
 import { ROUTES } from "@/config/routes";
-import { validateEmailFormat, validateRequired } from "@/utils/auth/validators";
-import apiPublic from "@/utils/api/apiPublic";
+import FieldError from "../FieldError";
+import FormError from "../FormError";
+import { useForgotPassword } from "@/hooks/useForgotPassword";
 
 export default function ForgotPasswordForm() {
-  const [email, setEmail] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; form?: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
- const clearFormError = () =>
-  setErrors((prev) => ({ ...prev, form: "" }));
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    setErrors({});
-
-    const requiredError = validateRequired(email);
-    if (requiredError) {
-      setErrors({ email: "Email is required!" });
-      return;
-    }
-
-    const emailFormatError = validateEmailFormat(email);
-    if (emailFormatError) {
-      setErrors({ email: "Invalid email format!" });
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setErrors({});
-
-      // 👉 API ide kasnije
-      // console.log("Reset link sent to:", email);
-      await apiPublic.post("/users/password-reset/", { email });
-
-      setIsSuccess(true);
-
-    } catch (err: any) {
-      setErrors({ form: err.response?.data?.detail || "Failed to send reset link." });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const {
+    email,
+    setEmail,
+    errors,
+    isSubmitting,
+    isSuccess,
+    clearFormError,
+    clearFieldError,
+    handleSubmit,
+  } = useForgotPassword();
 
   return (
     <div className="w-full max-w-md">
@@ -129,7 +99,7 @@ export default function ForgotPasswordForm() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                setErrors((prev) => ({ ...prev, email: "" }));
+                clearFieldError("email");
               }}
               onFocus={clearFormError}
               className={`
@@ -151,11 +121,7 @@ export default function ForgotPasswordForm() {
               `}
             />
 
-            {errors.email && (
-              <p className="text-sm text-error">
-                {errors.email}
-              </p>
-            )}
+            <FieldError message={errors.email} />
 
             <Button
               type="submit"
@@ -164,11 +130,7 @@ export default function ForgotPasswordForm() {
               {isSubmitting ? "Sending..." : "Send Reset Link"}
             </Button>
 
-              {errors.form && (
-              <p className="text-sm text-error">
-                {errors.form}
-              </p>
-            )}
+            <FormError message={errors.form} />
 
             {/* LOGIN LINK */}
             <p className="text-sm text-center text-brand-muted">

@@ -20,6 +20,7 @@ import Link from "next/link";
 import Button from "../Button";
 import { ROUTES } from "@/config/routes";
 import FormInput from "../FormInput";
+import FormError from "../FormError";
 import { useRegisterCompany } from "@/hooks/useRegisterCompany";
 
 
@@ -39,7 +40,6 @@ export default function RegisterCompanyForm() {
     errors,
     isSubmitting,
     isSuccess,
-    emailExists,
 
     clearFormError,
     clearFieldError,
@@ -169,11 +169,7 @@ export default function RegisterCompanyForm() {
             Register Company
           </Button>
 
-          {errors.form && (
-            <p className="text-sm text-error text-center">
-              {errors.form}
-            </p>
-          )}
+          <FormError message={errors.form} />
 
           {/* LOGIN LINK */}
         <p className="text-sm text-center text-brand-muted">

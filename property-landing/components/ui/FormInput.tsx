@@ -15,6 +15,8 @@
  * - sam odlučuje styling (error vs normal)
  */
 
+import FieldError from "./FieldError";
+
 type FormInputProps = {
   type?: string;
   placeholder?: string;
@@ -63,11 +65,8 @@ export default function FormInput({
         `}
       />
 
-      {error && (
-        <p className="text-sm text-error mt-1">
-          {error}
-        </p>
-      )}
+      <FieldError message={error} />
+
     </div>
   );
 }
