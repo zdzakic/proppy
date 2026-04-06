@@ -39,7 +39,7 @@ export default function CostCard({
         relative p-10 rounded-2xl transition-all duration-300
         ${isHighlight
           ? "bg-brand-primary text-white shadow-[0_20px_60px_rgba(0,0,0,0.25)] border border-white/10"
-          : "bg-white shadow-[0_15px_50px_rgba(0,0,0,0.06)] border border-black/5"
+          : "bg-brand-surface shadow-[0_15px_50px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] border border-brand-border"
         }
         hover:scale-[1.02]
       `}
@@ -66,7 +66,7 @@ export default function CostCard({
             className={`font-display ${
               isHighlight
                 ? "text-6xl"
-                : "text-5xl text-brand-primary"
+                : "text-5xl text-brand-accent dark:text-brand-text/80"
             }`}
           >
             {value}

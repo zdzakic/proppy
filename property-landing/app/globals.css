@@ -11,11 +11,14 @@
   --color-brand-border: var(--border);
   --color-brand-text: var(--text);
   --color-brand-muted: var(--muted);
+  --color-brand-header-text: var(--header-text);
+  --color-brand-header-muted: var(--header-muted);
   /* --font-family-display: "Playfair Display", Georgia, serif; */
   --font-family-display: var(--font-display);
   --box-shadow-premium: 0 20px 50px rgba(0,0,0,0.08);
   --border-radius-xl: 1rem;
   --border-radius-2xl: 1.5rem;
+  
 
   /* Error color */
   --color-error: var(--error);
@@ -57,6 +60,8 @@
   --accent-light: #D4B26A;
   --border: #E5E0D6;
   --accent-rgb: 184, 155, 94;
+  --header-text: #0E1B2E;
+  --header-muted: rgba(14, 27, 46, 0.72);
 
   /* 🔴 ERROR COLOR */
   --error: #DC2626;
@@ -91,6 +96,8 @@
   --primary: #132a46;
   --accent: #D4B26A;
   --border: #1F2937;
+  --header-text: #F3F4F6;
+  --header-muted: rgba(243, 244, 246, 0.78);
   /* 🔴 ERROR COLOR */
   --error: #EF4444;
   
