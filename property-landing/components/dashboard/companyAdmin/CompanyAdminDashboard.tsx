@@ -20,10 +20,6 @@ return (
         Company Admin Dashboard
       </h1>
 
-      {/* <div className="bg-brand-surface border border-brand-border rounded-xl p-6">
-        Example company admin dashboard card
-      </div> */}
-
       <BlocksOverview />
 
     </div>
