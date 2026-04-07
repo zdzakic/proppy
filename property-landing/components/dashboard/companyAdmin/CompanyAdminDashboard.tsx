@@ -5,25 +5,27 @@
  * - glavni ekran za upravljanje firmom
  * - ovdje ide:
  *   - blokovi
- *   - stanovi
+ *   - nekretnine
+ *   - korisnici
  */
 
+import BlocksOverview from "./blocks/BlocksOverview";
+
+
 export default function CompanyAdminDashboard() {
-  return (
+return (
     <div className="space-y-6">
+
       <h1 className="text-2xl font-semibold">
-        Dashboard
+        Company Admin Dashboard
       </h1>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="p-4 border rounded-xl">
-          Blocks (coming soon)
-        </div>
+      {/* <div className="bg-brand-surface border border-brand-border rounded-xl p-6">
+        Example company admin dashboard card
+      </div> */}
 
-        <div className="p-4 border rounded-xl">
-          Properties (coming soon)
-        </div>
-      </div>
+      <BlocksOverview />
+
     </div>
   );
 }
