@@ -1,14 +1,6 @@
 {
 	"folders": [
         {
-            "name": "zdzdigital",
-            "path": "../zdzdigital"
-        },
-        {
-            "name": "booky_universal",
-            "path": "../booky_universal"
-        },
-        {
             "name": "proppy",
             "path": "."
         }

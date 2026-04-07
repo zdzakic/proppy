@@ -1,153 +1,135 @@
-# serializers.py
+# properties/serializers.py
 from rest_framework import serializers
-from django.db import transaction
-from .models import Property, Company, CompanyMembership
+from users.models import Role
+from .models import Block, Property, PropertyOwner, UserRookeryRole, Company
 from django.contrib.auth import get_user_model
-from users.validators import validate_password_match
+from django.db import transaction
+
 
 User = get_user_model()
 
-class OwnershipSerializer(serializers.Serializer):
+
+class PropertyOwnerSerializer(serializers.ModelSerializer):
     """
-    Serializer for representing ownership relationships in a flat structure.
-
-    This is a manual serializer (not ModelSerializer) because it pulls fields 
-    from multiple related models: `User` (owner) and `Property`. It is used for
-    aggregated read-only API views (e.g. list of ownerships).
+    PropertyOwner CRUD (company admin). `property` comes from URL, not body.
     """
-    owner_id = serializers.IntegerField(source='user.id')
-    owner_email = serializers.EmailField(source='user.email')
-    owner_name = serializers.SerializerMethodField()
 
-    property_id = serializers.IntegerField(source='property.id')
-    property_name = serializers.CharField(source='property.name')
-    block_id = serializers.IntegerField(source='property.block.id', default=None)
-    block_name = serializers.CharField(source='property.block.name', default=None)
-    company_name = serializers.CharField(source='property.company.name', default=None)
-    comment = serializers.CharField(source='property.comment')
+    email = serializers.EmailField(write_only=True)
+    user_email = serializers.EmailField(source="user.email", read_only=True)
 
-    def get_owner_name(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}".strip()    
+    class Meta:
+        model = PropertyOwner
+        fields = [
+            "id",
+            "email",
+            "user_email",
+            "display_name",
+            "date_from",
+            "date_to",
+            "comment",
+            "order",
+        ]
+
+    def get_fields(self):
+        fields = super().get_fields()
+        # On update allow changing only metadata fields (display_name/comment/etc),
+        # while 'email' is an input-only field for create.
+        if self.instance is not None and "email" in fields:
+            fields["email"].read_only = True
+        return fields
+
+    def validate(self, data):
+        # Email is required only on create requests (when there is no instance yet).
+        if self.instance is None and not data.get("email"):
+            raise serializers.ValidationError("Email is required.")
+
+        return data
 
 
 class PropertySerializer(serializers.ModelSerializer):
     """
-    Serializer for the Property model including extra read-only fields.
+    Simple serializer for Property.
 
-    Adds `block_name` and `company_name` for convenience in frontend displays,
-    avoiding extra queries on the client side. Uses `source` to access related
-    fields through foreign keys.
+    WHY:
+    - used inside Block
+    - owners nested read-only for list/detail
     """
-    block_name = serializers.CharField(source='block.name', read_only=True)
-    company_name = serializers.CharField(source='company.name', read_only=True)
+
+    owners = PropertyOwnerSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property
-        fields = ['id', 'name', 'comment', 'block', 'block_name', 'company', 'company_name']
+        fields = ["id", "name", "comment", "owners"]
 
 
-class OwnerListSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.SerializerMethodField()
-    email = serializers.EmailField()
-    properties = serializers.SerializerMethodField()
-
-    def get_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}".strip()
-
-    def get_properties(self, obj):
-        return [
-            {
-                "id": ownership.property.id,
-                "name": ownership.property.name
-            }
-            for ownership in obj.ownerships.all()
-        ]
-
-
-class CompanyRegistrationSerializer(serializers.Serializer):
+class BlockSerializer(serializers.ModelSerializer):
     """
-    Serializer for self-service company registration.
+    Block serializer with nested properties.
 
-    What it does:
-    - accepts the minimal data needed for onboarding
-    - creates a new user
-    - creates a new company
-    - links the user to that company as admin via CompanyMembership
-
-    Why this approach:
-    - we are creating multiple related models in one flow
-    - plain Serializer is a better fit than ModelSerializer here
-    - transaction.atomic() ensures all-or-nothing DB writes
+    WHY:
+    - CompanyAdmin gets full structure in one call
     """
 
-    email = serializers.EmailField()
-    password = serializers.CharField(write_only=True)
-    password_confirm = serializers.CharField(write_only=True)
-    company_name = serializers.CharField(max_length=255)
+    properties = PropertySerializer(many=True, read_only=True)
 
-    def validate_email(self, value):
-        """
-        Validate that the email is unique.
-        """
-        value = value.lower()
+    class Meta:
+        model = Block
+        fields = ["id", "name", "company", "properties"]
 
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("User with this email already exists.")
-        return value
+    def validate_company(self, company):
+        user = self.context["request"].user
 
-    def validate_password(self, value):
-        from django.contrib.auth.password_validation import validate_password
-        from django.core.exceptions import ValidationError as DjangoValidationError
-
-        try:
-            validate_password(value)
-        except DjangoValidationError as e:
-            raise serializers.ValidationError(list(e.messages))
-
-        return value
-
-    def validate(self, data):
-        validate_password_match(
-            data["password"],
-            data["password_confirm"]
-        )
-        return data
-
-    @transaction.atomic
-    def create(self, validated_data):
-        """
-        Create user + company + company membership in a single transaction.
-
-        Why atomic:
-        - if any step fails, nothing is partially saved
-        - prevents half-created onboarding state
-        """
-        validated_data.pop("password_confirm")
-
-        email = validated_data["email"]
-        password = validated_data["password"]
-        company_name = validated_data["company_name"]
-
-        try:
-            user = User.objects.create_user(
-                email=email,
-                password=password,
-            )
-        except IntegrityError:
-            raise serializers.ValidationError(
-                {"email": "User with this email already exists."}
-            )
-             
-
-        company = Company.objects.create(
-            name=company_name,
-        )
-
-        CompanyMembership.objects.create(
+        is_admin = UserRookeryRole.objects.filter(
             user=user,
             company=company,
-            role="admin",
-        )
+            role__code="COMPANYADMIN"
+        ).exists()
 
-        return user
+        if not is_admin:
+            raise serializers.ValidationError(
+                "You cannot create block in this company."
+            )
+
+        return company
+
+
+class AddCompanyAdminSerializer(serializers.Serializer):
+    """
+    AddCompanySerializer
+
+    ŠTA RADI:
+    - dodaje novu firmu za već postojećeg usera
+
+    ZAŠTO:
+    - odvajamo registration flow od company managementa
+    - sigurnije (koristi request.user)
+    """
+
+    email = serializers.EmailField()
+    name = serializers.CharField(max_length=100)
+
+    def create(self, validated_data):
+        """Create new company admin role for existing user."""
+
+        email = validated_data["email"]
+        user = User.objects.get(email=email)
+        company = self.context["company"]
+
+        with transaction.atomic():
+            company = Company.objects.create(name=validated_data["name"])
+            role = Role.objects.get(code="COMPANYADMIN")
+            UserRookeryRole.objects.create(
+                user=user,
+                company=company,
+                role=role
+            )
+
+        return company
+            
+
+    def validate_email(self, email):
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User with this email does not exist.")
+        return email

@@ -1,31 +1,45 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User
+from .models import User, Role
+
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
+    """
+    Proper Django UserAdmin.
+
+    WHY:
+    - ensures password is hashed correctly
+    - uses Django built-in forms
+    """
+
     model = User
-    list_display = ('email', 'first_name', 'last_name', 'phone', 'role', 'is_active', 'is_staff')
-    ordering = ('id',)
-    list_filter = ('role', 'is_staff', 'is_active')
+
+    list_display = ("email", "first_name", "last_name", "is_staff")
+    ordering = ("email",)
+    list_filter = ("is_active", "is_staff", "is_superuser")
+    readonly_fields = ("date_created",)
+    search_fields = ("email", "first_name", "last_name")
 
     fieldsets = (
-        (None, {
-            'fields': ('email', 'password', 'first_name', 'last_name', 'address', 'phone', 'date_left', 'comment', 'role')
-        }),
-        ('Permissions', {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
-        }),
+        (None, {"fields": ("email", "password")}),
+        ("Personal Info", {"fields": ("first_name", "last_name", "title")}),
+        ("Address", {"fields": ("address_1", "address_2", "postcode", "country")}),
+        ("Other", {"fields": ("phone", "gender", "date_of_birth", "comment","date_created")}),
+        ("Permissions", {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
     )
 
     add_fieldsets = (
         (None, {
-            'classes': ('wide',),
-            'fields': (
-                'email', 'first_name', 'last_name', 'address', 'phone', 'date_left', 'comment',
-                'role', 'password1', 'password2', 'is_active', 'is_staff'
-            )}
-        ),
+            "classes": ("wide",),
+            "fields": ("email", "password1", "password2"),
+        }),
     )
 
-    search_fields = ('email', 'first_name', 'last_name', 'phone')
+    search_fields = ("email",)
+
+
+@admin.register(Role)
+class RoleAdmin(admin.ModelAdmin):
+    list_display = ("code", "name")
+    search_fields = ("code", "name")

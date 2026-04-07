@@ -29,7 +29,7 @@ export default function HeaderLink({
         transition duration-300
         ${
           scrolled
-            ? "text-brand-primary hover:text-brand-accent"
+            ? "text-brand-header-text hover:text-brand-accent"
             : "text-white/80 hover:text-white"
         }
         ${className}

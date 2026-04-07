@@ -41,8 +41,7 @@ return (
             className={`
                 font-display text-[1.65rem] tracking-[0.04em]
                 transition-colors duration-300
-                text-brand-hero
-                ${scrolled ? "text-brand-primary" : "text-brand-hero"}
+                ${scrolled ? "text-brand-header-text" : "text-brand-hero"}
             `}
             >
             ROOKerys
@@ -77,7 +76,7 @@ return (
             transition-colors duration-300
             ${
                 scrolled
-                ? "text-brand-primary hover:text-brand-accent"
+                ? "text-brand-header-muted hover:text-brand-accent"
                 : "text-white/70 hover:text-white"
             }
             `}
@@ -86,36 +85,47 @@ return (
         </button>
         {/* Account Dropdown */}
             <div
-            className="
-                absolute right-0 top-8 w-64
-                bg-white/95 backdrop-blur-md
-                rounded-xl
-                shadow-xl
-                border border-brand-border
-                p-4
-                opacity-0 invisible
-                translate-y-2
-                transition-all duration-200 ease-out
-                group-hover:opacity-100
-                group-hover:visible
-                group-hover:translate-y-0
-                group-focus-within:opacity-100
-                group-focus-within:visible
-                group-focus-within:translate-y-0
-            "
-            >
+                className="
+                    absolute right-0 top-8 w-64
+                    rounded-xl p-4
+
+                    bg-brand-surface dark:bg-brand-surface
+                    border border-brand-border
+
+                    shadow-[0_10px_40px_rgba(0,0,0,0.12)]
+                    dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)]
+
+                    transition-all duration-200 ease-out
+
+                    opacity-0 invisible translate-y-2
+                    group-hover:opacity-100 group-hover:visible group-hover:translate-y-0
+                    group-focus-within:opacity-100 group-focus-within:visible group-focus-within:translate-y-0
+                "
+                >
             <div className="space-y-2 text-sm">
 
                 <Link
                 href="/register/owner"
-                className="block px-3 py-2 rounded-lg hover:bg-brand-surface transition"
+                className="
+                    block px-3 py-2 rounded-lg
+                    text-brand-text dark:text-brand-text
+                    hover:bg-black/5 dark:hover:bg-white/5
+                    hover:text-brand-accent
+                    transition-colors duration-200
+                "
                 >
                 Create Account – Flat Owner
                 </Link>
 
                 <Link
-                href="/register/manager"
-                className="block px-3 py-2 rounded-lg hover:bg-brand-surface transition"
+                href="/register"
+                className="
+                    block px-3 py-2 rounded-lg
+                    text-brand-text dark:text-brand-text
+                    hover:bg-black/5 dark:hover:bg-white/5
+                    hover:text-brand-accent
+                    transition-colors duration-200
+                "
                 >
                 Create Account – Property Manager
                 </Link>
@@ -124,7 +134,13 @@ return (
 
                 <Link
                 href="/login"
-                className="block px-3 py-2 rounded-lg hover:bg-brand-surface transition"
+                className="
+                    block px-3 py-2 rounded-lg
+                    text-brand-text dark:text-brand-text
+                    hover:bg-black/5 dark:hover:bg-white/5
+                    hover:text-brand-accent
+                    transition-colors duration-200
+                "
                 >
                 Login
                 </Link>
@@ -137,23 +153,23 @@ return (
         <button
         onClick={() => setOpen(!open)}
         className={`md:hidden transition-colors duration-300 ${
-            scrolled ? "text-brand-primary" : "text-brand-hero"
+            scrolled ? "text-brand-header-text" : "text-brand-hero"
         }`}
         >
         <div className="space-y-1.5">
             <span
                 className={`block w-6 h-[2px] transition-colors duration-300 ${
-                    scrolled ? "bg-brand-primary" : "bg-brand-hero"
+                    scrolled ? "bg-brand-header-text" : "bg-brand-hero"
                 }`}
             ></span>
             <span
                 className={`block w-6 h-[2px] transition-colors duration-300 ${
-                    scrolled ? "bg-brand-primary" : "bg-brand-hero"
+                    scrolled ? "bg-brand-header-text" : "bg-brand-hero"
                 }`}
                 ></span>
             <span
                 className={`block w-6 h-[2px] transition-colors duration-300 ${
-                    scrolled ? "bg-brand-primary" : "bg-brand-hero"
+                    scrolled ? "bg-brand-header-text" : "bg-brand-hero"
                 }`}
                 ></span>
         </div>

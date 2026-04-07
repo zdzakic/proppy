@@ -19,21 +19,21 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
+/**
+ * MOCK AUTH CONTEXT
+ */
+const mockLogin = vi.fn().mockResolvedValue(undefined);
+vi.mock("@/context/AuthContext", () => ({
+  useAuth: () => ({
+    login: mockLogin,
+  }),
+}));
+
 vi.mock("@/utils/api/apiPublic");
 
 describe("LoginForm", () => {
 
-  it("calls login API when form submitted", async () => {
-
-    const mockPost = vi.mocked(apiPublic.post);
-
-    mockPost.mockResolvedValue({
-      data: {
-        access: "fake-access",
-        refresh: "fake-refresh",
-        user: { id: 1 }
-      }
-    });
+  it("calls login when form submitted with valid data", async () => {
 
     render(<LoginForm />);
 
@@ -46,7 +46,7 @@ describe("LoginForm", () => {
 
     await userEvent.click(button);
 
-    expect(mockPost).toHaveBeenCalled();
+    expect(mockLogin).toHaveBeenCalledWith("test@test.com", "123456");
 
   });
 

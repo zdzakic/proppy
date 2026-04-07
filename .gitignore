@@ -24,7 +24,8 @@ dist-ssr
 *.sln
 *.sw?
 *.env*
-__pycache__*
+*__pycache__*
+.venv
 
 #app related
 instance/*
@@ -32,4 +33,4 @@ instance/*
 config.jsx
 *.venv*
 .env
-TODO*
+

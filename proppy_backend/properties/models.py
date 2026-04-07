@@ -1,170 +1,286 @@
 from django.db import models
-from django.conf import settings
+from django.contrib.auth import get_user_model
+from users.models import Role
+
+User = get_user_model()
 
 
+# =========================================================
+# COMPANY
+# =========================================================
 class Company(models.Model):
-    name = models.CharField(max_length=255)         
-    address = models.TextField()                    
-    is_valid = models.BooleanField(default=True)    
-    comment = models.TextField(blank=True)          
+    """
+    Represents a company managing properties.
 
-    def __str__(self):
-        return self.name
+    WHY:
+    - Top-level tenant in system
+    - One company manages multiple blocks and properties
+    """
 
-
-class Block(models.Model):
-    name = models.CharField(max_length=255)            
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='blocks') 
-    comment = models.TextField(blank=True)         
-
-    def __str__(self):
-        return self.name
-
-
-class Property(models.Model):
-    name = models.CharField(max_length=255)  # propertyname
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='properties')
-    block = models.ForeignKey(Block, on_delete=models.SET_NULL, null=True, blank=True)
+    name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, blank=True)
+    is_valid = models.BooleanField(default=True)
     comment = models.TextField(blank=True)
 
     def __str__(self):
         return self.name
 
 
-# class Ownership(models.Model):
-#     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='ownerships')
-#     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='ownerships')
-#     start_date = models.DateField(null=True, blank=True)
-#     end_date = models.DateField(null=True, blank=True)  # null znači da je još uvijek aktivno
-#     comment = models.TextField(blank=True)
-
-#     def __str__(self):
-#         return f"{self.user.email} → {self.property.name} ({self.start_date} to {self.end_date or 'present'})"
-
-class Ownership(models.Model):
+# =========================================================
+# BLOCK
+# =========================================================
+class Block(models.Model):
     """
-    Represents relationship between user and property.
+    Represents a building block.
 
-    ZAŠTO:
-    - jedan user može imati više stanova
-    - jedan stan može imati više usera
-    - mora postojati kontekst (owner ili tenant)
-
-    ŠTA RJEŠAVA:
-    - zamjenjuje ownerrole iz Access baze
-    - omogućava više role-a za istog usera
+    WHY:
+    - Company → Blocks → Properties hierarchy
     """
 
-    ROLE_CHOICES = (
-        ("owner", "Owner"),
-        ("tenant", "Tenant"),
-    )
+    name = models.CharField(max_length=255)
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    company = models.ForeignKey(
+        Company,
         on_delete=models.CASCADE,
-        related_name='ownerships'
+        related_name="blocks"
     )
+
+    comment = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.company.name})"      
+
+
+# =========================================================
+# PROPERTY
+# =========================================================
+class Property(models.Model):
+    """
+    Represents an apartment / flat / unit.
+
+    WHY:
+    - Each block contains multiple properties
+    """
+
+    name = models.CharField(max_length=255)
+
+    block = models.ForeignKey(
+        Block,
+        on_delete=models.CASCADE,
+        related_name="properties"
+    )
+
+    comment = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.block.name})"
+
+
+# =========================================================
+# PROPERTY OWNER (ownership history)
+# =========================================================
+class PropertyOwner(models.Model):
+    """
+    Links User ↔ Property.
+
+    WHY:
+    - Tracks ownership history over time
+    - Supports multiple owners and historical changes
+
+    IMPORTANT:
+    - This is the ONLY place where ownership lives
+    """
 
     property = models.ForeignKey(
         Property,
         on_delete=models.CASCADE,
-        related_name='ownerships'
-    )
-
-    role = models.CharField(              
-        max_length=20,
-        choices=ROLE_CHOICES
-    )
-
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
-    comment = models.TextField(blank=True)
-
-    def __str__(self):
-        return f"{self.user.email} → {self.property.name} ({self.role})"
-
-
-class Insurance(models.Model):
-    """
-    Represents an insurance record associated with a specific insurance company.
-    The company field is a foreign key to the Company model (tblCompanies),
-    matching the structure shown in the Access DB diagram (inscompanyid → companyid).
-    """
-    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='insurances')
-    insurance_type = models.CharField(max_length=100)
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-    provider = models.CharField(max_length=255)
-    provider_reference = models.CharField(max_length=100, blank=True) 
-
-    def __str__(self):
-        return f"{self.insurance_type} ({self.company.name})"
-
-
-
-class HealthSafety(models.Model):
-    """
-    Represents a Health & Safety record linked to a specific company.
-    Follows structure from MS Access table 'tblHanS'.
-    """
-    company = models.ForeignKey('Company', on_delete=models.CASCADE, related_name='health_safety_docs')
-    document_type = models.CharField(max_length=100)  # hanstype
-    start_date = models.DateField()  # hansdtstart
-    end_date = models.DateField(null=True, blank=True)  # hansdtend
-    provider = models.TextField()  # hansprovider
-    provider_reference = models.CharField(max_length=100, blank=True)  # provnumber
-    amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # hansamount
-
-    def __str__(self):
-        return f"{self.document_type} ({self.company.name})"
-
-
-class CompanyMembership(models.Model):
-    """
-    Connects a user with a company and stores the user's role inside that company.
-
-    Why this exists:
-    - Django auth user represents identity/login only.
-    - Company-level access must be modeled separately because one company can have
-      multiple admins, and one user may belong to multiple companies later.
-
-    What this solves:
-    - introduces company_admin role cleanly
-    - prepares the backend for company-scoped permissions
-    - keeps the design scalable without changing current auth flow yet
-    """
-
-    ROLE_CHOICES = (
-        ("admin", "Company Admin"),
+        related_name="owners"
     )
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
-        related_name="company_memberships",
+        related_name="owned_properties",
+        null=False,
+        blank=False,
     )
+
+    display_name = models.CharField(max_length=255, blank=True)
+
+    date_from = models.DateField(null=True, blank=True)
+    date_to = models.DateField(null=True, blank=True)
+
+    comment = models.TextField(blank=True)
+
+    order = models.IntegerField(default=0)
+
+    def __str__(self):
+        owner_label = self.user.email if self.user else self.display_name or "Unknown owner"
+        return f"{owner_label} → {self.property.name}"
+
+
+# =========================================================
+# USER ROOKERY ROLE (ACCESS CONTROL)
+# =========================================================
+class UserRookeryRole(models.Model):
+    """
+    UserRookeryRole
+
+    Purpose:
+    - Defines application-level access for a user within a specific company
+
+    This is NOT ownership:
+    - Ownership is handled via PropertyOwner model
+
+    This IS access control:
+    - Determines whether a user can access the application
+    - Defines what role they have (OWNER, COMPANYADMIN, ADMIN)
+
+    Key relationships:
+    - user → who
+    - company → where
+    - role → how (permissions level)
+    - property_owner → optional link (required only for OWNER role)
+
+    Example:
+    - User A is COMPANYADMIN in Company X
+    - User B is OWNER in Company Y (linked to PropertyOwner)
+
+    Design note:
+    - Role is a ForeignKey → avoids hardcoded strings and ensures consistency
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="rookery_roles"
+    )
+
     company = models.ForeignKey(
         Company,
         on_delete=models.CASCADE,
-        related_name="memberships",
-    )
-    role = models.CharField(
-        max_length=20,
-        choices=ROLE_CHOICES,
-        default="admin",
+        related_name="user_roles"
     )
 
-    # Optional metadata, useful later if you want Access-like history/comments.
-    display_name = models.CharField(max_length=255, blank=True)
-    date_from = models.DateField(null=True, blank=True)
-    date_to = models.DateField(null=True, blank=True)
-    comment = models.TextField(blank=True)
-    order_index = models.PositiveIntegerField(null=True, blank=True)
+    # role = models.CharField(max_length=50, choices=ROLE_CHOICES)
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name="user_roles",
+        help_text="Defines the role of the user within a company context"
+    )
 
-    class Meta:
-        unique_together = ("user", "company", "role")
+    property_owner = models.ForeignKey(
+        PropertyOwner,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
+
+    def clean(self):
+        """
+        Business validation for role assignment.
+
+        Rules:
+        - OWNER must have property_owner
+        - property_owner must belong to the same user
+        - property_owner must belong to the same company
+
+        Why:
+        - Prevents inconsistent data (wrong ownership links)
+        """
+
+        from django.core.exceptions import ValidationError
+
+        # Rule 1: OWNER must have property_owner
+        if self.role and self.role.code == "OWNER" and not self.property_owner:
+            raise ValidationError("OWNER role must have a related PropertyOwner.")
+
+        # Rule 2: property_owner must match user
+        if self.property_owner and self.property_owner.user != self.user:
+            raise ValidationError("PropertyOwner must belong to the same user.")
+
+        # Rule 3: property_owner must match company
+        if self.property_owner:
+            property_company = self.property_owner.property.block.company
+            if property_company != self.company:
+                raise ValidationError("PropertyOwner must belong to the same company.")
 
     def __str__(self):
-        return f"{self.user.email} -> {self.company.name} ({self.role})"
+        return f"{self.user.email} - {self.role} ({self.company.name})"
 
+    def save(self, *args, **kwargs):
+        """
+        Ensure model validation is always executed.
+
+        Why:
+        - Django does NOT call clean() automatically on save()
+        - Without this, invalid data can be inserted via API or scripts
+        """
+        # self.full_clean()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "company", "role"],
+                condition=models.Q(property_owner__isnull=True),
+                name="unique_user_company_role_no_property_owner",
+            ),
+            models.UniqueConstraint(
+                fields=["property_owner"],
+                condition=models.Q(property_owner__isnull=False),
+                name="unique_userrookeryrole_per_property_owner",
+            ),
+        ]
+
+
+# =========================================================
+# SERVICES
+# =========================================================
+class Service(models.Model):
+    """
+    Defines service type (plumber, electrician, etc).
+
+    WHY:
+    - External service providers
+    - May later get system access
+    """
+
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+
+class UserService(models.Model):
+    """
+    Links user to service type.
+
+    WHY:
+    - A user can provide multiple services
+    """
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="services"
+    )
+
+    service = models.ForeignKey(
+        Service,
+        on_delete=models.CASCADE
+    )
+
+    comment = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.user.email} - {self.service}"
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "service"],
+                name="unique_user_service"
+            )
+        ]

@@ -1,22 +1,36 @@
 import { render, screen, fireEvent } from "@testing-library/react";
-import RegisterForm from "../RegisterForm";
+import { vi, describe, it, expect } from "vitest";
+import RegisterCompanyForm from "@/components/ui/auth/RegisterCompanyForm";
+import apiPublic from "@/utils/api/apiPublic";
+
+/**
+ * MOCK NEXT ROUTER
+ */
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    replace: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
 
 /**
  * Mock Button (ako koristiš custom Button komponentu)
  * ZAŠTO:
  * - izbjegavamo zavisnost od styling/loading logike
  */
-jest.mock("../Button", () => ({
-  __esModule: true,
-  default: ({ children, ...props }: any) => (
-    <button {...props}>{children}</button>
+vi.mock("@/components/ui/Button", () => ({
+  default: ({ children, loading, ...props }: any) => (
+    <button {...props} loading={loading ? "true" : undefined}>{children}</button>
   ),
 }));
 
-describe("RegisterForm", () => {
+vi.mock("@/utils/api/apiPublic");
+
+describe("RegisterCompanyForm", () => {
 
   it("renders all fields", () => {
-    render(<RegisterForm />);
+    render(<RegisterCompanyForm />);
 
     expect(screen.getByPlaceholderText("Email")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Company name")).toBeInTheDocument();
@@ -24,43 +38,14 @@ describe("RegisterForm", () => {
     expect(screen.getByPlaceholderText("Confirm password")).toBeInTheDocument();
   });
 
-  it("shows validation errors on empty submit", () => {
-    render(<RegisterForm />);
+  it("submits valid form and calls API", async () => {
+    const mockPost = vi.mocked(apiPublic.post);
 
-    fireEvent.click(screen.getByText("Create account"));
-
-    expect(screen.getByText("Email is required")).toBeInTheDocument();
-    expect(screen.getByText("Company name is required")).toBeInTheDocument();
-    expect(screen.getByText("Password is required")).toBeInTheDocument();
-    expect(screen.getByText("Confirm your password")).toBeInTheDocument();
-  });
-
-  it("shows error for invalid email", () => {
-    render(<RegisterForm />);
-
-    fireEvent.change(screen.getByPlaceholderText("Email"), {
-      target: { value: "invalid" },
+    mockPost.mockResolvedValue({
+      data: { success: true }
     });
 
-    fireEvent.change(screen.getByPlaceholderText("Company name"), {
-      target: { value: "TestCo" },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText("Password"), {
-      target: { value: "123456" },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText("Confirm password"), {
-      target: { value: "123456" },
-    });
-
-    fireEvent.click(screen.getByText("Create account"));
-
-    expect(screen.getByText("Invalid email")).toBeInTheDocument();
-  });
-
-  it("shows error if passwords do not match", () => {
-    render(<RegisterForm />);
+    render(<RegisterCompanyForm />);
 
     fireEvent.change(screen.getByPlaceholderText("Email"), {
       target: { value: "test@test.com" },
@@ -71,44 +56,24 @@ describe("RegisterForm", () => {
     });
 
     fireEvent.change(screen.getByPlaceholderText("Password"), {
-      target: { value: "123456" },
+      target: { value: "Password123!" },
     });
 
     fireEvent.change(screen.getByPlaceholderText("Confirm password"), {
-      target: { value: "654321" },
+      target: { value: "Password123!" },
     });
 
-    fireEvent.click(screen.getByText("Create account"));
+    fireEvent.click(screen.getByRole("button", { name: /register company/i }));
 
-    expect(screen.getByText("Passwords do not match")).toBeInTheDocument();
-  });
-
-  it("submits valid form (console.log called)", () => {
-    const consoleSpy = jest.spyOn(console, "log").mockImplementation();
-
-    render(<RegisterForm />);
-
-    fireEvent.change(screen.getByPlaceholderText("Email"), {
-      target: { value: "test@test.com" },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText("Company name"), {
-      target: { value: "TestCo" },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText("Password"), {
-      target: { value: "123456" },
-    });
-
-    fireEvent.change(screen.getByPlaceholderText("Confirm password"), {
-      target: { value: "123456" },
-    });
-
-    fireEvent.click(screen.getByText("Create account"));
-
-    expect(consoleSpy).toHaveBeenCalled();
-
-    consoleSpy.mockRestore();
+    expect(mockPost).toHaveBeenCalledWith(
+      "/users/register-company/",
+      {
+        email: "test@test.com",
+        company_name: "TestCo",
+        password: "Password123!",
+        password_confirm: "Password123!",
+      }
+    );
   });
 
 });
