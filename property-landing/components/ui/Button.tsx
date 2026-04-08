@@ -15,12 +15,10 @@
 
 import Spinner from "@/components/ui/Spinner";
 
-type ButtonProps = {
+type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   children: React.ReactNode;
   type?: "button" | "submit";
   loading?: boolean;
-  disabled?: boolean;
-  className?: string;
 };
 
 export default function Button({
@@ -29,12 +27,14 @@ export default function Button({
   loading = false,
   disabled = false,
   className = "",
+  ...rest
 }: ButtonProps) {
   return (
     <button
       type={type}
       disabled={disabled || loading}
       aria-busy={loading}
+      {...rest}
       className={`
         w-full
         py-3

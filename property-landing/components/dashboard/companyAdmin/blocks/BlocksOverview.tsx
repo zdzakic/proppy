@@ -1,20 +1,9 @@
 
-/**
- * ŠTA RJEŠAVA:
- * - prikaz blokova sa njihovim nekretninama
- * - dohvat podataka sa backend-a
- * - loading i empty state
- *
- * NAPOMENA:
- * - nema edit/delete funkcionalnosti, samo prikaz
- * - koristi Tailwind CSS za stilizaciju
- */
-
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import apiClient from "@/utils/api/apiClient";
-
+import FormError from "@/components/ui/FormError";
 
 type Property = {
   id: number;
@@ -25,57 +14,66 @@ type Block = {
   id: number;
   name: string;
   properties?: Property[];
-};  
+};
 
 export default function BlocksOverview() {
-
-  // state for blocks data
-  const [blocks, setBlocks] = useState([]);
+  const [blocks, setBlocks] = useState<Block[]>([]);
   const [loading, setLoading] = useState(true);
-const [error, setError] = useState("");
+  const [error, setError] = useState("");
 
-    // fetch blocks on component mount
-    useEffect(() => {
-      const fetchBlocks = async () => {
-        try {
-          const response = await apiClient.get("/properties/blocks/");
-          setBlocks(response.data);
-        } catch (err) {
-          setError("Failed to fetch blocks");
-        } finally {
-          setLoading(false);
-        }
-      };
+  useEffect(() => {
+    const fetchBlocks = async () => {
+      try {
+        const response = await apiClient.get("/properties/blocks/");
+        setBlocks(response.data as Block[]);
+      } catch {
+        setError("Failed to fetch blocks.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchBlocks();
-    }, []);
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  if (blocks.length === 0) {
-    return <div>No blocks available</div>;
-  }
+    fetchBlocks();
+  }, []);
 
   return (
-    <div className="space-y-6">
-      {blocks.map((block) => (
-        <div key={block.id} className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-md font-semibold">{block.name}</h2>
-          <ul className="mt-4 space-y-2">
-            {block.properties.map((property) => (
-              <li key={property.id} className="text-gray-700 text-sm">
-                {property.name}
-              </li>
-            ))}
-          </ul>
+    <section className="space-y-6 rounded-2xl border border-dashboard-border bg-dashboard-surface p-6">
+      <div className="space-y-1">
+        <h2 className="text-xl font-semibold text-dashboard-text">Blocks Overview</h2>
+        <p className="text-sm text-dashboard-muted">Overview of blocks and assigned properties.</p>
+      </div>
+
+      <FormError message={error} />
+      {loading && <p className="text-sm text-dashboard-muted">Loading blocks...</p>}
+
+      {!loading && !error && blocks.length === 0 && (
+        <p className="text-sm text-dashboard-muted">No blocks available.</p>
+      )}
+
+      {!loading && !error && blocks.length > 0 && (
+        <div className="space-y-3">
+          {blocks.map((block) => (
+            <article
+              key={block.id}
+              className="rounded-lg border border-dashboard-border bg-dashboard-surface p-4"
+            >
+              <h3 className="text-base font-semibold text-dashboard-text">{block.name}</h3>
+
+              {block.properties && block.properties.length > 0 ? (
+                <ul className="mt-3 space-y-1">
+                  {block.properties.map((property) => (
+                    <li key={property.id} className="text-sm text-dashboard-muted">
+                      {property.name}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-dashboard-muted">No properties in this block.</p>
+              )}
+            </article>
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+    </section>
   );
 }
