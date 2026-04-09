@@ -10,6 +10,7 @@
  */
 
 import BlocksOverview from "./blocks/BlocksOverview";
+import BlocksManager from "./blocks/BlocksManager";
 
 
 export default function CompanyAdminDashboard() {
@@ -20,7 +21,8 @@ return (
         Company Admin Dashboard
       </h1>
 
-      <BlocksOverview />
+      {/* <BlocksOverview /> */}
+      <BlocksManager />
 
     </div>
   );

@@ -1,30 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import apiClient from "@/utils/api/apiClient";
-import Button from "@/components/ui/Button";
-import FormInput from "@/components/ui/FormInput";
-import FormError from "@/components/ui/FormError";
+import ActionButton from "@/components/ui/ActionButton";
+import { toast } from "sonner";
+
+import AddBlockModal from "./AddblockModal";
+import BlocksTable from "./BlocksTable";
 
 type Block = {
   id: number;
   name: string;
+  comment?: string;
+  properties?: { id: number; name: string }[];
 };
 
 export default function BlocksManager() {
   const [blocks, setBlocks] = useState<Block[]>([]);
-  const [newBlockName, setNewBlockName] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [newBlockName, setNewBlockName] = useState("");
   const [creating, setCreating] = useState(false);
-  const [error, setError] = useState("");
+
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
 
   useEffect(() => {
     const fetchBlocks = async () => {
       try {
-        const response = await apiClient.get("/properties/blocks/");
-        setBlocks(response.data);
+        const res = await apiClient.get("/properties/blocks/");
+        setBlocks(res.data);
       } catch {
-        setError("Failed to fetch blocks.");
+        toast.error("Failed to load blocks.");
       } finally {
         setLoading(false);
       }
@@ -33,84 +44,153 @@ export default function BlocksManager() {
     fetchBlocks();
   }, []);
 
-  const handleCreateBlock = async () => {
+  const handleCreate = async () => {
     const name = newBlockName.trim();
     if (!name) return;
 
     setCreating(true);
-    setError("");
 
     try {
-      const response = await apiClient.post("/properties/blocks/", { name });
-      setBlocks((prev) => [...prev, response.data]);
+      const res = await apiClient.post("/properties/blocks/", { name });
+      setBlocks((prev) => [...prev, res.data]);
       setNewBlockName("");
+      setIsOpen(false);
+      toast.success("Block created successfully.");
     } catch {
-      setError("Failed to create block.");
+      toast.error("Failed to create block.");
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDeleteBlock = async (id: number) => {
-    setError("");
-
+  const handleDelete = async (id: number) => {
     try {
       await apiClient.delete(`/properties/blocks/${id}/`);
-      setBlocks((prev) => prev.filter((block) => block.id !== id));
+      setBlocks((prev) => prev.filter((b) => b.id !== id));
+      setSelectedBlock((prev) => (prev?.id === id ? null : prev));
+      toast.success("Block deleted successfully.");
     } catch {
-      setError("Failed to delete block.");
+      toast.error("Failed to delete block.");
     }
   };
 
+  const handleDetails = async (id: number) => {
+    setDetailsLoading(true);
+
+    try {
+      const response = await apiClient.get(`/properties/blocks/${id}/`);
+      setSelectedBlock(response.data as Block);
+      toast.info("Block details loaded.");
+    } catch {
+      const fallback = blocks.find((block) => block.id === id) ?? null;
+      setSelectedBlock(fallback);
+      toast.error("Detailed data is not available right now.");
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const handleEditStart = (block: Block) => {
+    setEditingId(block.id);
+    setEditName(block.name);
+  };
+
+  const handleSave = async (id: number) => {
+    try {
+      await apiClient.put(`/properties/blocks/${id}/`, {
+        name: editName,
+      });
+
+      setBlocks((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, name: editName } : b))
+      );
+      setEditingId(null);
+      toast.success("Block updated successfully.");
+    } catch {
+      toast.error("Failed to update block.");
+    }
+  };
+
+  if (loading) {
+    return <p className="text-sm text-dashboard-muted">Loading blocks...</p>;
+  }
+
   return (
-    <section className="space-y-6 rounded-2xl border border-dashboard-border bg-dashboard-surface p-6">
-      <div className="space-y-1">
-        <h2 className="text-xl font-semibold text-dashboard-text">Blocks Manager</h2>
-        <p className="text-sm text-dashboard-muted">Create and manage property blocks.</p>
-      </div>
+    <section className="space-y-6 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
+      {/* HEADER */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-dashboard-text">Blocks</h1>
+          <p className="text-sm text-dashboard-muted">Manage your property blocks.</p>
+        </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <FormInput
-          placeholder="Enter block name"
-          value={newBlockName}
-          onChange={(e) => setNewBlockName(e.target.value)}
-          onFocus={() => setError("")}
-        />
-
-        <Button
-          onClick={handleCreateBlock}
-          disabled={creating || !newBlockName.trim()}
-          className="w-full sm:w-auto sm:min-w-[150px] border border-dashboard-border bg-dashboard-surface text-dashboard-text hover:bg-dashboard-hover disabled:opacity-60"
+        <ActionButton
+          onClick={() => setIsOpen(true)}
+          variant="neutral"
+          fullWidth
+          className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
         >
-          {creating ? "Creating..." : "Create"}
-        </Button>
+          <Plus size={16} />
+          Add Block
+        </ActionButton>
       </div>
 
-      <FormError message={error} />
-      {loading && <p className="text-sm text-dashboard-muted">Loading blocks...</p>}
+      {/* TABLE */}
+      <BlocksTable
+        blocks={blocks}
+        editingId={editingId}
+        editName={editName}
+        setEditName={setEditName}
+        onEditStart={handleEditStart}
+        onDetails={handleDetails}
+        onSave={handleSave}
+        onDelete={handleDelete}
+      />
 
-      {!loading && blocks.length === 0 && (
-        <p className="text-sm text-dashboard-muted">No blocks available.</p>
+      {(selectedBlock || detailsLoading) && (
+        <section className="space-y-3 rounded-lg border border-dashboard-border bg-dashboard-surface p-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-dashboard-text">Block Details</h2>
+            {selectedBlock && (
+              <span className="text-xs text-dashboard-muted">ID: {selectedBlock.id}</span>
+            )}
+          </div>
+
+          {detailsLoading && (
+            <p className="text-xs text-dashboard-muted">Loading block details...</p>
+          )}
+
+          {!detailsLoading && selectedBlock && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-dashboard-text">{selectedBlock.name}</p>
+
+              {selectedBlock.properties && selectedBlock.properties.length > 0 ? (
+                <ul className="space-y-1">
+                  {selectedBlock.properties.map((property) => (
+                    <li key={property.id} className="text-xs text-dashboard-muted">
+                      {property.name}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-dashboard-muted">
+                  No property details available for this block.
+                </p>
+              )}
+            </div>
+          )}
+        </section>
       )}
 
-      {!loading && blocks.length > 0 && (
-        <ul className="space-y-2">
-          {blocks.map((block) => (
-            <li
-              key={block.id}
-              className="flex items-center justify-between rounded-lg border border-dashboard-border bg-dashboard-surface px-3 py-2"
-            >
-              <span className="text-sm font-medium text-dashboard-text">{block.name}</span>
-              <Button
-                onClick={() => handleDeleteBlock(block.id)}
-                className="w-auto min-w-0 rounded-md border border-dashboard-border bg-transparent px-3 py-1 text-xs font-medium text-dashboard-text hover:bg-dashboard-hover"
-              >
-                Delete
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {/* MODAL */}
+      <AddBlockModal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        onCreate={handleCreate}
+        value={newBlockName}
+        setValue={setNewBlockName}
+        loading={creating}
+      />
     </section>
   );
 }
