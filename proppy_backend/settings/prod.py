@@ -1,14 +1,30 @@
 import os
+import re
+from urllib.parse import urlparse
 
 from .base import *
 
 
 def _split_env_list(name: str) -> list[str]:
     raw = os.getenv(name, "")
-    return [item.strip() for item in raw.split(",") if item.strip()]
+    return [item.strip() for item in re.split(r"[,\n]+", raw) if item.strip()]
+
+
+def _normalize_origin(origin: str) -> str:
+    if origin.startswith(("http://", "https://")):
+        return origin
+    return f"https://{origin}"
+
+
+def _normalize_host(host: str) -> str:
+    value = host.strip()
+    if "://" in value:
+        parsed = urlparse(value)
+        value = parsed.netloc or parsed.path
+    return value.split("/")[0]
 
 DEBUG = False
-ALLOWED_HOSTS = _split_env_list("ALLOWED_HOSTS")
+ALLOWED_HOSTS = [_normalize_host(item) for item in _split_env_list("ALLOWED_HOSTS")]
 
 DATABASES = {
     'default': {
@@ -21,9 +37,9 @@ DATABASES = {
     }
 }
 
-CORS_ALLOWED_ORIGINS = _split_env_list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOWED_ORIGINS = [_normalize_origin(item) for item in _split_env_list("CORS_ALLOWED_ORIGINS")]
 
-CSRF_TRUSTED_ORIGINS = _split_env_list("CSRF_TRUSTED_ORIGINS")
+CSRF_TRUSTED_ORIGINS = [_normalize_origin(item) for item in _split_env_list("CSRF_TRUSTED_ORIGINS")]
 
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "True").lower() == "true"
