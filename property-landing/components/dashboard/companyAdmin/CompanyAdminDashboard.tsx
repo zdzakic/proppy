@@ -17,9 +17,9 @@ export default function CompanyAdminDashboard() {
 return (
     <div className="space-y-6">
 
-      <h1 className="text-2xl font-semibold">
+      {/* <h1 className="text-2xl font-semibold">
         Company Admin Dashboard
-      </h1>
+      </h1> */}
 
       {/* <BlocksOverview /> */}
       <BlocksManager />

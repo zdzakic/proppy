@@ -121,7 +121,7 @@ export default function BlocksManager() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-xl font-semibold text-dashboard-text">Blocks</h1>
-          <p className="text-sm text-dashboard-muted">Manage your property blocks.</p>
+          {/* <p className="text-sm text-dashboard-muted">Manage your property blocks.</p> */}
         </div>
 
         <ActionButton
