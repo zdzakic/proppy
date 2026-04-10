@@ -1,8 +1,7 @@
 from django.urls import path
 from .views import (
-    BlockListAPIView,
-    BlockCreateAPIView,
-    BlockDeleteAPIView,
+    BlockListCreateAPIView,
+    BlockRetrieveUpdateDestroyAPIView,
     PropertyListAPIView,
     PropertyCreateAPIView,
     PropertyUpdateAPIView,
@@ -17,9 +16,8 @@ from .views import (
 
 
 urlpatterns = [
-    path('blocks/', BlockListAPIView.as_view(), name='block-list'),
-    path('blocks/create/', BlockCreateAPIView.as_view(), name='block-create'),
-    path('blocks/<int:pk>/delete/', BlockDeleteAPIView.as_view(), name='block-delete'),
+    path('blocks/', BlockListCreateAPIView.as_view(), name='block-list'),
+    path('blocks/<int:pk>/', BlockRetrieveUpdateDestroyAPIView.as_view(), name='block-detail'),
     path(
         'blocks/<int:block_id>/properties/create/',
         PropertyCreateAPIView.as_view(),

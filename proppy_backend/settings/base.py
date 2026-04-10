@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -6,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 AUTH_USER_MODEL = 'users.User'
 
 # secret key
-SECRET_KEY = 'sdh232KV_23232mpqfjjjwsdsd62323__hd'
+SECRET_KEY = os.getenv('SECRET_KEY', 'dev-insecure-key-change-me')
 
 
 INSTALLED_APPS = [

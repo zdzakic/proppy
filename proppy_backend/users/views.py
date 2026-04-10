@@ -1,3 +1,5 @@
+import os
+
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -193,7 +195,8 @@ class PasswordResetRequestView(APIView):
             # Generate secure token and UID for password reset
             token = PasswordResetTokenGenerator().make_token(user)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
-            reset_link = f"http://localhost:3000/reset-password/{uid}/{token}/"
+            frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+            reset_link = f"{frontend_url}/reset-password/{uid}/{token}/"
 
             # Send reset email to console (for development; configure EMAIL_BACKEND in settings)
             send_mail(

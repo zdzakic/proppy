@@ -52,13 +52,30 @@ class CompanyAdminScopedMixin:
             block__company_id__in=company_ids,
         )
 
+    def resolve_single_admin_company(self):
+        """
+        Resolve company from COMPANYADMIN scope when request body does not include it.
+        """
+        admin_roles = UserRookeryRole.objects.filter(
+            user=self.request.user,
+            role__code="COMPANYADMIN",
+        ).select_related("company")
 
-class BlockListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
+        if not admin_roles.exists():
+            raise PermissionDenied("You are not assigned as COMPANYADMIN.")
+
+        if admin_roles.count() > 1:
+            raise PermissionDenied("Company is required when you manage multiple companies.")
+
+        return admin_roles.first().company
+
+
+class BlockListCreateAPIView(CompanyAdminScopedMixin, generics.ListCreateAPIView):
     """
     Returns blocks for companies where user is COMPANYADMIN.
 
-    WHY ListAPIView:    
-    - read-only endpoint
+    WHY ListCreateAPIView:
+    - list + create on one endpoint
     - minimal code
     - DRF handles everything else
     """
@@ -74,46 +91,45 @@ class BlockListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
             "properties__owners__user",
         )
 
+    def perform_create(self, serializer):
+        company = serializer.validated_data.get("company")
 
-class BlockCreateAPIView(generics.CreateAPIView):
+        if company is None:
+            company = self.resolve_single_admin_company()
+
+        serializer.save(company=company)
+
+
+class BlockRetrieveUpdateDestroyAPIView(CompanyAdminScopedMixin, generics.RetrieveUpdateDestroyAPIView):
     """
-    Create Block.
-
-    WHY CreateAPIView:
-    - standard DRF create flow
-    - minimal codes
-    - serializer handles validation
-
-    RULES:
-    - only COMPANYADMIN
-    - only inside own company
+    REST-style block endpoint used by frontend:
+    - GET    /blocks/{id}/
+    - PUT    /blocks/{id}/
+    - DELETE /blocks/{id}/
     """
 
     serializer_class = BlockSerializer
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
 
+    def get_queryset(self):
+        company_ids = self.get_admin_company_ids()
+        return Block.objects.filter(company_id__in=company_ids).prefetch_related(
+            "properties",
+            "properties__owners",
+            "properties__owners__user",
+        )
 
-class BlockDeleteAPIView(generics.DestroyAPIView):
-    """
-    Delete Block.
-
-    RULES:
-    - only COMPANYADMIN
-    - only within user's company
-    """
-
-    queryset = Block.objects.all()
-    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+    def perform_update(self, serializer):
+        # Keep existing company on update unless explicit value is provided and validated.
+        serializer.save()
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         block_id = instance.id
-        
         self.perform_destroy(instance)
-
         return Response(
-            {"message": f"Block {block_id} deleted successfully"}, 
-            status=status.HTTP_200_OK
+            {"message": f"Block {block_id} deleted successfully"},
+            status=status.HTTP_200_OK,
         )
 
 

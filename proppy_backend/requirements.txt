@@ -4,9 +4,11 @@ django-cors-headers==4.7.0
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 dotenv==0.9.9
+gunicorn==25.3.0
 iniconfig==2.3.0
 packaging==26.0
 pluggy==1.6.0
+psycopg2-binary==2.9.11
 Pygments==2.19.2
 PyJWT==2.9.0
 pytest==9.0.2

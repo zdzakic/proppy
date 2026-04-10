@@ -51,7 +51,7 @@ def test_company_admin_can_create_block():
 
     client.force_authenticate(user=user)
 
-    response = client.post("/api/properties/blocks/create/", {
+    response = client.post("/api/properties/blocks/", {
         "name": "Block A",
         "company": company.id
     })
@@ -74,7 +74,7 @@ def test_non_admin_cannot_create_block():
 
     client.force_authenticate(user=user)
 
-    response = client.post("/api/properties/blocks/create/", {
+    response = client.post("/api/properties/blocks/", {
         "name": "Block X",
         "company": company.id
     })
@@ -100,7 +100,7 @@ def test_admin_cannot_create_block_in_other_company():
 
     client.force_authenticate(user=user)
 
-    response = client.post("/api/properties/blocks/create/", {
+    response = client.post("/api/properties/blocks/", {
         "name": "Block X",
         "company": company2.id
     })
@@ -127,7 +127,7 @@ def test_company_admin_can_delete_block():
 
     client.force_authenticate(user=user)
 
-    response = client.delete(f"/api/properties/blocks/{block.id}/delete/")
+    response = client.delete(f"/api/properties/blocks/{block.id}/")
 
     assert response.status_code == 200
     assert "deleted successfully" in response.data["message"]
@@ -147,7 +147,7 @@ def test_non_admin_cannot_delete_block():
 
     client.force_authenticate(user=user)
 
-    response = client.delete(f"/api/properties/blocks/{block.id}/delete/")
+    response = client.delete(f"/api/properties/blocks/{block.id}/")
 
     assert response.status_code == 403
 
@@ -172,10 +172,9 @@ def test_admin_cannot_delete_block_from_other_company():
 
     client.force_authenticate(user=user)
 
-    response = client.delete(f"/api/properties/blocks/{block.id}/delete/")
+    response = client.delete(f"/api/properties/blocks/{block.id}/")
 
-    assert response.status_code == 403
-    assert response.data["detail"] == "Only company admins allowed."
+    assert response.status_code == 404
 
 @pytest.mark.django_db
 def test_delete_non_existing_block():
@@ -193,7 +192,7 @@ def test_delete_non_existing_block():
 
     client.force_authenticate(user=user)
 
-    response = client.delete("/api/properties/blocks/999/delete/")
+    response = client.delete("/api/properties/blocks/999/")
 
     assert response.status_code == 404
 
@@ -215,13 +214,13 @@ def test_company_admin_can_create_multiple_blocks():
     client.force_authenticate(user=user)
 
     # prvi block
-    response1 = client.post("/api/properties/blocks/create/", {
+    response1 = client.post("/api/properties/blocks/", {
         "name": "Block A",
         "company": company.id
     })
 
     # drugi block
-    response2 = client.post("/api/properties/blocks/create/", {
+    response2 = client.post("/api/properties/blocks/", {
         "name": "Block B",
         "company": company.id
     })
@@ -230,6 +229,108 @@ def test_company_admin_can_create_multiple_blocks():
     assert response2.status_code == 201
 
     assert Block.objects.count() == 2
+
+
+@pytest.mark.django_db
+def test_company_admin_can_create_block_without_company_when_single_company_admin():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin-single@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    company = Company.objects.create(name="Only Company")
+
+    UserRookeryRole.objects.create(user=user, company=company, role=role)
+
+    client.force_authenticate(user=user)
+
+    response = client.post("/api/properties/blocks/", {"name": "Block Solo"}, format="json")
+
+    assert response.status_code == 201
+    assert response.data["name"] == "Block Solo"
+    assert response.data["company"] == company.id
+
+
+@pytest.mark.django_db
+def test_company_admin_must_send_company_when_admin_of_multiple_companies():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin-multi@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    company1 = Company.objects.create(name="Company 1")
+    company2 = Company.objects.create(name="Company 2")
+
+    UserRookeryRole.objects.create(user=user, company=company1, role=role)
+    UserRookeryRole.objects.create(user=user, company=company2, role=role)
+
+    client.force_authenticate(user=user)
+
+    response = client.post("/api/properties/blocks/", {"name": "Block Ambiguous"}, format="json")
+
+    assert response.status_code == 403
+    assert response.data["detail"] == "Company is required when you manage multiple companies."
+
+
+@pytest.mark.django_db
+def test_company_admin_can_retrieve_block_detail():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin-detail@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    company = Company.objects.create(name="Detail Company")
+
+    UserRookeryRole.objects.create(user=user, company=company, role=role)
+    block = Block.objects.create(name="Detail Block", company=company, comment="Core detail")
+
+    client.force_authenticate(user=user)
+
+    response = client.get(f"/api/properties/blocks/{block.id}/")
+
+    assert response.status_code == 200
+    assert response.data["id"] == block.id
+    assert response.data["name"] == "Detail Block"
+    assert response.data["comment"] == "Core detail"
+
+
+@pytest.mark.django_db
+def test_admin_gets_404_for_block_detail_from_other_company():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin-detail-scope@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    own_company = Company.objects.create(name="Own Company")
+    other_company = Company.objects.create(name="Other Company")
+
+    UserRookeryRole.objects.create(user=user, company=own_company, role=role)
+    other_block = Block.objects.create(name="Other Block", company=other_company)
+
+    client.force_authenticate(user=user)
+
+    response = client.get(f"/api/properties/blocks/{other_block.id}/")
+
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_company_admin_can_update_block_name():
+    client = APIClient()
+
+    user = User.objects.create_user(email="admin@test.com", password="1234")
+    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    company = Company.objects.create(name="Test Company")
+
+    UserRookeryRole.objects.create(user=user, company=company, role=role)
+    block = Block.objects.create(name="Block Old", company=company)
+
+    client.force_authenticate(user=user)
+
+    response = client.patch(
+        f"/api/properties/blocks/{block.id}/",
+        {"name": "Block New"},
+        format="json",
+    )
+
+    assert response.status_code == 200
+    assert response.data["name"] == "Block New"
 
 
 @pytest.mark.django_db
