@@ -58,7 +58,10 @@ class AuthTests(TestCase):
         """
 
         # create role
-        role = Role.objects.create(code="COMPANYADMIN", name="Company Admin")
+        role, _ = Role.objects.get_or_create(
+            code="COMPANYADMIN",
+            defaults={"name": "Company Admin"},
+        )
 
         # create user
         user = User.objects.create_user(

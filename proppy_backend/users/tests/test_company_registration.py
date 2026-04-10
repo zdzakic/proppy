@@ -22,9 +22,9 @@ class RegisterCompanyTests(TestCase):
         self.client = APIClient()
 
         # ensure role exists
-        self.role = Role.objects.create(
+        self.role, _ = Role.objects.get_or_create(
             code="COMPANYADMIN",
-            name="Company Admin"
+            defaults={"name": "Company Admin"},
         )
 
     # --------------------------------------------------
@@ -135,3 +135,22 @@ class RegisterCompanyTests(TestCase):
 
         data = response.json()
         self.assertIn("company_name", data)
+
+    def test_register_company_creates_companyadmin_role_if_missing(self):
+        Role.objects.all().delete()
+
+        payload = {
+            "email": "auto-role@test.com",
+            "password": "Test123!",
+            "password_confirm": "Test123!",
+            "company_name": "Auto Role Company"
+        }
+
+        response = self.client.post(
+            "/api/users/register-company/",
+            payload,
+            format="json"
+        )
+
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(Role.objects.filter(code="COMPANYADMIN").exists())

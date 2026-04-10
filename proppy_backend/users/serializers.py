@@ -127,7 +127,10 @@ class RegisterCompanySerializer(serializers.Serializer):
             )
 
             # 3. ROLE
-            role = Role.objects.get(code="COMPANYADMIN")
+            role, _ = Role.objects.get_or_create(
+                code="COMPANYADMIN",
+                defaults={"name": "Company Admin"},
+            )
 
             # 4. LINK
             UserRookeryRole.objects.create(

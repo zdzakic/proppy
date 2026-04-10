@@ -105,7 +105,7 @@ return (
             <div className="space-y-2 text-sm">
 
                 <Link
-                href="/register/owner"
+                href="/register"
                 className="
                     block px-3 py-2 rounded-lg
                     text-brand-text dark:text-brand-text
@@ -234,7 +234,7 @@ return (
                 <div className="h-px bg-white/20"></div>
 
                 <HeaderLink
-                    href="/register/owner"
+                    href="/register"
                     scrolled={scrolled}
                     onClick={() => setOpen(false)}
                     className="block"
@@ -243,7 +243,7 @@ return (
                 </HeaderLink>
 
                <HeaderLink
-                    href="/register/manager"
+                    href="/register"
                     scrolled={scrolled}
                     onClick={() => setOpen(false)}
                     className="block"
