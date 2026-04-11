@@ -93,8 +93,8 @@ const dashboardSidebarByRole: Record<AppRole, DashboardMenuItemConfig[]> = {
 };
 
 const commonUserMenuItems: DashboardMenuItemConfig[] = [
-  { label: "Profile", icon: User },
-  { label: "Settings", icon: Settings },
+  { label: "Profile", href: ROUTES.DASHBOARD_PAGES.PROFILE, icon: User },
+  { label: "Settings", href: ROUTES.DASHBOARD_PAGES.SETTINGS, icon: Settings },
   {
     label: "Logout",
     action: "logout",
