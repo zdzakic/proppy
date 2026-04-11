@@ -12,6 +12,7 @@ from .serializers import BlockSerializer, PropertySerializer, PropertyOwnerSeria
 from .permissions import IsCompanyAdmin
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
+from core.pagination import OptionalPageNumberPagination
 
 
 User = get_user_model()
@@ -31,7 +32,7 @@ class CompanyAdminScopedMixin:
 
     def get_properties_queryset(self, *, block_id=None, with_owners_prefetch=True):
         company_ids = self.get_admin_company_ids()
-        qs = Property.objects.filter(block__company_id__in=company_ids)
+        qs = Property.objects.filter(block__company_id__in=company_ids).order_by("id")
         if with_owners_prefetch:
             qs = qs.prefetch_related("owners", "owners__user")
         if block_id:
@@ -82,6 +83,7 @@ class BlockListCreateAPIView(CompanyAdminScopedMixin, generics.ListCreateAPIView
 
     serializer_class = BlockSerializer
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+    pagination_class = OptionalPageNumberPagination
 
     def get_queryset(self):
         company_ids = self.get_admin_company_ids()
@@ -89,7 +91,7 @@ class BlockListCreateAPIView(CompanyAdminScopedMixin, generics.ListCreateAPIView
             "properties",
             "properties__owners",
             "properties__owners__user",
-        )
+        ).order_by("id")
 
     def perform_create(self, serializer):
         company = serializer.validated_data.get("company")
@@ -139,6 +141,7 @@ class PropertyListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
     """
     serializer_class = PropertySerializer
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+    pagination_class = OptionalPageNumberPagination
 
     def get_queryset(self):
         block_id = self.kwargs.get('block_id')
@@ -203,6 +206,7 @@ class PropertyDestroyAPIView(CompanyAdminScopedMixin, generics.DestroyAPIView):
 class PropertyOwnerListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
     serializer_class = PropertyOwnerSerializer
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+    pagination_class = OptionalPageNumberPagination
 
     def get_queryset(self):
         prop = self.get_property_for_scope()

@@ -19,6 +19,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.core.mail import send_mail
+from core.pagination import OptionalPageNumberPagination
 
 
 User = get_user_model()
@@ -152,6 +153,7 @@ class CompanyListView(ListAPIView):
 
     serializer_class = CompanySerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = OptionalPageNumberPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -161,7 +163,7 @@ class CompanyListView(ListAPIView):
             role__code="COMPANYADMIN"
         ).values_list("company_id", flat=True)
 
-        return Company.objects.filter(id__in=company_ids)
+        return Company.objects.filter(id__in=company_ids).order_by("id")
 
 
 

@@ -36,6 +36,39 @@ def test_company_admin_can_see_blocks():
 
 
 @pytest.mark.django_db
+def test_blocks_list_optional_pagination_behavior():
+    client = APIClient()
+
+    user = User.objects.create_user(email="pagination@test.com", password="1234")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
+    company = Company.objects.create(name="Pagination Company")
+
+    UserRookeryRole.objects.create(
+        user=user,
+        company=company,
+        role=role,
+    )
+
+    for i in range(25):
+        Block.objects.create(name=f"Block {i}", company=company)
+
+    client.force_authenticate(user=user)
+
+    # Backward compatible mode: no `page` param => plain array.
+    response = client.get("/api/properties/blocks/")
+    assert response.status_code == 200
+    assert isinstance(response.data, list)
+    assert len(response.data) == 25
+
+    # Opt-in pagination mode: with `page` param => paginated payload.
+    paged_response = client.get("/api/properties/blocks/?page=1")
+    assert paged_response.status_code == 200
+    assert isinstance(paged_response.data, dict)
+    assert paged_response.data["count"] == 25
+    assert len(paged_response.data["results"]) == 20
+
+
+@pytest.mark.django_db
 def test_company_admin_can_create_block():
     client = APIClient()
 
