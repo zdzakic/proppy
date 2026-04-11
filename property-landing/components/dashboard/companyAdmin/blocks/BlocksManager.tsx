@@ -10,9 +10,11 @@ import type { CreatePropertyResponse } from "@/types/property";
 import AddBlockModal from "./AddblockModal";
 import AddPropertyModal from "./AddPropertyModal";
 import BlocksTable from "./BlocksTable";
-import EditPropertyModal from "./EditPropertyModal";
-import PropertiesTable from "./PropertiesTable";
-import PropertyDetailsModal from "./PropertyDetailsModal";
+import DeleteBlockModal from "./DeleteBlockModal";
+import EditBlockModal from "./EditBlockModal";
+import EditPropertyModal from "../properties/EditPropertyModal";
+import PropertiesTable from "../properties/PropertiesTable";
+import PropertyDetailsModal from "../properties/PropertyDetailsModal";
 
 type Block = {
   id: number;
@@ -43,8 +45,13 @@ export default function BlocksManager() {
   const [newBlockName, setNewBlockName] = useState("");
   const [creating, setCreating] = useState(false);
 
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editName, setEditName] = useState("");
+  const [selectedEditBlock, setSelectedEditBlock] = useState<Block | null>(null);
+  const [isEditBlockModalOpen, setIsEditBlockModalOpen] = useState(false);
+  const [isEditBlockSaving, setIsEditBlockSaving] = useState(false);
+  const [editBlockError, setEditBlockError] = useState<string | null>(null);
+  const [pendingDeleteBlock, setPendingDeleteBlock] = useState<Block | null>(null);
+  const [isDeleteBlockModalOpen, setIsDeleteBlockModalOpen] = useState(false);
+  const [isDeletingBlock, setIsDeletingBlock] = useState(false);
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
@@ -88,14 +95,28 @@ export default function BlocksManager() {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDeleteRequest = (id: number) => {
+    const block = blocks.find((item) => item.id === id) ?? null;
+    setPendingDeleteBlock(block);
+    setIsDeleteBlockModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!pendingDeleteBlock) return;
+
+    setIsDeletingBlock(true);
+
     try {
-      await apiClient.delete(`/properties/blocks/${id}/`);
-      setBlocks((prev) => prev.filter((b) => b.id !== id));
-      setSelectedBlock((prev) => (prev?.id === id ? null : prev));
+      await apiClient.delete(`/properties/blocks/${pendingDeleteBlock.id}/`);
+      setBlocks((prev) => prev.filter((b) => b.id !== pendingDeleteBlock.id));
+      setSelectedBlock((prev) => (prev?.id === pendingDeleteBlock.id ? null : prev));
+      setPendingDeleteBlock(null);
+      setIsDeleteBlockModalOpen(false);
       toast.success("Block deleted successfully.");
     } catch {
       toast.error("Failed to delete block.");
+    } finally {
+      setIsDeletingBlock(false);
     }
   };
 
@@ -115,8 +136,9 @@ export default function BlocksManager() {
   };
 
   const handleEditStart = (block: Block) => {
-    setEditingId(block.id);
-    setEditName(block.name);
+    setEditBlockError(null);
+    setSelectedEditBlock(block);
+    setIsEditBlockModalOpen(true);
   };
 
   const handleOpenPropertyModal = (block: Block) => {
@@ -124,19 +146,48 @@ export default function BlocksManager() {
     setIsPropertyModalOpen(true);
   };
 
-  const handleSave = async (id: number) => {
+  const handleSave = async (payload: { name: string }) => {
+    if (!selectedEditBlock) return;
+
+    setIsEditBlockSaving(true);
+    setEditBlockError(null);
+
     try {
-      await apiClient.put(`/properties/blocks/${id}/`, {
-        name: editName,
+      await apiClient.put(`/properties/blocks/${selectedEditBlock.id}/`, {
+        name: payload.name,
       });
 
       setBlocks((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, name: editName } : b))
+        prev.map((b) =>
+          b.id === selectedEditBlock.id ? { ...b, name: payload.name } : b
+        )
       );
-      setEditingId(null);
+
+      setSelectedBlock((prev) => {
+        if (!prev || prev.id !== selectedEditBlock.id) return prev;
+        return { ...prev, name: payload.name };
+      });
+
+      setSelectedEditBlock((prev) => (prev ? { ...prev, name: payload.name } : prev));
+      setIsEditBlockModalOpen(false);
       toast.success("Block updated successfully.");
-    } catch {
-      toast.error("Failed to update block.");
+    } catch (error: unknown) {
+      const maybeError = error as {
+        response?: {
+          data?: {
+            detail?: string;
+            message?: string;
+          };
+        };
+      };
+
+      setEditBlockError(
+        maybeError.response?.data?.detail ||
+          maybeError.response?.data?.message ||
+          "Failed to update block."
+      );
+    } finally {
+      setIsEditBlockSaving(false);
     }
   };
 
@@ -307,14 +358,10 @@ export default function BlocksManager() {
 
         <BlocksTable
           blocks={blocks}
-          editingId={editingId}
-          editName={editName}
-          setEditName={setEditName}
           onEditStart={handleEditStart}
           onAddProperty={handleOpenPropertyModal}
           onDetails={handleDetails}
-          onSave={handleSave}
-          onDelete={handleDelete}
+          onDelete={handleDeleteRequest}
         />
       </section>
 
@@ -375,6 +422,26 @@ export default function BlocksManager() {
         blockName={selectedBlock?.name}
         onClose={() => setIsPropertyModalOpen(false)}
         onCreated={handlePropertyCreated}
+      />
+
+      <DeleteBlockModal
+        isOpen={isDeleteBlockModalOpen}
+        block={pendingDeleteBlock}
+        isDeleting={isDeletingBlock}
+        onClose={() => {
+          setIsDeleteBlockModalOpen(false);
+          setPendingDeleteBlock(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+      />
+
+      <EditBlockModal
+        isOpen={isEditBlockModalOpen}
+        block={selectedEditBlock}
+        isSaving={isEditBlockSaving}
+        error={editBlockError}
+        onSave={handleSave}
+        onClose={() => setIsEditBlockModalOpen(false)}
       />
 
       <PropertyDetailsModal

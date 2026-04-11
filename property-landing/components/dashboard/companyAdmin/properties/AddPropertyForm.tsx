@@ -73,9 +73,6 @@ export default function AddPropertyForm({
     >
       <div>
         <h2 className="text-lg font-semibold text-dashboard-text">Add Property</h2>
-        <p className="text-sm text-dashboard-muted">
-          Fill in the fields supported by the current backend contract.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

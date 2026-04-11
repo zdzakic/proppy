@@ -1,6 +1,12 @@
 "use client";
 
-import { Eye, Pencil, Plus, Save, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import {
+  sortByNumber,
+  sortByString,
+  type SortDirection,
+} from "@/utils/table/sorting";
 
 type Block = {
   id: number;
@@ -11,27 +17,55 @@ type Block = {
 
 type Props = {
   blocks: Block[];
-  editingId: number | null;
-  editName: string;
-  setEditName: (v: string) => void;
   onEditStart: (block: Block) => void;
   onAddProperty: (block: Block) => void;
   onDetails: (id: number) => void;
-  onSave: (id: number) => void;
   onDelete: (id: number) => void;
 };
 
+type SortKey = "name" | "properties" | "comment";
+
 export default function BlocksTable({
   blocks,
-  editingId,
-  editName,
-  setEditName,
   onEditStart,
   onAddProperty,
   onDetails,
-  onSave,
   onDelete,
 }: Props) {
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  const sortedBlocks = useMemo(() => {
+    if (sortKey === "name") {
+      return sortByString(blocks, (block) => block.name, sortDirection);
+    }
+
+    if (sortKey === "properties") {
+      return sortByNumber(
+        blocks,
+        (block) => block.properties?.length ?? 0,
+        sortDirection
+      );
+    }
+
+    return sortByString(blocks, (block) => block.comment, sortDirection);
+  }, [blocks, sortDirection, sortKey]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(key);
+    setSortDirection("asc");
+  };
+
+  const getSortIndicator = (key: SortKey) => {
+    if (sortKey !== key) return "";
+    return sortDirection === "asc" ? "↑" : "↓";
+  };
+
   const stopRowClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
   };
@@ -47,7 +81,7 @@ export default function BlocksTable({
   return (
     <div className="space-y-2">
       <div className="space-y-2 md:hidden">
-        {blocks.map((block) => (
+        {sortedBlocks.map((block) => (
           <article
             key={block.id}
             className="cursor-pointer rounded-lg border border-dashboard-border bg-dashboard-surface p-3 transition-colors hover:bg-dashboard-hover"
@@ -63,16 +97,7 @@ export default function BlocksTable({
             aria-label={`Open details for ${block.name}`}
           >
             <div className="space-y-2">
-              {editingId === block.id ? (
-                <input
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  onClick={stopRowClick}
-                  className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-2.5 py-1.5 text-xs text-dashboard-text focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-                />
-              ) : (
-                <p className="text-sm font-semibold leading-tight text-dashboard-text">{block.name}</p>
-              )}
+              <p className="text-sm font-semibold leading-tight text-dashboard-text">{block.name}</p>
 
               <p className="text-xs text-dashboard-muted">
                 Properties: {block.properties?.length ?? 0}
@@ -107,30 +132,17 @@ export default function BlocksTable({
                   <Eye size={12} />
                 </button>
 
-                {editingId === block.id ? (
-                  <button
-                    onClick={(event) => {
-                      stopRowClick(event);
-                      onSave(block.id);
-                    }}
-                    className="inline-flex items-center gap-1 rounded-md border border-brand-primary bg-brand-primary px-2.5 py-1 text-[11px] font-medium text-white transition-opacity hover:opacity-90"
-                  >
-                    <Save size={12} />
-                    Save
-                  </button>
-                ) : (
-                  <button
-                    onClick={(event) => {
-                      stopRowClick(event);
-                      onEditStart(block);
-                    }}
-                    title="Edit block"
-                    aria-label="Edit block"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
-                  >
-                    <Pencil size={12} />
-                  </button>
-                )}
+                <button
+                  onClick={(event) => {
+                    stopRowClick(event);
+                    onEditStart(block);
+                  }}
+                  title="Edit block"
+                  aria-label="Edit block"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
+                >
+                  <Pencil size={12} />
+                </button>
 
                 <button
                   onClick={(event) => {
@@ -150,34 +162,65 @@ export default function BlocksTable({
       </div>
 
       <div className="hidden overflow-x-auto rounded-lg border border-dashboard-border md:block">
-        <table className="w-full text-xs">
+        <table className="w-full table-fixed text-xs">
+          <colgroup>
+            <col className="w-[32%]" />
+            <col className="w-[18%]" />
+            <col className="w-[30%]" />
+            <col className="w-[20%]" />
+          </colgroup>
+
           <thead className="bg-dashboard-hover text-left text-dashboard-muted">
             <tr>
-              <th className="px-3 py-2 font-medium">Name</th>
-              <th className="px-3 py-2 font-medium">Properties</th>
-              <th className="px-3 py-2 font-medium">Comment</th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort("name")}
+                  className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                >
+                  <span>Name</span>
+                  <span className="inline-flex w-4 justify-center text-dashboard-text">
+                    {getSortIndicator("name")}
+                  </span>
+                </button>
+              </th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort("properties")}
+                  className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                >
+                  <span>Properties</span>
+                  <span className="inline-flex w-4 justify-center text-dashboard-text">
+                    {getSortIndicator("properties")}
+                  </span>
+                </button>
+              </th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort("comment")}
+                  className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                >
+                  <span>Comment</span>
+                  <span className="inline-flex w-4 justify-center text-dashboard-text">
+                    {getSortIndicator("comment")}
+                  </span>
+                </button>
+              </th>
               <th className="px-3 py-2 text-right font-medium">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {blocks.map((block) => (
+            {sortedBlocks.map((block) => (
               <tr
                 key={block.id}
                 className="cursor-pointer border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
                 onClick={() => onDetails(block.id)}
               >
                 <td className="px-3 py-2">
-                  {editingId === block.id ? (
-                    <input
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      onClick={stopRowClick}
-                      className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-2.5 py-1.5 text-xs text-dashboard-text focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-                    />
-                  ) : (
-                    <span className="font-medium text-dashboard-text">{block.name}</span>
-                  )}
+                  <span className="font-medium text-dashboard-text">{block.name}</span>
                 </td>
 
                 <td className="px-3 py-2 text-dashboard-muted">
@@ -214,30 +257,17 @@ export default function BlocksTable({
                       <Eye size={12} />
                     </button>
 
-                    {editingId === block.id ? (
-                      <button
-                        onClick={(event) => {
-                          stopRowClick(event);
-                          onSave(block.id);
-                        }}
-                        className="inline-flex items-center gap-1 rounded-md border border-brand-primary bg-brand-primary px-2.5 py-1 text-[11px] font-medium text-white transition-opacity hover:opacity-90"
-                      >
-                        <Save size={12} />
-                        Save
-                      </button>
-                    ) : (
-                      <button
-                        onClick={(event) => {
-                          stopRowClick(event);
-                          onEditStart(block);
-                        }}
-                        title="Edit block"
-                        aria-label="Edit block"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
-                      >
-                        <Pencil size={12} />
-                      </button>
-                    )}
+                    <button
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onEditStart(block);
+                      }}
+                      title="Edit block"
+                      aria-label="Edit block"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
+                    >
+                      <Pencil size={12} />
+                    </button>
 
                     <button
                       onClick={(event) => {

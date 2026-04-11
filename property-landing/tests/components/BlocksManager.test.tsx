@@ -78,11 +78,11 @@ describe("BlocksManager", () => {
 
     await user.click(screen.getAllByLabelText("Edit block")[0]);
 
-    const editInput = screen.getAllByDisplayValue("Block A")[0];
+    const editInput = await screen.findByLabelText("Block Name");
     fireEvent.change(editInput, {
       target: { value: "Block A Updated" },
     });
-    await user.click(screen.getAllByRole("button", { name: /save/i })[0]);
+    await user.click(screen.getByRole("button", { name: /save changes/i }));
 
     await waitFor(() => {
       expect(mockPut).toHaveBeenCalledWith("/properties/blocks/1/", {
@@ -103,6 +103,7 @@ describe("BlocksManager", () => {
     await screen.findAllByText("Block A");
 
     await user.click(screen.getAllByLabelText("Delete block")[0]);
+    await user.click(screen.getByRole("button", { name: /yes, delete block/i }));
 
     await waitFor(() => {
       expect(mockDelete).toHaveBeenCalledWith("/properties/blocks/1/");

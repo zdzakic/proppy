@@ -1,6 +1,12 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
+import {
+  sortByNumber,
+  sortByString,
+  type SortDirection,
+} from "@/utils/table/sorting";
 
 type PropertyRow = {
   id: number;
@@ -15,12 +21,44 @@ type PropertiesTableProps = {
   onDelete: (property: PropertyRow) => void;
 };
 
+type SortKey = "id" | "name" | "comment";
+
 export default function PropertiesTable({
   properties,
   onDetails,
   onEdit,
   onDelete,
 }: PropertiesTableProps) {
+  const [sortKey, setSortKey] = useState<SortKey>("id");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+
+  const sortedProperties = useMemo(() => {
+    if (sortKey === "id") {
+      return sortByNumber(properties, (property) => property.id, sortDirection);
+    }
+
+    if (sortKey === "name") {
+      return sortByString(properties, (property) => property.name, sortDirection);
+    }
+
+    return sortByString(properties, (property) => property.comment, sortDirection);
+  }, [properties, sortDirection, sortKey]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
+      return;
+    }
+
+    setSortKey(key);
+    setSortDirection("asc");
+  };
+
+  const getSortIndicator = (key: SortKey) => {
+    if (sortKey !== key) return "";
+    return sortDirection === "asc" ? "↑" : "↓";
+  };
+
   if (properties.length === 0) {
     return (
       <div className="rounded-lg border border-dashboard-border bg-dashboard-surface p-4 text-center">
@@ -32,7 +70,7 @@ export default function PropertiesTable({
   return (
     <div className="space-y-2">
       <div className="space-y-2 md:hidden">
-        {properties.map((property) => (
+        {sortedProperties.map((property) => (
           <article
             key={property.id}
             className="rounded-lg border border-dashboard-border bg-dashboard-surface p-3 transition-colors hover:bg-dashboard-hover"
@@ -82,18 +120,58 @@ export default function PropertiesTable({
       </div>
 
       <div className="hidden overflow-x-auto rounded-lg border border-dashboard-border md:block">
-        <table className="w-full text-xs">
+        <table className="w-full table-fixed text-xs">
+          <colgroup>
+            <col className="w-[12%]" />
+            <col className="w-[28%]" />
+            <col className="w-[40%]" />
+            <col className="w-[20%]" />
+          </colgroup>
+
           <thead className="bg-dashboard-hover text-left text-dashboard-muted">
             <tr>
-              <th className="px-3 py-2 font-medium">ID</th>
-              <th className="px-3 py-2 font-medium">Name</th>
-              <th className="px-3 py-2 font-medium">Comment</th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort("id")}
+                  className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                >
+                  <span>ID</span>
+                  <span className="inline-flex w-4 justify-center text-dashboard-text">
+                    {getSortIndicator("id")}
+                  </span>
+                </button>
+              </th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort("name")}
+                  className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                >
+                  <span>Name</span>
+                  <span className="inline-flex w-4 justify-center text-dashboard-text">
+                    {getSortIndicator("name")}
+                  </span>
+                </button>
+              </th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort("comment")}
+                  className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                >
+                  <span>Comment</span>
+                  <span className="inline-flex w-4 justify-center text-dashboard-text">
+                    {getSortIndicator("comment")}
+                  </span>
+                </button>
+              </th>
               <th className="px-3 py-2 text-right font-medium">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {properties.map((property) => (
+            {sortedProperties.map((property) => (
               <tr
                 key={property.id}
                 className="border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
