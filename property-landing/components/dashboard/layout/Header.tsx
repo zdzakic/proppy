@@ -19,17 +19,20 @@
  * - centralno mjesto za dashboard actions
  */
 
-import { User } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { useState, useRef } from "react";
-import {useAuth} from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import ThemeToggle from "@/components/theme/ThemeToggle";
 import DashboardMenuItem from "@/components/dashboard/layout/DashboardMenuItem";
 import { getDashboardUserMenuItems } from "@/config/navigation";
 
+type HeaderProps = {
+  onMenuClick?: () => void;
+};
 
-export default function Header() {
+export default function Header({ onMenuClick }: HeaderProps) {
   const [open, setOpen] = useState(false);
-  const closeTimer = useRef<NodeJS.Timeout | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { logout, user } = useAuth();
   const userMenuItems = getDashboardUserMenuItems(user?.roles);
 
@@ -51,17 +54,30 @@ export default function Header() {
         top-0
         z-30
         flex
-        h-24
+        h-20
         items-center
         justify-between
         border-b
         border-dashboard-border
         bg-dashboard-surface
-        px-6
+        px-4
+        sm:px-6
+        md:h-24
       "
     >
-      <div className="text-3xl font-semibold text-dashboard-text">
-        Dashboard
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-dashboard-text hover:bg-dashboard-hover md:hidden"
+          onClick={onMenuClick}
+          aria-label="Toggle sidebar"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+
+        <div className="text-xl font-semibold text-dashboard-text sm:text-2xl md:text-3xl">
+          Dashboard
+        </div>
       </div>
 
       <div className="flex items-center gap-4">
@@ -75,6 +91,7 @@ export default function Header() {
         >
           <button
             type="button"
+            onClick={() => setOpen((prev) => !prev)}
             className="
               flex
               h-10
@@ -115,7 +132,12 @@ export default function Header() {
                       href={item.href}
                       icon={item.icon}
                       label={item.label}
-                      onClick={item.action === "logout" ? logout : undefined}
+                      onClick={() => {
+                        if (item.action === "logout") {
+                          logout();
+                        }
+                        setOpen(false);
+                      }}
                       variant="dropdown"
                     />
                   </div>

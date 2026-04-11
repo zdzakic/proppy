@@ -24,26 +24,32 @@
   import SideBar from "@/components/dashboard/layout/SideBar";
   import Header from "@/components/dashboard/layout/Header";
   import ProtectedRoute from "@/components/ui/auth/ProtectedRoute";
+  import { useState } from "react";
 
   export default function DashboardLayout({
     children,
   }: {
     children: React.ReactNode;
   }) {
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
     return (
       <ProtectedRoute>
           <ThemeProvider>
           <div className="flex min-h-screen bg-dashboard-bg text-dashboard-text">
 
               {/* Sidebar */}
-              <SideBar />
+                <SideBar
+                  open={mobileSidebarOpen}
+                  onClose={() => setMobileSidebarOpen(false)}
+                />
 
               {/* Main wrapper */}
-              <div className="ml-64 flex flex-1 flex-col">
+                <div className="flex flex-1 flex-col md:ml-64">
 
-              <Header />
+                <Header onMenuClick={() => setMobileSidebarOpen((prev) => !prev)} />
 
-              <main className="flex-1 p-6 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6">
                   <div className="mx-auto w-full ">
                   {children}
                   </div>

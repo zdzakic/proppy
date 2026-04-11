@@ -28,7 +28,7 @@ export default function DashboardMenuItem({
 
   if (href) {
     return (
-      <Link href={href} className={className}>
+      <Link href={href} onClick={onClick} className={className}>
         <Icon className={iconClassName} />
         <span>{label}</span>
       </Link>
