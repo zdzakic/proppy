@@ -150,3 +150,83 @@ proppy/
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Deployment Runbook (KISS)
+
+This section is the single source of truth for daily development and production deploys.
+
+### 1) Dev vs Prod (What is different)
+
+Development:
+- Backend uses SQLite by default (`settings.dev`).
+- Frontend calls local API URL (`NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api`).
+- Fast iteration, local-only data, easy reset.
+
+Production:
+- Backend uses PostgreSQL (`settings.prod`) on Render.
+- Frontend is hosted on Vercel and calls Render backend URL.
+- Environment variables drive all secrets and host settings.
+- Static files are collected and served in production.
+
+Important mental model:
+- Dev database and prod database are different.
+- A user created locally does not exist in production unless created there.
+
+### 2) Core backend behavior already implemented
+
+- Production settings are env-driven (hosts, CORS, CSRF, DB, secrets).
+- Role seeding exists for production startup data.
+- Registration no longer depends on manual role pre-creation.
+- Automatic superuser bootstrap command exists (`ensure_superuser`).
+- Static files are configured for production serving.
+
+### 3) Minimal Environment Variables
+
+Backend (Render):
+- `DJANGO_ENV=prod`
+- `SECRET_KEY=<strong secret>`
+- `ALLOWED_HOSTS=<render-backend-host>`
+- `CORS_ALLOWED_ORIGINS=<comma-separated frontend origins with https://>`
+- `CSRF_TRUSTED_ORIGINS=<comma-separated frontend origins with https://>`
+- `FRONTEND_URL=<primary frontend origin>`
+- `DB_NAME=<postgres database name>`
+- `DB_USER=<postgres user>`
+- `DB_PASSWORD=<postgres password>`
+- `DB_HOST=<postgres hostname>`
+- `DB_PORT=5432`
+- `DJANGO_SUPERUSER_EMAIL=<admin email>`
+- `DJANGO_SUPERUSER_PASSWORD=<admin password>`
+- Optional: `DJANGO_SUPERUSER_FIRST_NAME`, `DJANGO_SUPERUSER_LAST_NAME`
+
+Frontend (Vercel):
+- `NEXT_PUBLIC_API_BASE_URL=https://<render-backend>/api`
+
+### 4) Render Commands (recommended)
+
+Build Command:
+
+```bash
+pip install -r requirements.txt && python manage.py collectstatic --noinput
+```
+
+Start Command:
+
+```bash
+python manage.py migrate && python manage.py ensure_superuser && gunicorn wsgi:application --bind 0.0.0.0:$PORT
+```
+
+### 5) Redeploy Checklist
+
+1. Push backend changes to the same branch Render deploys.
+2. Confirm Render deploy uses the expected commit hash.
+3. Verify backend health endpoint.
+4. Redeploy Vercel frontend if API URL or FE code changed.
+5. Test: register, login, dashboard, forgot/reset password.
+
+### 6) Security and hygiene
+
+- Never keep DB credentials in tracked files.
+- If credentials were exposed, rotate DB password and update env vars.
+- Keep `.env` files out of git.

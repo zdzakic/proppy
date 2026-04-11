@@ -15,7 +15,7 @@ def test_company_admin_can_see_blocks():
     client = APIClient()
 
     user = User.objects.create_user(email="test@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     company = Company.objects.create(name="Test Company")
 
@@ -40,7 +40,7 @@ def test_company_admin_can_create_block():
     client = APIClient()
 
     user = User.objects.create_user(email="test@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company = Company.objects.create(name="Test Company")
 
     UserRookeryRole.objects.create(
@@ -86,7 +86,7 @@ def test_admin_cannot_create_block_in_other_company():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     company1 = Company.objects.create(name="Company 1")
     company2 = Company.objects.create(name="Company 2")
@@ -113,7 +113,7 @@ def test_company_admin_can_delete_block():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     company = Company.objects.create(name="Test Company")
 
@@ -157,7 +157,7 @@ def test_admin_cannot_delete_block_from_other_company():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     company1 = Company.objects.create(name="Company 1")
     company2 = Company.objects.create(name="Company 2")
@@ -181,7 +181,7 @@ def test_delete_non_existing_block():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company = Company.objects.create(name="Test Company")
 
     UserRookeryRole.objects.create(
@@ -201,7 +201,7 @@ def test_company_admin_can_create_multiple_blocks():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     company = Company.objects.create(name="Test Company")
 
@@ -236,7 +236,7 @@ def test_company_admin_can_create_block_without_company_when_single_company_admi
     client = APIClient()
 
     user = User.objects.create_user(email="admin-single@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company = Company.objects.create(name="Only Company")
 
     UserRookeryRole.objects.create(user=user, company=company, role=role)
@@ -255,7 +255,7 @@ def test_company_admin_must_send_company_when_admin_of_multiple_companies():
     client = APIClient()
 
     user = User.objects.create_user(email="admin-multi@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company1 = Company.objects.create(name="Company 1")
     company2 = Company.objects.create(name="Company 2")
 
@@ -275,7 +275,7 @@ def test_company_admin_can_retrieve_block_detail():
     client = APIClient()
 
     user = User.objects.create_user(email="admin-detail@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company = Company.objects.create(name="Detail Company")
 
     UserRookeryRole.objects.create(user=user, company=company, role=role)
@@ -296,7 +296,7 @@ def test_admin_gets_404_for_block_detail_from_other_company():
     client = APIClient()
 
     user = User.objects.create_user(email="admin-detail-scope@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     own_company = Company.objects.create(name="Own Company")
     other_company = Company.objects.create(name="Other Company")
 
@@ -315,7 +315,7 @@ def test_company_admin_can_update_block_name():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company = Company.objects.create(name="Test Company")
 
     UserRookeryRole.objects.create(user=user, company=company, role=role)
@@ -337,7 +337,7 @@ def test_company_admin_can_update_block_name():
 def test_company_admin_can_list_and_create_properties():
     client = APIClient()
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company = Company.objects.create(name="Test Company")
     UserRookeryRole.objects.create(user=user, company=company, role=role)
     block = Block.objects.create(name="Block A", company=company)
@@ -365,7 +365,7 @@ def test_company_admin_can_list_and_create_properties():
 def test_admin_gets_404_for_block_in_other_company():
     client = APIClient()
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     c1 = Company.objects.create(name="C1")
     c2 = Company.objects.create(name="C2")
     UserRookeryRole.objects.create(user=user, company=c1, role=role)
@@ -402,7 +402,7 @@ def test_non_admin_cannot_create_property():
 def test_company_admin_can_update_and_delete_property():
     client = APIClient()
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
     company = Company.objects.create(name="C")
     UserRookeryRole.objects.create(user=user, company=company, role=role)
     block = Block.objects.create(name="B", company=company)
@@ -430,7 +430,7 @@ def test_admin_cannot_update_property_from_other_company():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     c1 = Company.objects.create(name="C1")
     c2 = Company.objects.create(name="C2")
@@ -456,7 +456,7 @@ def test_admin_cannot_delete_property_from_other_company():
     client = APIClient()
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     c1 = Company.objects.create(name="C1")
     c2 = Company.objects.create(name="C2")
@@ -486,7 +486,7 @@ def test_company_admin_object_permission_block_and_property():
     request = factory.get("/")
 
     user = User.objects.create_user(email="admin@test.com", password="1234")
-    role = Role.objects.create(code="COMPANYADMIN", name="Admin")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
 
     c1 = Company.objects.create(name="C1")
     c2 = Company.objects.create(name="C2")
@@ -519,8 +519,8 @@ def test_company_admin_property_owner_crud_and_owner_role():
     client = APIClient()
     admin = User.objects.create_user(email="admin@test.com", password="1234")
     owner_user = User.objects.create_user(email="owner@test.com", password="1234")
-    role_admin = Role.objects.create(code="COMPANYADMIN", name="Admin")
-    Role.objects.create(code="OWNER", name="Owner")
+    role_admin = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
+    Role.objects.get_or_create(code="OWNER", defaults={"name": "Owner"})[0]
 
     company = Company.objects.create(name="C")
     UserRookeryRole.objects.create(user=admin, company=company, role=role_admin)
@@ -597,8 +597,8 @@ def test_admin_cannot_create_property_owner_in_other_company():
     client = APIClient()
     admin = User.objects.create_user(email="admin@test.com", password="1234")
     owner_user = User.objects.create_user(email="owner@test.com", password="1234")
-    Role.objects.create(code="COMPANYADMIN", name="Admin")
-    Role.objects.create(code="OWNER", name="Owner")
+    Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Admin"})[0]
+    Role.objects.get_or_create(code="OWNER", defaults={"name": "Owner"})[0]
 
     c1 = Company.objects.create(name="C1")
     c2 = Company.objects.create(name="C2")
