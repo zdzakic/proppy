@@ -25,22 +25,11 @@ export const companyInfo = {
   registration: "Registered in England & Wales",
 };
 
-export const platformLinks = [
-  { label: "Owner Login", href: "/login" },
-  { label: "Register", href: "/register" }, // added
-//   { label: "Features", href: "#features" },
-];
-
 export const contactInfo = {
   email: "info@rookerys.com",
   phone: "+44 0000 000000", // placeholder
   location: "United Kingdom", // placeholder
 };
-
-export const legalLinks = [
-  { label: "Privacy", href: "/privacy" },
-  { label: "Terms", href: "/terms" },
-];
 
 export const complianceInfo =
   "GDPR Compliant • Secure Owner Portal";

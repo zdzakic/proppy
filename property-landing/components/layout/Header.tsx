@@ -1,9 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { navigationLinks } from "@/constants/links";
 import { User } from "lucide-react";
 import Link from "next/link";
 import HeaderLink from "@/components/ui/HeaderLink";
+import {
+    landingAccountLinks,
+    landingNavigationLinks,
+} from "@/config/navigation";
 
 export default function Header() {
 
@@ -49,7 +52,7 @@ return (
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-12 text-[0.95rem]">
-        {navigationLinks.map((t) => (
+        {landingNavigationLinks.map((t) => (
             <HeaderLink
                 key={t.href}
                 href={t.href}
@@ -104,36 +107,26 @@ return (
                 >
             <div className="space-y-2 text-sm">
 
-                <Link
-                href="/register"
-                className="
+                {landingAccountLinks.slice(0, 2).map((link) => (
+                    <Link
+                    key={link.label}
+                    href={link.href}
+                    className="
                     block px-3 py-2 rounded-lg
                     text-brand-text dark:text-brand-text
                     hover:bg-black/5 dark:hover:bg-white/5
                     hover:text-brand-accent
                     transition-colors duration-200
                 "
-                >
-                Create Account – Flat Owner
-                </Link>
-
-                <Link
-                href="/register"
-                className="
-                    block px-3 py-2 rounded-lg
-                    text-brand-text dark:text-brand-text
-                    hover:bg-black/5 dark:hover:bg-white/5
-                    hover:text-brand-accent
-                    transition-colors duration-200
-                "
-                >
-                Create Account – Property Manager
-                </Link>
+                    >
+                    {link.label}
+                    </Link>
+                ))}
 
                 <div className="h-px bg-brand-border my-2"></div>
 
                 <Link
-                href="/login"
+                href={landingAccountLinks[2].href}
                 className="
                     block px-3 py-2 rounded-lg
                     text-brand-text dark:text-brand-text
@@ -142,7 +135,7 @@ return (
                     transition-colors duration-200
                 "
                 >
-                Login
+                {landingAccountLinks[2].label}
                 </Link>
 
             </div>
@@ -202,7 +195,7 @@ return (
                 </button>
 
             <div className="pt-24 px-8 space-y-8 text-xl">
-            {navigationLinks.map((t) => (
+                {landingNavigationLinks.map((t) => (
                <HeaderLink
                 key={t.href}
                 href={t.href}
@@ -233,32 +226,26 @@ return (
 
                 <div className="h-px bg-white/20"></div>
 
-                <HeaderLink
-                    href="/register"
+                {landingAccountLinks.slice(0, 2).map((link) => (
+                    <HeaderLink
+                    key={link.label}
+                    href={link.href}
                     scrolled={scrolled}
                     onClick={() => setOpen(false)}
                     className="block"
                     >
-                    Create Account – Flat Owner
-                </HeaderLink>
+                    {link.label}
+                    </HeaderLink>
+                ))}
 
                <HeaderLink
-                    href="/register"
-                    scrolled={scrolled}
-                    onClick={() => setOpen(false)}
-                    className="block"
-                    >
-                    Create Account – Property Manager
-                </HeaderLink>
-
-               <HeaderLink
-                href="/login"
+                href={landingAccountLinks[2].href}
                 scrolled={scrolled}
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3"
                 >
                 <User size={20} strokeWidth={1.5} />
-                Login
+                {landingAccountLinks[2].label}
                 </HeaderLink>
 
             </div>

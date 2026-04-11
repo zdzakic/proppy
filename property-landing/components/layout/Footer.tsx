@@ -9,12 +9,15 @@
  */
 
 import Link from "next/link";
-import { navigationLinks } from "@/constants/links";
+import {
+  footerPlatformLinks,
+  landingNavigationLinks,
+  legalNavigationLinks,
+} from "@/config/navigation";
 import {
   brandInfo,
-  platformLinks,
   contactInfo,
-  legalLinks,companyInfo,
+  companyInfo,
   institutionalTagline,
   complianceInfo,
 } from "@/constants/footer";
@@ -69,7 +72,7 @@ export default function Footer() {
             Navigation
           </h3>
           <ul className="space-y-3 text-white/60">
-            {navigationLinks.map((link) => (
+            {landingNavigationLinks.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}
@@ -88,7 +91,7 @@ export default function Footer() {
             Platform
           </h3>
           <ul className="space-y-3 text-white/60">
-            {platformLinks.map((link) => (
+            {footerPlatformLinks.map((link) => (
                 <li key={link.href}>
                 <Link
                     href={link.href}
@@ -154,7 +157,7 @@ export default function Footer() {
           </span>
 
           <div className="flex gap-6">
-            {legalLinks.map((link) => (
+            {legalNavigationLinks.map((link) => (
                 <Link
                 key={link.href}
                 href={link.href}

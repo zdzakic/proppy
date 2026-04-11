@@ -13,6 +13,13 @@
 export const ROUTES = {
   HOME: "/",
 
+  LANDING: {
+    OVERVIEW: "#overview",
+    CHALLENGES: "#challenges",
+    BETTER_APPROACH: "#better-approach",
+    WHO_WE_ARE: "#who-we-are",
+  },
+
   AUTH: {
     LOGIN: "/login",
     REGISTER: "/register",
@@ -21,4 +28,26 @@ export const ROUTES = {
   },
 
   DASHBOARD: "/dashboard",
+
+  DASHBOARD_PAGES: {
+    PROFILE: "/dashboard/profile",
+    SETTINGS: "/dashboard/settings",
+    COMPANY_ADMIN: {
+      PROPERTIES: "/dashboard/properties",
+      USERS: "/dashboard/users",
+    },
+    OWNER: {
+      PROPERTIES: "/dashboard/properties",
+      TENANTS: "/dashboard/tenants",
+    },
+    TENANT: {
+      LEASE: "/dashboard/lease",
+      PAYMENTS: "/dashboard/payments",
+    },
+  },
+
+  LEGAL: {
+    PRIVACY: "/privacy",
+    TERMS: "/terms",
+  },
 };

@@ -19,16 +19,19 @@
  * - centralno mjesto za dashboard actions
  */
 
-import { User, Settings, LogOut } from "lucide-react";
+import { User } from "lucide-react";
 import { useState, useRef } from "react";
 import {useAuth} from "@/context/AuthContext";
 import ThemeToggle from "@/components/theme/ThemeToggle";
+import DashboardMenuItem from "@/components/dashboard/layout/DashboardMenuItem";
+import { getDashboardUserMenuItems } from "@/config/navigation";
 
 
 export default function Header() {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<NodeJS.Timeout | null>(null);
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
+  const userMenuItems = getDashboardUserMenuItems(user?.roles);
 
   const handleEnter = () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
@@ -71,6 +74,7 @@ export default function Header() {
           onMouseLeave={handleLeave}
         >
           <button
+            type="button"
             className="
               flex
               h-10
@@ -102,71 +106,20 @@ export default function Header() {
                 shadow-lg
                 "
             >
-                <button
-                className="
-                    flex
-                    w-full
-                    items-center
-                    gap-2
-                    rounded-md
-                    px-3
-                    py-2
-                    text-left
-                    text-sm
-                    text-dashboard-text
-                    transition-colors
-                    hover:bg-dashboard-hover
-                    cursor-pointer
-                "
-                >
-                <User className="h-4 w-4 opacity-70" />
-                Profile
-                </button>
-
-                <button
-                className="
-                    flex
-                    w-full
-                    items-center
-                    gap-2
-                    rounded-md
-                    px-3
-                    py-2
-                    text-left
-                    text-sm
-                    text-dashboard-text
-                    transition-colors
-                    hover:bg-dashboard-hover
-                    cursor-pointer
-                "
-                >
-                <Settings className="h-4 w-4 opacity-70" />
-                Settings
-                </button>
-
-                <div className="my-1 border-t border-dashboard-border"></div>
-
-                <button
-                onClick={logout}
-                className="
-                    flex
-                    w-full
-                    items-center
-                    gap-2
-                    rounded-md
-                    px-3
-                    py-2
-                    text-left
-                    text-sm
-                    text-dashboard-text
-                    transition-colors
-                    hover:bg-dashboard-hover
-                    cursor-pointer
-                "
-                >
-                <LogOut className="h-4 w-4 opacity-70" />
-                Logout
-                </button>
+                {userMenuItems.map((item) => (
+                  <div key={item.label}>
+                    {item.separatorBefore ? (
+                      <div className="my-1 border-t border-dashboard-border"></div>
+                    ) : null}
+                    <DashboardMenuItem
+                      href={item.href}
+                      icon={item.icon}
+                      label={item.label}
+                      onClick={item.action === "logout" ? logout : undefined}
+                      variant="dropdown"
+                    />
+                  </div>
+                ))}
             </div>
             )}
         </div>

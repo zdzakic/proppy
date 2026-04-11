@@ -19,14 +19,14 @@
  * - daje dashboardu strukturu sličnu NextAdmin stilu
  */
 
-import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  Settings,
-} from "lucide-react";
+import DashboardMenuItem from "@/components/dashboard/layout/DashboardMenuItem";
+import { getDashboardSidebarItems } from "@/config/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SideBar() {
+  const { user } = useAuth();
+  const sidebarItems = getDashboardSidebarItems(user?.roles);
+
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-dashboard-border bg-dashboard-surface md:flex">
       {/* 
@@ -42,37 +42,15 @@ export default function SideBar() {
         Linkovi su trenutno statični da prvo stabilizujemo layout UI.
       */}
       <nav className="flex-1 space-y-2 p-4 mt-8">
-        <a
-          href="/dashboard"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
-        >
-          <LayoutDashboard className="h-5 w-5" />
-          <span>Dashboard</span>
-        </a>
-
-        <a
-          href="/dashboard/properties"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
-        >
-          <Building2 className="h-5 w-5" />
-          <span>Properties</span>
-        </a>
-
-        <a
-          href="/dashboard/tenants"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
-        >
-          <Users className="h-5 w-5" />
-          <span>Tenants</span>
-        </a>
-
-        <a
-          href="/dashboard/settings"
-          className="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-dashboard-text hover:bg-dashboard-hover"
-        >
-          <Settings className="h-5 w-5" />
-          <span>Settings</span>
-        </a>
+        {sidebarItems.map((item) => (
+          <DashboardMenuItem
+            key={item.label}
+            href={item.href}
+            icon={item.icon}
+            label={item.label}
+            variant="sidebar"
+          />
+        ))}
       </nav>
     </aside>
   );
