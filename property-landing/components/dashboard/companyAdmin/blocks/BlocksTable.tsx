@@ -7,6 +7,7 @@ import {
   sortByString,
   type SortDirection,
 } from "@/utils/table/sorting";
+import type { TableViewMode } from "@/utils/table/viewMode";
 
 type Block = {
   id: number;
@@ -21,9 +22,11 @@ type Props = {
   onAddProperty: (block: Block) => void;
   onDetails: (id: number) => void;
   onDelete: (id: number) => void;
+  viewMode?: BlocksViewMode;
 };
 
 type SortKey = "name" | "properties" | "comment";
+export type BlocksViewMode = TableViewMode;
 
 export default function BlocksTable({
   blocks,
@@ -31,6 +34,7 @@ export default function BlocksTable({
   onAddProperty,
   onDetails,
   onDelete,
+  viewMode = "auto",
 }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -78,9 +82,21 @@ export default function BlocksTable({
     );
   }
 
+  const showCards = viewMode !== "table";
+  const showTable = viewMode !== "cards";
+
+  const cardsWrapperClassName =
+    viewMode === "auto" ? "space-y-2 md:hidden" : "space-y-2";
+
+  const tableWrapperClassName =
+    viewMode === "auto"
+      ? "hidden overflow-x-auto rounded-lg border border-dashboard-border md:block"
+      : "overflow-x-auto rounded-lg border border-dashboard-border";
+
   return (
     <div className="space-y-2">
-      <div className="space-y-2 md:hidden">
+      {showCards ? (
+      <div className={cardsWrapperClassName}>
         {sortedBlocks.map((block) => (
           <article
             key={block.id}
@@ -160,8 +176,10 @@ export default function BlocksTable({
           </article>
         ))}
       </div>
+      ) : null}
 
-      <div className="hidden overflow-x-auto rounded-lg border border-dashboard-border md:block">
+      {showTable ? (
+      <div className={tableWrapperClassName}>
         <table className="w-full table-fixed text-xs">
           <colgroup>
             <col className="w-[32%]" />
@@ -287,6 +305,7 @@ export default function BlocksTable({
           </tbody>
         </table>
       </div>
+      ) : null}
     </div>
   );
 }

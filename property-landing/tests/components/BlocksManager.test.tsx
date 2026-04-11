@@ -154,4 +154,61 @@ describe("BlocksManager", () => {
 
     expect(await screen.findAllByText("Apartment 101")).not.toHaveLength(0);
   });
+
+  it("switches block list layout between cards and table", async () => {
+    const user = userEvent.setup();
+
+    render(<BlocksManager />);
+
+    await screen.findAllByText("Block A");
+
+    await user.click(screen.getByRole("button", { name: /cards layout/i }));
+
+    expect(screen.getByRole("button", { name: /open details for block a/i })).toBeInTheDocument();
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /table layout/i }));
+
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /open details for block a/i })).not.toBeInTheDocument();
+  });
+
+  it("switches properties layout between cards and table in block details", async () => {
+    const user = userEvent.setup();
+
+    mockPost.mockImplementation(async (url: string) => {
+      if (url === "/properties/blocks/1/properties/create/") {
+        return {
+          data: {
+            id: 10,
+            name: "Apartment 101",
+            comment: "Top floor",
+            owners: [],
+          },
+        };
+      }
+
+      return { data: {} };
+    });
+
+    render(<BlocksManager />);
+
+    await screen.findAllByText("Block A");
+
+    await user.click(screen.getAllByLabelText("Add property")[0]);
+    await user.type(screen.getByLabelText("Property Name"), "Apartment 101");
+    await user.type(screen.getByLabelText("Comment (Optional)"), "Top floor");
+    await user.click(screen.getByRole("button", { name: /save property/i }));
+
+    await screen.findAllByText("Apartment 101");
+
+    await user.click(screen.getByRole("button", { name: /properties cards layout/i }));
+
+    expect(screen.getByRole("button", { name: /view property details/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("table")).toHaveLength(1);
+
+    await user.click(screen.getByRole("button", { name: /properties table layout/i }));
+
+    expect(screen.getAllByRole("table")).toHaveLength(2);
+  });
 });

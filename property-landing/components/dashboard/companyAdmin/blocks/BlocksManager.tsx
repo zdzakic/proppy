@@ -6,6 +6,8 @@ import apiClient from "@/utils/api/apiClient";
 import ActionButton from "@/components/ui/ActionButton";
 import { toast } from "sonner";
 import type { CreatePropertyResponse } from "@/types/property";
+import type { TableViewMode } from "@/utils/table/viewMode";
+import TableLayoutToggle from "@/components/dashboard/shared/common/TableLayoutToggle";
 
 import AddBlockModal from "./AddblockModal";
 import AddPropertyModal from "./AddPropertyModal";
@@ -60,6 +62,8 @@ export default function BlocksManager() {
   const [isPropertyEditOpen, setIsPropertyEditOpen] = useState(false);
   const [isPropertySaving, setIsPropertySaving] = useState(false);
   const [propertyError, setPropertyError] = useState<string | null>(null);
+  const [blocksViewMode, setBlocksViewMode] = useState<TableViewMode>("auto");
+  const [propertiesViewMode, setPropertiesViewMode] = useState<TableViewMode>("auto");
 
   useEffect(() => {
     const fetchBlocks = async () => {
@@ -339,21 +343,34 @@ export default function BlocksManager() {
 
   return (
     <>
-      <section className="space-y-6 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-xl font-semibold text-dashboard-text">Blocks</h1>
+      <section className="space-y-2 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
+        <div className="space-y-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-xl font-semibold text-dashboard-text">Blocks</h1>
+              <p className="text-xs text-dashboard-muted">
+                Organize building sections and manage their properties.
+              </p>
+            </div>
+
+            <ActionButton
+              onClick={() => setIsOpen(true)}
+              variant="neutral"
+              fullWidth
+              className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
+            >
+              <Plus size={16} />
+              Add Block
+            </ActionButton>
           </div>
 
-          <ActionButton
-            onClick={() => setIsOpen(true)}
-            variant="neutral"
-            fullWidth
-            className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
-          >
-            <Plus size={16} />
-            Add Block
-          </ActionButton>
+          <div className="hidden items-center justify-end md:flex">
+            <TableLayoutToggle
+              value={blocksViewMode}
+              onChange={setBlocksViewMode}
+              ariaLabelPrefix="Blocks"
+            />
+          </div>
         </div>
 
         <BlocksTable
@@ -362,26 +379,51 @@ export default function BlocksManager() {
           onAddProperty={handleOpenPropertyModal}
           onDetails={handleDetails}
           onDelete={handleDeleteRequest}
+          viewMode={blocksViewMode}
         />
       </section>
 
       {(selectedBlock || detailsLoading) && (
-        <section className="mt-6 space-y-3 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-dashboard-text">Block Details</h2>
-            <div className="flex items-center gap-2">
-              {selectedBlock && (
-                <ActionButton
-                  onClick={() => setIsPropertyModalOpen(true)}
-                  variant="neutral"
-                  fullWidth
-                  className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
-                >
-                  <Plus size={16} />
-                  Add Property
-                </ActionButton>
-              )}
+        <section className="mt-6 space-y-2 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
+          <div className="space-y-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-dashboard-text">Block Details</h2>
+                <p className="text-xs text-dashboard-muted">
+                  Review properties and manage units inside the selected block.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {selectedBlock && (
+                  <ActionButton
+                    onClick={() => setIsPropertyModalOpen(true)}
+                    variant="neutral"
+                    fullWidth
+                    className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
+                  >
+                    <Plus size={16} />
+                    Add Property
+                  </ActionButton>
+                )}
+              </div>
             </div>
+
+            {selectedBlock ? (
+              <div className="hidden items-center justify-between md:flex">
+                <p className="text-sm font-normal text-dashboard-text">
+                  {selectedBlock.name}
+                  <span className="ml-1 text-xs font-normal text-dashboard-muted">
+                    · {selectedBlock.properties?.length ?? 0} properties
+                  </span>
+                </p>
+
+                <TableLayoutToggle
+                  value={propertiesViewMode}
+                  onChange={setPropertiesViewMode}
+                  ariaLabelPrefix="Properties"
+                />
+              </div>
+            ) : null}
           </div>
 
           {detailsLoading && (
@@ -390,18 +432,12 @@ export default function BlocksManager() {
 
           {!detailsLoading && selectedBlock && (
             <div className="space-y-2">
-              <p className="text-sm font-normal text-dashboard-text">
-                {selectedBlock.name}
-                <span className="ml-1 text-xs font-normal text-dashboard-muted">
-                  · {selectedBlock.properties?.length ?? 0} properties
-                </span>
-              </p>
-
               <PropertiesTable
                 properties={selectedBlock.properties ?? []}
                 onDetails={handlePropertyDetails}
                 onEdit={handlePropertyEdit}
                 onDelete={handlePropertyDelete}
+                viewMode={propertiesViewMode}
               />
             </div>
           )}

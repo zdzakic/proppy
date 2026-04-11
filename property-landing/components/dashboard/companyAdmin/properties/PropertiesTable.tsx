@@ -7,6 +7,7 @@ import {
   sortByString,
   type SortDirection,
 } from "@/utils/table/sorting";
+import type { TableViewMode } from "@/utils/table/viewMode";
 
 type PropertyRow = {
   id: number;
@@ -19,6 +20,7 @@ type PropertiesTableProps = {
   onDetails: (property: PropertyRow) => void;
   onEdit: (property: PropertyRow) => void;
   onDelete: (property: PropertyRow) => void;
+  viewMode?: TableViewMode;
 };
 
 type SortKey = "id" | "name" | "comment";
@@ -28,6 +30,7 @@ export default function PropertiesTable({
   onDetails,
   onEdit,
   onDelete,
+  viewMode = "auto",
 }: PropertiesTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>("id");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -67,9 +70,21 @@ export default function PropertiesTable({
     );
   }
 
+  const showCards = viewMode !== "table";
+  const showTable = viewMode !== "cards";
+
+  const cardsWrapperClassName =
+    viewMode === "auto" ? "space-y-2 md:hidden" : "space-y-2";
+
+  const tableWrapperClassName =
+    viewMode === "auto"
+      ? "hidden overflow-x-auto rounded-lg border border-dashboard-border md:block"
+      : "overflow-x-auto rounded-lg border border-dashboard-border";
+
   return (
     <div className="space-y-2">
-      <div className="space-y-2 md:hidden">
+      {showCards ? (
+      <div className={cardsWrapperClassName}>
         {sortedProperties.map((property) => (
           <article
             key={property.id}
@@ -118,8 +133,10 @@ export default function PropertiesTable({
           </article>
         ))}
       </div>
+      ) : null}
 
-      <div className="hidden overflow-x-auto rounded-lg border border-dashboard-border md:block">
+      {showTable ? (
+      <div className={tableWrapperClassName}>
         <table className="w-full table-fixed text-xs">
           <colgroup>
             <col className="w-[12%]" />
@@ -216,6 +233,7 @@ export default function PropertiesTable({
           </tbody>
         </table>
       </div>
+      ) : null}
     </div>
   );
 }

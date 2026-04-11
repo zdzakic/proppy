@@ -1,0 +1,1 @@
+export type TableViewMode = "auto" | "table" | "cards";
