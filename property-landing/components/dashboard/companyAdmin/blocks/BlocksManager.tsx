@@ -5,15 +5,34 @@ import { Plus } from "lucide-react";
 import apiClient from "@/utils/api/apiClient";
 import ActionButton from "@/components/ui/ActionButton";
 import { toast } from "sonner";
+import type { CreatePropertyResponse } from "@/types/property";
 
 import AddBlockModal from "./AddblockModal";
+import AddPropertyModal from "./AddPropertyModal";
 import BlocksTable from "./BlocksTable";
+import EditPropertyModal from "./EditPropertyModal";
+import PropertiesTable from "./PropertiesTable";
+import PropertyDetailsModal from "./PropertyDetailsModal";
 
 type Block = {
   id: number;
   name: string;
   comment?: string;
-  properties?: { id: number; name: string }[];
+  properties?: Property[];
+};
+
+type PropertyOwner = {
+  id: number;
+  user_email?: string;
+  display_name?: string;
+  comment?: string;
+};
+
+type Property = {
+  id: number;
+  name: string;
+  comment?: string;
+  owners?: PropertyOwner[];
 };
 
 export default function BlocksManager() {
@@ -28,6 +47,12 @@ export default function BlocksManager() {
   const [editName, setEditName] = useState("");
   const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [isPropertyModalOpen, setIsPropertyModalOpen] = useState(false);
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
+  const [isPropertyDetailsOpen, setIsPropertyDetailsOpen] = useState(false);
+  const [isPropertyEditOpen, setIsPropertyEditOpen] = useState(false);
+  const [isPropertySaving, setIsPropertySaving] = useState(false);
+  const [propertyError, setPropertyError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchBlocks = async () => {
@@ -80,7 +105,6 @@ export default function BlocksManager() {
     try {
       const response = await apiClient.get(`/properties/blocks/${id}/`);
       setSelectedBlock(response.data as Block);
-      toast.info("Block details loaded.");
     } catch {
       const fallback = blocks.find((block) => block.id === id) ?? null;
       setSelectedBlock(fallback);
@@ -93,6 +117,11 @@ export default function BlocksManager() {
   const handleEditStart = (block: Block) => {
     setEditingId(block.id);
     setEditName(block.name);
+  };
+
+  const handleOpenPropertyModal = (block: Block) => {
+    setSelectedBlock(block);
+    setIsPropertyModalOpen(true);
   };
 
   const handleSave = async (id: number) => {
@@ -111,49 +140,205 @@ export default function BlocksManager() {
     }
   };
 
+  const handlePropertyCreated = (property: CreatePropertyResponse) => {
+    if (!selectedBlock) return;
+
+    setBlocks((prev) =>
+      prev.map((block) => {
+        if (block.id !== selectedBlock.id) {
+          return block;
+        }
+
+        const nextProperties = [
+          ...(block.properties ?? []),
+          { id: property.id, name: property.name, comment: property.comment ?? "" },
+        ];
+        return { ...block, properties: nextProperties };
+      })
+    );
+
+    setSelectedBlock((prev) => {
+      if (!prev || prev.id !== selectedBlock.id) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        properties: [
+          ...(prev.properties ?? []),
+          { id: property.id, name: property.name, comment: property.comment ?? "" },
+        ],
+      };
+    });
+
+    toast.success("Property created successfully.");
+  };
+
+  const handlePropertyDetails = (property: Property) => {
+    setSelectedProperty(property);
+    setIsPropertyDetailsOpen(true);
+  };
+
+  const handlePropertyEdit = (property: Property) => {
+    setPropertyError(null);
+    setSelectedProperty(property);
+    setIsPropertyEditOpen(true);
+  };
+
+  const handlePropertyDelete = async (property: Property) => {
+    if (!selectedBlock) return;
+
+    try {
+      await apiClient.delete(
+        `/properties/blocks/${selectedBlock.id}/properties/${property.id}/delete/`
+      );
+
+      setBlocks((prev) =>
+        prev.map((block) => {
+          if (block.id !== selectedBlock.id) return block;
+          return {
+            ...block,
+            properties: (block.properties ?? []).filter((item) => item.id !== property.id),
+          };
+        })
+      );
+
+      setSelectedBlock((prev) => {
+        if (!prev || prev.id !== selectedBlock.id) return prev;
+        return {
+          ...prev,
+          properties: (prev.properties ?? []).filter((item) => item.id !== property.id),
+        };
+      });
+
+      if (selectedProperty?.id === property.id) {
+        setSelectedProperty(null);
+        setIsPropertyDetailsOpen(false);
+        setIsPropertyEditOpen(false);
+      }
+
+      toast.success("Property deleted successfully.");
+    } catch {
+      toast.error("Failed to delete property.");
+    }
+  };
+
+  const handlePropertyUpdate = async (payload: { name: string; comment: string }) => {
+    if (!selectedBlock || !selectedProperty) return;
+
+    setIsPropertySaving(true);
+    setPropertyError(null);
+
+    try {
+      const response = await apiClient.put(
+        `/properties/blocks/${selectedBlock.id}/properties/${selectedProperty.id}/`,
+        payload
+      );
+
+      const updatedProperty: Property = response.data;
+
+      setBlocks((prev) =>
+        prev.map((block) => {
+          if (block.id !== selectedBlock.id) return block;
+          return {
+            ...block,
+            properties: (block.properties ?? []).map((item) =>
+              item.id === updatedProperty.id ? { ...item, ...updatedProperty } : item
+            ),
+          };
+        })
+      );
+
+      setSelectedBlock((prev) => {
+        if (!prev || prev.id !== selectedBlock.id) return prev;
+        return {
+          ...prev,
+          properties: (prev.properties ?? []).map((item) =>
+            item.id === updatedProperty.id ? { ...item, ...updatedProperty } : item
+          ),
+        };
+      });
+
+      setSelectedProperty((prev) => (prev ? { ...prev, ...updatedProperty } : prev));
+      setIsPropertyEditOpen(false);
+      toast.success("Property updated successfully.");
+    } catch (error: unknown) {
+      const maybeError = error as {
+        response?: {
+          data?: {
+            detail?: string;
+            message?: string;
+          };
+        };
+      };
+
+      setPropertyError(
+        maybeError.response?.data?.detail ||
+          maybeError.response?.data?.message ||
+          "Failed to update property."
+      );
+    } finally {
+      setIsPropertySaving(false);
+    }
+  };
+
   if (loading) {
     return <p className="text-sm text-dashboard-muted">Loading blocks...</p>;
   }
 
   return (
-    <section className="space-y-6 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
-      {/* HEADER */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-dashboard-text">Blocks</h1>
-          {/* <p className="text-sm text-dashboard-muted">Manage your property blocks.</p> */}
+    <>
+      <section className="space-y-6 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl font-semibold text-dashboard-text">Blocks</h1>
+          </div>
+
+          <ActionButton
+            onClick={() => setIsOpen(true)}
+            variant="neutral"
+            fullWidth
+            className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
+          >
+            <Plus size={16} />
+            Add Block
+          </ActionButton>
         </div>
 
-        <ActionButton
-          onClick={() => setIsOpen(true)}
-          variant="neutral"
-          fullWidth
-          className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
-        >
-          <Plus size={16} />
-          Add Block
-        </ActionButton>
-      </div>
-
-      {/* TABLE */}
-      <BlocksTable
-        blocks={blocks}
-        editingId={editingId}
-        editName={editName}
-        setEditName={setEditName}
-        onEditStart={handleEditStart}
-        onDetails={handleDetails}
-        onSave={handleSave}
-        onDelete={handleDelete}
-      />
+        <BlocksTable
+          blocks={blocks}
+          editingId={editingId}
+          editName={editName}
+          setEditName={setEditName}
+          onEditStart={handleEditStart}
+          onAddProperty={handleOpenPropertyModal}
+          onDetails={handleDetails}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
+      </section>
 
       {(selectedBlock || detailsLoading) && (
-        <section className="space-y-3 rounded-lg border border-dashboard-border bg-dashboard-surface p-3">
+        <section className="mt-6 space-y-3 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-dashboard-text">Block Details</h2>
-            {selectedBlock && (
-              <span className="text-xs text-dashboard-muted">ID: {selectedBlock.id}</span>
-            )}
+            <div className="flex items-center gap-2">
+              {selectedBlock && (
+                <span className="text-xs text-dashboard-muted">ID: {selectedBlock.id}</span>
+              )}
+
+              {selectedBlock && (
+                <ActionButton
+                  onClick={() => setIsPropertyModalOpen(true)}
+                  variant="neutral"
+                  fullWidth
+                  className="sm:w-auto border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
+                >
+                  <Plus size={16} />
+                  Add Property
+                </ActionButton>
+              )}
+            </div>
           </div>
 
           {detailsLoading && (
@@ -164,25 +349,17 @@ export default function BlocksManager() {
             <div className="space-y-2">
               <p className="text-sm font-medium text-dashboard-text">{selectedBlock.name}</p>
 
-              {selectedBlock.properties && selectedBlock.properties.length > 0 ? (
-                <ul className="space-y-1">
-                  {selectedBlock.properties.map((property) => (
-                    <li key={property.id} className="text-xs text-dashboard-muted">
-                      {property.name}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-dashboard-muted">
-                  No property details available for this block.
-                </p>
-              )}
+              <PropertiesTable
+                properties={selectedBlock.properties ?? []}
+                onDetails={handlePropertyDetails}
+                onEdit={handlePropertyEdit}
+                onDelete={handlePropertyDelete}
+              />
             </div>
           )}
         </section>
       )}
 
-      {/* MODAL */}
       <AddBlockModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
@@ -191,6 +368,30 @@ export default function BlocksManager() {
         setValue={setNewBlockName}
         loading={creating}
       />
-    </section>
+
+      <AddPropertyModal
+        isOpen={isPropertyModalOpen}
+        blockId={selectedBlock?.id ?? null}
+        blockName={selectedBlock?.name}
+        onClose={() => setIsPropertyModalOpen(false)}
+        onCreated={handlePropertyCreated}
+      />
+
+      <PropertyDetailsModal
+        isOpen={isPropertyDetailsOpen}
+        property={selectedProperty}
+        blockName={selectedBlock?.name}
+        onClose={() => setIsPropertyDetailsOpen(false)}
+      />
+
+      <EditPropertyModal
+        isOpen={isPropertyEditOpen}
+        property={selectedProperty}
+        isSaving={isPropertySaving}
+        error={propertyError}
+        onSave={handlePropertyUpdate}
+        onClose={() => setIsPropertyEditOpen(false)}
+      />
+    </>
   );
 }
