@@ -35,6 +35,7 @@ export const ROUTES = {
     COMPANY_ADMIN: {
       PROPERTIES: "/dashboard/properties",
       USERS: "/dashboard/users",
+      HOW_TO_USE: "/dashboard/how-to-use",
     },
     OWNER: {
       PROPERTIES: "/dashboard/properties",

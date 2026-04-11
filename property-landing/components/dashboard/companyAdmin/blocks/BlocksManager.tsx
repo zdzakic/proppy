@@ -371,10 +371,6 @@ export default function BlocksManager() {
             <h2 className="text-sm font-semibold text-dashboard-text">Block Details</h2>
             <div className="flex items-center gap-2">
               {selectedBlock && (
-                <span className="text-xs text-dashboard-muted">ID: {selectedBlock.id}</span>
-              )}
-
-              {selectedBlock && (
                 <ActionButton
                   onClick={() => setIsPropertyModalOpen(true)}
                   variant="neutral"
@@ -394,7 +390,12 @@ export default function BlocksManager() {
 
           {!detailsLoading && selectedBlock && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-dashboard-text">{selectedBlock.name}</p>
+              <p className="text-sm font-normal text-dashboard-text">
+                {selectedBlock.name}
+                <span className="ml-1 text-xs font-normal text-dashboard-muted">
+                  · {selectedBlock.properties?.length ?? 0} properties
+                </span>
+              </p>
 
               <PropertiesTable
                 properties={selectedBlock.properties ?? []}

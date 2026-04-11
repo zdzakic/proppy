@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 
 type DashboardMenuItemProps = {
@@ -23,7 +26,20 @@ export default function DashboardMenuItem({
   onClick,
   variant = "sidebar",
 }: DashboardMenuItemProps) {
-  const className = `flex w-full items-center gap-3 text-dashboard-text ${variantClasses[variant]}`;
+  const pathname = usePathname();
+  const currentPath = pathname ?? "";
+
+  const isActive =
+    !!href &&
+    variant === "sidebar" &&
+    (currentPath === href ||
+      (href !== "/dashboard" && currentPath.startsWith(`${href}/`)));
+
+  const activeClasses = isActive
+    ? "bg-dashboard-hover border border-dashboard-ring"
+    : "";
+
+  const className = `flex w-full items-center gap-3 text-dashboard-text ${variantClasses[variant]} ${activeClasses}`;
   const iconClassName = variant === "sidebar" ? "h-5 w-5" : "h-4 w-4 opacity-70";
 
   if (href) {

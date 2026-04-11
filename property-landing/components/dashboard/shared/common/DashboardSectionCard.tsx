@@ -9,6 +9,7 @@ type DashboardSectionCardProps = {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
+  titleClassName?: string;
 };
 
 export default function DashboardSectionCard({
@@ -19,6 +20,7 @@ export default function DashboardSectionCard({
   children,
   className = "",
   contentClassName = "",
+  titleClassName = "text-lg font-semibold",
 }: DashboardSectionCardProps) {
   return (
     <section
@@ -31,7 +33,7 @@ export default function DashboardSectionCard({
         <div className="flex items-center gap-3">
           {Icon ? <Icon className="h-5 w-5 text-dashboard-muted" /> : null}
           <div>
-            <h2 className="text-lg font-semibold text-dashboard-text">{title}</h2>
+            <h2 className={`${titleClassName} text-dashboard-text`}>{title}</h2>
             {description ? (
               <p className="text-sm text-dashboard-muted">{description}</p>
             ) : null}

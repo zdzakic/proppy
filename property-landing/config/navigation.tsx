@@ -1,5 +1,6 @@
 import {
   Building2,
+  CircleHelp,
   LayoutDashboard,
   LogOut,
   type LucideIcon,
@@ -54,9 +55,9 @@ const dashboardSidebarByRole: Record<AppRole, DashboardMenuItemConfig[]> = {
   COMPANYADMIN: [
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
     {
-      label: "Blocks",
-      href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.PROPERTIES,
-      icon: Building2,
+      label: "How To Use",
+      href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.HOW_TO_USE,
+      icon: CircleHelp,
     },
     {
       label: "Settings",
