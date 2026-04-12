@@ -31,15 +31,27 @@ describe("BlocksManager", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockGet.mockResolvedValue({
-      data: [
-        {
-          id: 1,
-          name: "Block A",
-          comment: "",
-          properties: [],
-        },
-      ],
+    mockGet.mockImplementation(async (url: string) => {
+      if (url === "/properties/blocks/") {
+        return {
+          data: [
+            {
+              id: 1,
+              name: "Block A",
+              comment: "",
+              properties: [],
+            },
+          ],
+        };
+      }
+
+      if (url === "/users/companies/") {
+        return {
+          data: [{ id: 1, name: "Admin Co" }],
+        };
+      }
+
+      return { data: [] };
     });
   });
 
@@ -65,6 +77,58 @@ describe("BlocksManager", () => {
     });
 
     expect(await screen.findAllByText("New Block")).not.toHaveLength(0);
+  });
+
+  it("creates a block with selected company when admin manages multiple companies", async () => {
+    const user = userEvent.setup();
+
+    mockGet.mockImplementation(async (url: string) => {
+      if (url === "/properties/blocks/") {
+        return {
+          data: [
+            {
+              id: 1,
+              name: "Block A",
+              comment: "",
+              properties: [],
+            },
+          ],
+        };
+      }
+
+      if (url === "/users/companies/") {
+        return {
+          data: [
+            { id: 11, name: "Alpha Co" },
+            { id: 12, name: "Beta Co" },
+          ],
+        };
+      }
+
+      return { data: [] };
+    });
+
+    mockPost.mockResolvedValueOnce({
+      data: { id: 3, name: "Tower B", comment: "", properties: [] },
+    });
+
+    render(<BlocksManager />);
+
+    await screen.findAllByText("Block A");
+
+    await user.click(screen.getByRole("button", { name: /add block/i }));
+    await user.type(screen.getByPlaceholderText("Block name"), "Tower B");
+    await user.selectOptions(screen.getByLabelText("Company"), "12");
+    await user.click(screen.getByRole("button", { name: /^save$/i }));
+
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith("/properties/blocks/", {
+        name: "Tower B",
+        company: 12,
+      });
+    });
+
+    expect(await screen.findAllByText("Tower B")).not.toHaveLength(0);
   });
 
   it("updates a block name", async () => {

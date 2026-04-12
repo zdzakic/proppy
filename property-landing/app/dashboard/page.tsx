@@ -20,13 +20,12 @@
 import { useAuth } from "@/context/AuthContext";
 import OwnerDashboard from "@/components/dashboard/owner/OwnerDashboard";
 import TenantDashboard from "@/components/dashboard/tenant/TenantDashboard";
-import  CompanyAdminDashboard from "@/components/dashboard/companyAdmin/CompanyAdminDashboard";
+import CompanyAdminDashboard from "@/components/dashboard/companyAdmin/CompanyAdminDashboard";
 
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
-  console.log("User in DashboardPage:", user);
 
   if (!user) return <div>No user found</div>;
 

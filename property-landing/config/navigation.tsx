@@ -55,6 +55,11 @@ const dashboardSidebarByRole: Record<AppRole, DashboardMenuItemConfig[]> = {
   COMPANYADMIN: [
     { label: "Dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
     {
+      label: "Companies",
+      href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.COMPANIES,
+      icon: Building2,
+    },
+    {
       label: "How To Use",
       href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.HOW_TO_USE,
       icon: CircleHelp,

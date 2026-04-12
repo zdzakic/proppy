@@ -33,6 +33,7 @@ export const ROUTES = {
     PROFILE: "/dashboard/profile",
     SETTINGS: "/dashboard/settings",
     COMPANY_ADMIN: {
+      COMPANIES: "/dashboard/companies",
       PROPERTIES: "/dashboard/properties",
       USERS: "/dashboard/users",
       HOW_TO_USE: "/dashboard/how-to-use",
