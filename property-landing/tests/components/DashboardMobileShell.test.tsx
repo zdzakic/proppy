@@ -49,8 +49,8 @@ describe("Dashboard mobile shell", () => {
 
     render(<SideBar open onClose={handleClose} />);
 
-    const dashboardLinks = screen.getAllByRole("link", { name: /dashboard/i });
-    await user.click(dashboardLinks[dashboardLinks.length - 1]);
+    const companiesLinks = screen.getAllByRole("link", { name: /companies/i });
+    await user.click(companiesLinks[companiesLinks.length - 1]);
 
     expect(handleClose).toHaveBeenCalledTimes(1);
   });

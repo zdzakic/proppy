@@ -53,10 +53,10 @@ export const legalNavigationLinks: NavigationLink[] = [
 
 const dashboardSidebarByRole: Record<AppRole, DashboardMenuItemConfig[]> = {
   COMPANYADMIN: [
-    { label: "Dashboard", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
+    { label: "Companies", href: ROUTES.DASHBOARD, icon: LayoutDashboard },
     {
-      label: "Companies",
-      href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.COMPANIES,
+      label: "Blocks",
+      href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.PROPERTIES,
       icon: Building2,
     },
     {

@@ -18,9 +18,9 @@
  */
 
 import { useAuth } from "@/context/AuthContext";
+import CompaniesManager from "@/components/dashboard/companyAdmin/companies/CompaniesManager";
 import OwnerDashboard from "@/components/dashboard/owner/OwnerDashboard";
 import TenantDashboard from "@/components/dashboard/tenant/TenantDashboard";
-import CompanyAdminDashboard from "@/components/dashboard/companyAdmin/CompanyAdminDashboard";
 
 
 export default function DashboardPage() {
@@ -33,7 +33,7 @@ export default function DashboardPage() {
    * 🔴 COMPANY ADMIN (PRVI!)
    */
   if (user.roles?.includes("COMPANYADMIN")) {
-    return <CompanyAdminDashboard />;
+    return <CompaniesManager />;
   }
 
   /**

@@ -3,11 +3,12 @@ import { describe, expect, it } from "vitest";
 import { getDashboardSidebarItems } from "@/config/navigation";
 
 describe("dashboard sidebar companies link", () => {
-  it("shows Companies directly under Dashboard for COMPANYADMIN", () => {
+  it("shows Companies as the primary sidebar link for COMPANYADMIN", () => {
     const items = getDashboardSidebarItems(["COMPANYADMIN"]);
 
-    expect(items[0]?.label).toBe("Dashboard");
-    expect(items[1]?.label).toBe("Companies");
+    expect(items[0]?.label).toBe("Companies");
+    expect(items[0]?.href).toBe("/dashboard");
+    expect(items[1]?.label).toBe("Blocks");
   });
 
   it("does not show Companies for OWNER", () => {
