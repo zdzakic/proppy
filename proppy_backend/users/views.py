@@ -166,6 +166,40 @@ class CompanyListView(ListAPIView):
         return Company.objects.filter(id__in=company_ids).order_by("id")
 
 
+class UpdateCompanyView(APIView):
+    """
+    Update company name for companies where user is COMPANYADMIN.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, company_id):
+        user = request.user
+
+        try:
+            company = Company.objects.get(id=company_id)
+        except Company.DoesNotExist:
+            return Response(
+                {"detail": "Company not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        is_admin = UserRookeryRole.objects.filter(
+            user=user,
+            company=company,
+            role__code="COMPANYADMIN",
+        ).exists()
+
+        if not is_admin:
+            raise PermissionDenied("You are not admin of this company.")
+
+        serializer = CompanySerializer(company, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 
 class PasswordResetRequestView(APIView):

@@ -12,7 +12,7 @@ type EditCompanyModalProps = {
   company: Company | null;
   isSaving: boolean;
   error: string | null;
-  onSave: (payload: { name: string }) => Promise<void>;
+  onSave: (payload: { name: string; address: string }) => Promise<void>;
   onClose: () => void;
 };
 
@@ -25,10 +25,12 @@ export default function EditCompanyModal({
   onClose,
 }: EditCompanyModalProps) {
   const [name, setName] = useState("");
+  const [address, setAddress] = useState("");
 
   useEffect(() => {
     if (!company) return;
     setName(company.name);
+    setAddress(company.address ?? "");
   }, [company]);
 
   if (!isOpen || !company) return null;
@@ -41,6 +43,7 @@ export default function EditCompanyModal({
 
     await onSave({
       name: name.trim(),
+      address: address.trim(),
     });
   };
 
@@ -69,6 +72,20 @@ export default function EditCompanyModal({
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
+              className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label htmlFor="edit-company-address" className="text-sm text-dashboard-muted">
+              Address
+            </label>
+            <input
+              id="edit-company-address"
+              type="text"
+              value={address}
+              onChange={(event) => setAddress(event.target.value)}
+              placeholder="Optional"
               className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
             />
           </div>

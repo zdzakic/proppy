@@ -1,6 +1,7 @@
 export interface Company {
   id: number;
   name: string;
+  address?: string;
 }
 
 export interface CompaniesListResponse {
@@ -10,5 +11,6 @@ export interface CompaniesListResponse {
 export interface AddCompanyResponse {
   company_id: number;
   company_name: string;
+  company_address?: string;
   message?: string;
 }

@@ -299,5 +299,6 @@ class AddCompanyView(APIView):
         return Response({
             "message": "Company added successfully",
             "company_id": company.id,
-            "company_name": company.name}, 
-            status=status.HTTP_201_CREATED)
+            "company_name": company.name,
+            "company_address": company.address,
+        }, status=status.HTTP_201_CREATED)

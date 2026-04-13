@@ -93,6 +93,7 @@ describe("CompaniesManager", () => {
       expect(mockPost).toHaveBeenCalledWith("/properties/companies/create/", {
         email: "admin@proppy.test",
         name: "Gamma",
+        address: "",
       });
     });
 
@@ -135,6 +136,7 @@ describe("CompaniesManager", () => {
     await waitFor(() => {
       expect(mockPut).toHaveBeenCalledWith("/users/companies/4/update/", {
         name: "New Name",
+        address: "",
       });
     });
 

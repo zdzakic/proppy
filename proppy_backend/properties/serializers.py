@@ -108,6 +108,7 @@ class AddCompanyAdminSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
     name = serializers.CharField(max_length=100)
+    address = serializers.CharField(max_length=255, required=False, allow_blank=True)
 
     def create(self, validated_data):
         """Create new company admin role for existing user."""
@@ -117,7 +118,10 @@ class AddCompanyAdminSerializer(serializers.Serializer):
         company = self.context["company"]
 
         with transaction.atomic():
-            company = Company.objects.create(name=validated_data["name"])
+            company = Company.objects.create(
+                name=validated_data["name"],
+                address=validated_data.get("address", ""),
+            )
             role = Role.objects.get(code="COMPANYADMIN")
             UserRookeryRole.objects.create(
                 user=user,

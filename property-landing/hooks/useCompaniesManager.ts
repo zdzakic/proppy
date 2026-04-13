@@ -36,6 +36,7 @@ export function useCompaniesManager(userEmail?: string | null) {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newCompanyName, setNewCompanyName] = useState("");
+  const [newCompanyAddress, setNewCompanyAddress] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const [selectedEditCompany, setSelectedEditCompany] = useState<Company | null>(null);
@@ -86,16 +87,19 @@ export function useCompaniesManager(userEmail?: string | null) {
         {
           email: userEmail,
           name,
+          address: newCompanyAddress.trim(),
         }
       );
 
       const createdCompany: Company = {
         id: response.data.company_id,
         name: response.data.company_name,
+        address: response.data.company_address ?? "",
       };
 
       setCompanies((prev) => [...prev, createdCompany]);
       setNewCompanyName("");
+      setNewCompanyAddress("");
       setIsAddModalOpen(false);
       toast.success("Company created successfully.");
     } catch {
@@ -112,7 +116,7 @@ export function useCompaniesManager(userEmail?: string | null) {
     setIsEditCompanyModalOpen(true);
   };
 
-  const handleEditSave = async (payload: { name: string }) => {
+  const handleEditSave = async (payload: { name: string; address: string }) => {
     if (!selectedEditCompany) return;
 
     setIsEditCompanySaving(true);
@@ -123,6 +127,7 @@ export function useCompaniesManager(userEmail?: string | null) {
         `/users/companies/${selectedEditCompany.id}/update/`,
         {
           name: payload.name,
+          address: payload.address,
         }
       );
 
@@ -197,6 +202,8 @@ export function useCompaniesManager(userEmail?: string | null) {
     setIsAddModalOpen,
     newCompanyName,
     setNewCompanyName,
+    newCompanyAddress,
+    setNewCompanyAddress,
     isCreating,
     selectedEditCompany,
     isEditCompanyModalOpen,

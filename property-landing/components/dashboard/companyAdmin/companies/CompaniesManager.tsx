@@ -26,6 +26,8 @@ export default function CompaniesManager() {
     setIsAddModalOpen,
     newCompanyName,
     setNewCompanyName,
+    newCompanyAddress,
+    setNewCompanyAddress,
     isCreating,
     selectedEditCompany,
     isEditCompanyModalOpen,
@@ -104,6 +106,8 @@ export default function CompaniesManager() {
         onCreate={handleCreateCompany}
         value={newCompanyName}
         setValue={setNewCompanyName}
+        addressValue={newCompanyAddress}
+        setAddressValue={setNewCompanyAddress}
         loading={isCreating}
       />
 

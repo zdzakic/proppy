@@ -1,0 +1,14 @@
+postgres sb
+name: proppy-db
+hostname: dpg-d7cflrcp3tds739ubcrg-a
+port: 5432
+database: proppy_be2w
+username: proppy_be2w_user
+pass: olY1VKxiSaybMHdOevTy3mm9buut8pHp
+intenral: fpostgresql://proppy_be2w_user:olY1VKxiSaybMHdOevTy3mm9buut8pHp@dpg-d7cflrcp3tds739ubcrg-a/proppy_be2w
+external: postgresql://proppy_be2w_user:olY1VKxiSaybMHdOevTy3mm9buut8pHp@dpg-d7cflrcp3tds739ubcrg-a.frankfurt-postgres.render.com/proppy_be2w
+
+
+#BE admin
+https://proppy-g81a.onrender.com/admin
+

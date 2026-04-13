@@ -1,7 +1,7 @@
 # users/urls.py
 from django.urls import path
 from .views import CurrentUserView,RegisterCompanyView, \
-    PasswordResetConfirmView,DeleteCompanyView, CompanyListView, \
+    PasswordResetConfirmView,DeleteCompanyView, CompanyListView, UpdateCompanyView, \
     PasswordResetRequestView
 
 urlpatterns = [
@@ -26,6 +26,11 @@ urlpatterns = [
         "companies/",
         CompanyListView.as_view(),
         name="company-list",
+    ),
+    path(
+        "companies/<int:company_id>/update/",
+        UpdateCompanyView.as_view(),
+        name="company-update",
     ),
 ]   
 

@@ -4,8 +4,8 @@ from .models import Company, Block, Property, PropertyOwner, UserRookeryRole
 
 @admin.register(Company)
 class CompanyAdmin(admin.ModelAdmin):
-    list_display = ("id", "name", "is_valid")
-    search_fields = ("name",)
+    list_display = ("id", "name", "address", "is_valid")
+    search_fields = ("name", "address")
 
 
 @admin.register(Block)

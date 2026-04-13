@@ -10,6 +10,8 @@ type AddCompanyModalProps = {
   onCreate: () => void;
   value: string;
   setValue: (value: string) => void;
+  addressValue: string;
+  setAddressValue: (value: string) => void;
   loading: boolean;
 };
 
@@ -19,6 +21,8 @@ export default function AddCompanyModal({
   onCreate,
   value,
   setValue,
+  addressValue,
+  setAddressValue,
   loading,
 }: AddCompanyModalProps) {
   if (!isOpen) return null;
@@ -43,6 +47,13 @@ export default function AddCompanyModal({
           onChange={(event) => setValue(event.target.value)}
           placeholder="Company name"
           className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
+        />
+
+        <input
+          value={addressValue}
+          onChange={(event) => setAddressValue(event.target.value)}
+          placeholder="Address (optional)"
+          className="mt-2 w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
         />
 
         <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

@@ -18,7 +18,7 @@ type CompaniesTableProps = {
   viewMode?: TableViewMode;
 };
 
-type SortKey = "id" | "name" | "comment";
+type SortKey = "id" | "name" | "address";
 
 export default function CompaniesTable({
   companies,
@@ -36,6 +36,10 @@ export default function CompaniesTable({
 
     if (sortKey === "name") {
       return sortByString(companies, (company) => company.name, sortDirection);
+    }
+
+    if (sortKey === "address") {
+      return sortByString(companies, (company) => company.address ?? "", sortDirection);
     }
 
     return sortByString(companies, () => "", sortDirection);
@@ -95,7 +99,9 @@ export default function CompaniesTable({
                   {company.name}
                 </p>
 
-                <p className="text-xs text-dashboard-muted">Comment: -</p>
+                <p className="text-xs text-dashboard-muted">
+                  {company.address ? company.address : <span className="italic">No address</span>}
+                </p>
 
                 <div className="flex flex-wrap gap-1.5">
                   <button
@@ -167,12 +173,12 @@ export default function CompaniesTable({
                 <th className="px-3 py-2 font-medium">
                   <button
                     type="button"
-                    onClick={() => handleSort("comment")}
+                    onClick={() => handleSort("address")}
                     className="inline-flex items-center gap-1 hover:text-dashboard-text"
                   >
-                    <span>Comment</span>
+                    <span>Address</span>
                     <span className="inline-flex w-4 justify-center text-dashboard-text">
-                      {getSortIndicator("comment")}
+                      {getSortIndicator("address")}
                     </span>
                   </button>
                 </th>
@@ -188,7 +194,7 @@ export default function CompaniesTable({
                 >
                   <td className="px-3 py-2 text-dashboard-muted">{company.id}</td>
                   <td className="px-3 py-2 font-medium text-dashboard-text">{company.name}</td>
-                  <td className="px-3 py-2 text-dashboard-muted">-</td>
+                  <td className="px-3 py-2 text-dashboard-muted">{company.address || "-"}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
