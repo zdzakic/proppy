@@ -197,7 +197,7 @@ export default function CompaniesTable({
                     </span>
                   </button>
                 </th>
-                <th className="px-3 py-2 font-medium">
+                <th className="px-3 py-2 text-center font-medium">
                   <button
                     type="button"
                     onClick={() => handleSort("block_count")}
@@ -209,7 +209,7 @@ export default function CompaniesTable({
                     </span>
                   </button>
                 </th>
-                <th className="px-3 py-2 font-medium">
+                <th className="px-3 py-2 text-center font-medium">
                   <button
                     type="button"
                     onClick={() => handleSort("property_count")}
@@ -234,8 +234,8 @@ export default function CompaniesTable({
                   <td className="px-3 py-2 text-dashboard-muted">{company.id}</td>
                   <td className="px-3 py-2 font-medium text-dashboard-text">{company.name}</td>
                   <td className="px-3 py-2 text-dashboard-muted">{company.address || "-"}</td>
-                  <td className="px-3 py-2 text-dashboard-muted">{company.block_count}</td>
-                  <td className="px-3 py-2 text-dashboard-muted">{company.property_count}</td>
+                  <td className="px-3 py-2 text-center text-dashboard-muted">{company.block_count}</td>
+                  <td className="px-3 py-2 text-center text-dashboard-muted">{company.property_count}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1.5">
                       <button

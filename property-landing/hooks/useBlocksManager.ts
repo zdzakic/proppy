@@ -138,11 +138,17 @@ export function useBlocksManager() {
     setCreating(true);
 
     try {
-      const payload: { name: string; company?: number } = { name };
+      //debug
+      console.log("selectedCompanyId", selectedCompanyId);
+      
 
-      if (adminCompanies.length > 1 && selectedCompanyId) {
-        payload.company = selectedCompanyId;
-      }
+      const payload: { name: string; company: number } = {
+        name,
+        company: selectedCompanyId!,
+      };
+
+      // debug
+      console.log("payload", payload);
 
       const res = await apiClient.post("/properties/blocks/", payload);
       setBlocks((prev) => [...prev, res.data]);

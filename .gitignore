@@ -33,4 +33,5 @@ instance/*
 config.jsx
 *.venv*
 .env
+TODO*
 

@@ -1,6 +1,7 @@
 import os
 
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.db.models import Count
 from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.generics import RetrieveAPIView, ListAPIView
@@ -163,7 +164,11 @@ class CompanyListView(ListAPIView):
             role__code="COMPANYADMIN"
         ).values_list("company_id", flat=True)
 
-        return Company.objects.filter(id__in=company_ids).order_by("id")
+        # return Company.objects.filter(id__in=company_ids).order_by("id")
+        return Company.objects.filter(id__in=company_ids).annotate(
+            block_count=Count('blocks', distinct=True),
+            property_count=Count('blocks__properties', distinct=True)
+        ).order_by("id")
 
 
 class UpdateCompanyView(APIView):

@@ -12,6 +12,8 @@ import type { TableViewMode } from "@/utils/table/viewMode";
 type Block = {
   id: number;
   name: string;
+  company: number;
+  company_name: string;
   comment?: string;
   properties?: { id: number; name: string }[];
 };
@@ -25,7 +27,7 @@ type Props = {
   viewMode?: BlocksViewMode;
 };
 
-type SortKey = "name" | "properties" | "comment";
+type SortKey = "name" | "company_name" | "properties" | "comment";
 export type BlocksViewMode = TableViewMode;
 
 export default function BlocksTable({
@@ -42,6 +44,10 @@ export default function BlocksTable({
   const sortedBlocks = useMemo(() => {
     if (sortKey === "name") {
       return sortByString(blocks, (block) => block.name, sortDirection);
+    }
+
+    if (sortKey === "company_name") {
+      return sortByString(blocks, (block) => block.company_name, sortDirection);
     }
 
     if (sortKey === "properties") {
@@ -114,6 +120,7 @@ export default function BlocksTable({
           >
             <div className="space-y-2">
               <p className="text-sm font-semibold leading-tight text-dashboard-text">{block.name}</p>
+              <p className="text-xs text-dashboard-muted">{block.company_name}</p>
 
               <p className="text-xs text-dashboard-muted">
                 Properties: {block.properties?.length ?? 0}
@@ -182,9 +189,10 @@ export default function BlocksTable({
       <div className={tableWrapperClassName}>
         <table className="w-full table-fixed text-xs">
           <colgroup>
-            <col className="w-[32%]" />
-            <col className="w-[18%]" />
-            <col className="w-[30%]" />
+            <col className="w-[24%]" />
+            <col className="w-[24%]" />
+            <col className="w-[12%]" />
+            <col className="w-[20%]" />
             <col className="w-[20%]" />
           </colgroup>
 
@@ -199,6 +207,18 @@ export default function BlocksTable({
                   <span>Name</span>
                   <span className="inline-flex w-4 justify-center text-dashboard-text">
                     {getSortIndicator("name")}
+                  </span>
+                </button>
+              </th>
+              <th className="px-3 py-2 font-medium">
+                <button
+                  type="button"
+                  onClick={() => handleSort("company_name")}
+                  className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                >
+                  <span>Company</span>
+                  <span className="inline-flex w-4 justify-center text-dashboard-text">
+                    {getSortIndicator("company_name")}
                   </span>
                 </button>
               </th>
@@ -239,6 +259,10 @@ export default function BlocksTable({
               >
                 <td className="px-3 py-2">
                   <span className="font-medium text-dashboard-text">{block.name}</span>
+                </td>
+
+                <td className="px-3 py-2 text-dashboard-muted">
+                  {block.company_name}
                 </td>
 
                 <td className="px-3 py-2 text-dashboard-muted">

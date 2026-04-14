@@ -143,6 +143,9 @@ class RegisterCompanySerializer(serializers.Serializer):
 
 
 class CompanySerializer(serializers.ModelSerializer):
+    block_count = serializers.IntegerField(read_only=True)
+    property_count = serializers.IntegerField(read_only=True)
+    
     class Meta:
         model = Company
-        fields = ["id", "name", "address"]
+        fields = ["id", "name", "address","block_count","property_count"]

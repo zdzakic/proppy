@@ -71,11 +71,16 @@ class BlockSerializer(serializers.ModelSerializer):
     """
 
     properties = PropertySerializer(many=True, read_only=True)
-    company = serializers.PrimaryKeyRelatedField(queryset=Company.objects.all(), required=False)
+    company = serializers.PrimaryKeyRelatedField(
+        queryset=Company.objects.all(),
+        required=False,
+    )
+    company_name = serializers.CharField(source="company.name", read_only=True)
+
 
     class Meta:
         model = Block
-        fields = ["id", "name", "comment", "company", "properties"]
+        fields = ["id", "name", "comment", "company", "company_name", "properties"]
 
     def validate_company(self, company):
         user = self.context["request"].user

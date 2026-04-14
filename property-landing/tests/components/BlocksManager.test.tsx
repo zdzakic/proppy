@@ -73,6 +73,7 @@ describe("BlocksManager", () => {
     await waitFor(() => {
       expect(mockPost).toHaveBeenCalledWith("/properties/blocks/", {
         name: "New Block",
+        company: 1,
       });
     });
 
