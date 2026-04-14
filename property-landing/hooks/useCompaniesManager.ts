@@ -95,6 +95,8 @@ export function useCompaniesManager(userEmail?: string | null) {
         id: response.data.company_id,
         name: response.data.company_name,
         address: response.data.company_address ?? "",
+        block_count:0,
+        property_count:0,
       };
 
       setCompanies((prev) => [...prev, createdCompany]);

@@ -104,7 +104,7 @@ export default function BlocksManager() {
         </div>
 
         <BlocksTable
-          blocks={blocks}
+          blocks={blocks as any}
           onEditStart={handleEditStart}
           onAddProperty={handleOpenPropertyModal}
           onDetails={handleDetails}
