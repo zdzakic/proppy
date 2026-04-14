@@ -18,7 +18,8 @@ type CompaniesTableProps = {
   viewMode?: TableViewMode;
 };
 
-type SortKey = "id" | "name" | "address";
+type SortKey = "id" | "name" | "address" | "block_count" | "property_count";
+
 
 export default function CompaniesTable({
   companies,
@@ -40,6 +41,14 @@ export default function CompaniesTable({
 
     if (sortKey === "address") {
       return sortByString(companies, (company) => company.address ?? "", sortDirection);
+    }
+
+    if (sortKey === "block_count") {
+      return sortByNumber(companies, (company) => company.block_count, sortDirection);
+    }
+
+    if (sortKey === "property_count") {
+      return sortByNumber(companies, (company) => company.property_count, sortDirection);
     }
 
     return sortByString(companies, () => "", sortDirection);
@@ -103,6 +112,10 @@ export default function CompaniesTable({
                   {company.address ? company.address : <span className="italic">No address</span>}
                 </p>
 
+                <p className="text-xs text-dashboard-muted">
+                  Blocks: {company.block_count} | Properties: {company.property_count}
+                </p>
+
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={(event) => {
@@ -138,9 +151,11 @@ export default function CompaniesTable({
         <div className={tableWrapperClassName}>
           <table className="w-full table-fixed text-xs">
             <colgroup>
-              <col className="w-[12%]" />
+              <col className="w-[8%]" />
+              <col className="w-[24%]" />
               <col className="w-[28%]" />
-              <col className="w-[40%]" />
+              <col className="w-[10%]" />
+              <col className="w-[10%]" />
               <col className="w-[20%]" />
             </colgroup>
 
@@ -182,6 +197,30 @@ export default function CompaniesTable({
                     </span>
                   </button>
                 </th>
+                <th className="px-3 py-2 font-medium">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("block_count")}
+                    className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                  >
+                    <span>Blocks</span>
+                    <span className="inline-flex w-4 justify-center text-dashboard-text">
+                      {getSortIndicator("block_count")}
+                    </span>
+                  </button>
+                </th>
+                <th className="px-3 py-2 font-medium">
+                  <button
+                    type="button"
+                    onClick={() => handleSort("property_count")}
+                    className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                  >
+                    <span>Properties</span>
+                    <span className="inline-flex w-4 justify-center text-dashboard-text">
+                      {getSortIndicator("property_count")}
+                    </span>
+                  </button>
+                </th>
                 <th className="px-3 py-2 text-right font-medium">Actions</th>
               </tr>
             </thead>
@@ -195,6 +234,8 @@ export default function CompaniesTable({
                   <td className="px-3 py-2 text-dashboard-muted">{company.id}</td>
                   <td className="px-3 py-2 font-medium text-dashboard-text">{company.name}</td>
                   <td className="px-3 py-2 text-dashboard-muted">{company.address || "-"}</td>
+                  <td className="px-3 py-2 text-dashboard-muted">{company.block_count}</td>
+                  <td className="px-3 py-2 text-dashboard-muted">{company.property_count}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
