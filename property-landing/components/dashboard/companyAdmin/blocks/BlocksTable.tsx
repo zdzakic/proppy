@@ -11,14 +11,6 @@ import type { TableViewMode } from "@/utils/table/viewMode";
 
 import type { Block } from "@/types/Block";
 
-// type Block = {
-//   id: number;
-//   name: string;
-//   company: number;
-//   company_name: string;
-//   comment?: string;
-//   properties?: { id: number; name: string }[];
-// };
 
 type Props = {
   blocks: Block[];
