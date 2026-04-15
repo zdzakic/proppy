@@ -85,7 +85,9 @@ export default function CompaniesTable({
   const showTable = viewMode !== "cards";
 
   const cardsWrapperClassName =
-    viewMode === "auto" ? "space-y-2 md:hidden" : "space-y-2";
+    viewMode === "auto"
+      ? "space-y-2 md:hidden"
+      : "grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
 
   const tableWrapperClassName =
     viewMode === "auto"

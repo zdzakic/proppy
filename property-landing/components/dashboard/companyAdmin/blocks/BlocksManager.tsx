@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import ActionButton from "@/components/ui/ActionButton";
 import type { TableViewMode } from "@/utils/table/viewMode";
-import TableLayoutToggle from "@/components/dashboard/shared/common/TableLayoutToggle";
 import DeleteConfirmModal from "@/components/dashboard/shared/common/DeleteConfirmModal";
 import { useBlocksManager } from "@/hooks/useBlocksManager";
 
@@ -95,14 +94,6 @@ export default function BlocksManager() {
               Add Block
             </ActionButton>
           </div>
-
-          <div className="hidden items-center justify-end md:flex">
-            <TableLayoutToggle
-              value={blocksViewMode}
-              onChange={setBlocksViewMode}
-              ariaLabelPrefix="Blocks"
-            />
-          </div>
         </div>
 
         {/* <BlocksTable
@@ -125,6 +116,7 @@ export default function BlocksManager() {
             handleDetails(id);
           }}
           onDelete={handleDeleteRequest}
+          onViewModeChange={setBlocksViewMode}
           // onAddBlock={(companyId) => {
           //   setSelectedCompanyId(companyId);
           //   setIsOpen(true);

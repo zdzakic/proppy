@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import TableLayoutToggle from "@/components/dashboard/shared/common/TableLayoutToggle";
 import BlocksTable from "./BlocksTable";
 import type { Block } from "@/types/Block";
-
+import type { TableViewMode } from "@/utils/table/viewMode";
 
 type Props = {
   blocks: Block[];
@@ -12,7 +13,8 @@ type Props = {
   onDetails: (id: number) => void;
   onDelete: (id: number) => void;
   onAddBlock?: (companyId: number) => void;
-  viewMode?: "table" | "cards" | "auto";
+  viewMode?: TableViewMode;
+  onViewModeChange?: (mode: TableViewMode) => void;
 };
 
 /**
@@ -33,6 +35,7 @@ export default function BlocksGroupedView({
   onDetails,
   onDelete,
   viewMode = "auto",
+  onViewModeChange,
 }: Props) {
   const groupedBlocks = useMemo(() => {
     return blocks.reduce((acc, block) => {
@@ -59,6 +62,16 @@ export default function BlocksGroupedView({
             <h3 className="text-sm font-semibold text-dashboard-text">
               {group.company_name} ({group.blocks.length})
             </h3>
+
+            {onViewModeChange ? (
+              <div className="hidden md:block">
+                <TableLayoutToggle
+                  value={viewMode}
+                  onChange={onViewModeChange}
+                  ariaLabelPrefix="Blocks"
+                />
+              </div>
+            ) : null}
           </div> 
 
           {/* TABLE */}

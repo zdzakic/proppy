@@ -28,6 +28,11 @@ describe("BlocksManager", () => {
   const mockPut = vi.mocked(apiClient.put);
   const mockDelete = vi.mocked(apiClient.delete);
 
+  const expandBlocksList = async (user: ReturnType<typeof userEvent.setup>) => {
+    const toggles = await screen.findAllByRole("button", { name: "Blocks" });
+    await user.click(toggles[0]);
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
 
@@ -64,6 +69,7 @@ describe("BlocksManager", () => {
 
     render(<BlocksManager />);
 
+    await expandBlocksList(user);
     await screen.findAllByText("Block A");
 
     await user.click(screen.getByRole("button", { name: /add block/i }));
@@ -115,6 +121,7 @@ describe("BlocksManager", () => {
 
     render(<BlocksManager />);
 
+    await expandBlocksList(user);
     await screen.findAllByText("Block A");
 
     await user.click(screen.getByRole("button", { name: /add block/i }));
@@ -139,6 +146,7 @@ describe("BlocksManager", () => {
 
     render(<BlocksManager />);
 
+    await expandBlocksList(user);
     await screen.findAllByText("Block A");
 
     await user.click(screen.getAllByLabelText("Edit block")[0]);
@@ -165,6 +173,7 @@ describe("BlocksManager", () => {
 
     render(<BlocksManager />);
 
+    await expandBlocksList(user);
     await screen.findAllByText("Block A");
 
     await user.click(screen.getAllByLabelText("Delete block")[0]);
@@ -181,6 +190,40 @@ describe("BlocksManager", () => {
 
   it("adds a property to a selected block", async () => {
     const user = userEvent.setup();
+
+    mockGet.mockImplementation(async (url: string) => {
+      if (url === "/properties/blocks/") {
+        return {
+          data: [
+            {
+              id: 1,
+              name: "Block A",
+              comment: "",
+              properties: [],
+            },
+          ],
+        };
+      }
+
+      if (url === "/users/companies/") {
+        return {
+          data: [{ id: 1, name: "Admin Co" }],
+        };
+      }
+
+      if (url === "/properties/blocks/1/") {
+        return {
+          data: {
+            id: 1,
+            name: "Block A",
+            comment: "",
+            properties: [{ id: 10, name: "Apartment 101", comment: "Top floor" }],
+          },
+        };
+      }
+
+      return { data: [] };
+    });
 
     mockPost.mockImplementation(async (url: string) => {
       if (url === "/properties/blocks/1/properties/create/") {
@@ -199,6 +242,7 @@ describe("BlocksManager", () => {
 
     render(<BlocksManager />);
 
+    await expandBlocksList(user);
     await screen.findAllByText("Block A");
 
     await user.click(screen.getAllByLabelText("Add property")[0]);
@@ -217,6 +261,7 @@ describe("BlocksManager", () => {
       );
     });
 
+    await user.click(screen.getAllByLabelText("View details")[0]);
     expect(await screen.findAllByText("Apartment 101")).not.toHaveLength(0);
   });
 
@@ -225,6 +270,7 @@ describe("BlocksManager", () => {
 
     render(<BlocksManager />);
 
+    await expandBlocksList(user);
     await screen.findAllByText("Block A");
 
     await user.click(screen.getByRole("button", { name: /cards layout/i }));
@@ -240,6 +286,40 @@ describe("BlocksManager", () => {
 
   it("switches properties layout between cards and table in block details", async () => {
     const user = userEvent.setup();
+
+    mockGet.mockImplementation(async (url: string) => {
+      if (url === "/properties/blocks/") {
+        return {
+          data: [
+            {
+              id: 1,
+              name: "Block A",
+              comment: "",
+              properties: [],
+            },
+          ],
+        };
+      }
+
+      if (url === "/users/companies/") {
+        return {
+          data: [{ id: 1, name: "Admin Co" }],
+        };
+      }
+
+      if (url === "/properties/blocks/1/") {
+        return {
+          data: {
+            id: 1,
+            name: "Block A",
+            comment: "",
+            properties: [{ id: 10, name: "Apartment 101", comment: "Top floor" }],
+          },
+        };
+      }
+
+      return { data: [] };
+    });
 
     mockPost.mockImplementation(async (url: string) => {
       if (url === "/properties/blocks/1/properties/create/") {
@@ -258,6 +338,7 @@ describe("BlocksManager", () => {
 
     render(<BlocksManager />);
 
+    await expandBlocksList(user);
     await screen.findAllByText("Block A");
 
     await user.click(screen.getAllByLabelText("Add property")[0]);
@@ -265,6 +346,7 @@ describe("BlocksManager", () => {
     await user.type(screen.getByLabelText("Comment (Optional)"), "Top floor");
     await user.click(screen.getByRole("button", { name: /save property/i }));
 
+    await user.click(screen.getAllByLabelText("View details")[0]);
     await screen.findAllByText("Apartment 101");
 
     await user.click(screen.getByRole("button", { name: /properties cards layout/i }));
