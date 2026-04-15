@@ -1,15 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 
-import {
-  sortByNumber,
-  sortByString,
-  type SortDirection,
-} from "@/utils/table/sorting";
 import type { TableViewMode } from "@/utils/table/viewMode";
 import type { Company } from "@/types/company";
+import { useSort } from "@/hooks/useSort";
 
 type CompaniesTableProps = {
   companies: Company[];
@@ -27,47 +22,26 @@ export default function CompaniesTable({
   onDelete,
   viewMode = "auto",
 }: CompaniesTableProps) {
-  const [sortKey, setSortKey] = useState<SortKey>("id");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
-  const sortedCompanies = useMemo(() => {
-    if (sortKey === "id") {
-      return sortByNumber(companies, (company) => company.id, sortDirection);
-    }
-
-    if (sortKey === "name") {
-      return sortByString(companies, (company) => company.name, sortDirection);
-    }
-
-    if (sortKey === "address") {
-      return sortByString(companies, (company) => company.address ?? "", sortDirection);
-    }
-
-    if (sortKey === "block_count") {
-      return sortByNumber(companies, (company) => company.block_count, sortDirection);
-    }
-
-    if (sortKey === "property_count") {
-      return sortByNumber(companies, (company) => company.property_count, sortDirection);
-    }
-
-    return sortByString(companies, () => "", sortDirection);
-  }, [companies, sortDirection, sortKey]);
-
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-      return;
-    }
-
-    setSortKey(key);
-    setSortDirection("asc");
-  };
-
-  const getSortIndicator = (key: SortKey) => {
-    if (sortKey !== key) return "";
-    return sortDirection === "asc" ? "↑" : "↓";
-  };
+  const { sortedItems: sortedCompanies, handleSort, getSortIndicator } = useSort<
+    Company,
+    SortKey
+  >(companies, {
+    defaultKey: "id",
+    getSortValueType: (key) => {
+      if (key === "id" || key === "block_count" || key === "property_count") {
+        return "number";
+      }
+      return "string";
+    },
+    getSortValue: (key, company) => {
+      if (key === "id") return company.id;
+      if (key === "name") return company.name;
+      if (key === "address") return company.address ?? "";
+      if (key === "block_count") return company.block_count ?? 0;
+      if (key === "property_count") return company.property_count ?? 0;
+      return "";
+    },
+  });
 
   const stopRowClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
@@ -233,11 +207,11 @@ export default function CompaniesTable({
                   key={company.id}
                   className="border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
                 >
-                  <td className="px-3 py-2 text-dashboard-muted">{company.id}</td>
+                  <td className="px-3 py-2 text-dashboard-muted">{company.id || "-"}</td>
                   <td className="px-3 py-2 font-medium text-dashboard-text">{company.name}</td>
                   <td className="px-3 py-2 text-dashboard-muted">{company.address || "-"}</td>
-                  <td className="px-3 py-2 text-center text-dashboard-muted">{company.block_count}</td>
-                  <td className="px-3 py-2 text-center text-dashboard-muted">{company.property_count}</td>
+                  <td className="px-3 py-2 text-center text-dashboard-muted">{company.block_count || "-"}</td>
+                  <td className="px-3 py-2 text-center text-dashboard-muted">{company.property_count || "-"}</td>
                   <td className="px-3 py-2">
                     <div className="flex items-center justify-end gap-1.5">
                       <button

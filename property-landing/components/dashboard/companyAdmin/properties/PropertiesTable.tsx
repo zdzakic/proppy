@@ -1,13 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
-import {
-  sortByNumber,
-  sortByString,
-  type SortDirection,
-} from "@/utils/table/sorting";
 import type { TableViewMode } from "@/utils/table/viewMode";
+import { useSort } from "@/hooks/useSort";
 
 type PropertyRow = {
   id: number;
@@ -32,35 +28,19 @@ export default function PropertiesTable({
   onDelete,
   viewMode = "auto",
 }: PropertiesTableProps) {
-  const [sortKey, setSortKey] = useState<SortKey>("id");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
-  const sortedProperties = useMemo(() => {
-    if (sortKey === "id") {
-      return sortByNumber(properties, (property) => property.id, sortDirection);
-    }
-
-    if (sortKey === "name") {
-      return sortByString(properties, (property) => property.name, sortDirection);
-    }
-
-    return sortByString(properties, (property) => property.comment, sortDirection);
-  }, [properties, sortDirection, sortKey]);
-
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-      return;
-    }
-
-    setSortKey(key);
-    setSortDirection("asc");
-  };
-
-  const getSortIndicator = (key: SortKey) => {
-    if (sortKey !== key) return "";
-    return sortDirection === "asc" ? "↑" : "↓";
-  };
+  const { sortedItems: sortedProperties, handleSort, getSortIndicator } = useSort<
+    PropertyRow,
+    SortKey
+  >(properties, {
+    defaultKey: "id",
+    getSortValueType: (key) => (key === "id" ? "number" : "string"),
+    getSortValue: (key, property) => {
+      if (key === "id") return property.id;
+      if (key === "name") return property.name;
+      if (key === "comment") return property.comment ?? "";
+      return "";
+    },
+  });
 
   if (properties.length === 0) {
     return (

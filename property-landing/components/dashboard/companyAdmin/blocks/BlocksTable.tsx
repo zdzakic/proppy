@@ -1,13 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ChevronDown, ChevronUp, Eye, Pencil, Plus, Trash2 } from "lucide-react";
-import {
-  sortByNumber,
-  sortByString,
-  type SortDirection,
-} from "@/utils/table/sorting";
 import type { TableViewMode } from "@/utils/table/viewMode";
+import { useSort } from "@/hooks/useSort";
 
 import type { Block } from "@/types/Block";
 
@@ -33,43 +29,23 @@ export default function BlocksTable({
   viewMode = "auto",
 }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(true);
-  const [sortKey, setSortKey] = useState<SortKey>("name");
-  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
-
-  const sortedBlocks = useMemo(() => {
-    if (sortKey === "name") {
-      return sortByString(blocks, (block) => block.name, sortDirection);
-    }
-
-    if (sortKey === "company_name") {
-      return sortByString(blocks, (block) => block.company_name, sortDirection);
-    }
-
-    if (sortKey === "properties") {
-      return sortByNumber(
-        blocks,
-        (block) => block.properties?.length ?? 0,
-        sortDirection
-      );
-    }
-
-    return sortByString(blocks, (block) => block.comment, sortDirection);
-  }, [blocks, sortDirection, sortKey]);
-
-  const handleSort = (key: SortKey) => {
-    if (sortKey === key) {
-      setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
-      return;
-    }
-
-    setSortKey(key);
-    setSortDirection("asc");
-  };
-
-  const getSortIndicator = (key: SortKey) => {
-    if (sortKey !== key) return "";
-    return sortDirection === "asc" ? "↑" : "↓";
-  };
+  const { sortedItems: sortedBlocks, handleSort, getSortIndicator } = useSort<
+    Block,
+    SortKey
+  >(blocks, {
+    defaultKey: "name",
+    getSortValueType: (key) => {
+      if (key === "properties") return "number";
+      return "string";
+    },
+    getSortValue: (key, block) => {
+      if (key === "name") return block.name;
+      if (key === "company_name") return block.company_name;
+      if (key === "properties") return block.properties?.length ?? 0;
+      if (key === "comment") return block.comment ?? "";
+      return "";
+    },
+  });
 
   const stopRowClick = (event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
