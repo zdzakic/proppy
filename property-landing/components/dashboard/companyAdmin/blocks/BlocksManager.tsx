@@ -14,7 +14,7 @@ import BlocksTable from "./BlocksTable";
 import EditBlockModal from "./EditBlockModal";
 import EditPropertyModal from "../properties/EditPropertyModal";
 import PropertyDetailsModal from "../properties/PropertyDetailsModal";
-import BlockDetailsSection from "./BlockDetailsSection";
+import BlockDetailsModal from "./BlockDetailsModal";
 import BlocksGroupedView from "./BlocksGroupedView";
 
 export default function BlocksManager() {
@@ -67,6 +67,7 @@ export default function BlocksManager() {
 
   const [blocksViewMode, setBlocksViewMode] = useState<TableViewMode>("auto");
   const [propertiesViewMode, setPropertiesViewMode] = useState<TableViewMode>("auto");
+  const [isBlockDetailsOpen, setIsBlockDetailsOpen] = useState(false);
 
   if (loading) {
     return <p className="text-sm text-dashboard-muted">Loading blocks...</p>;
@@ -108,7 +109,10 @@ export default function BlocksManager() {
           blocks={blocks as any}
           onEditStart={handleEditStart}
           onAddProperty={handleOpenPropertyModal}
-          onDetails={handleDetails}
+          onDetails={(id) => {
+            setIsBlockDetailsOpen(true);
+            handleDetails(id);
+          }}
           onDelete={handleDeleteRequest}
           viewMode={blocksViewMode}
         /> */}
@@ -116,7 +120,10 @@ export default function BlocksManager() {
           blocks={blocks as any}
           onEditStart={handleEditStart}
           onAddProperty={handleOpenPropertyModal}
-          onDetails={handleDetails}
+          onDetails={(id) => {
+            setIsBlockDetailsOpen(true);
+            handleDetails(id);
+          }}
           onDelete={handleDeleteRequest}
           // onAddBlock={(companyId) => {
           //   setSelectedCompanyId(companyId);
@@ -126,18 +133,18 @@ export default function BlocksManager() {
         />
       </section>
 
-      {(selectedBlock || detailsLoading) && (
-        <BlockDetailsSection
-          selectedBlock={selectedBlock}
-          detailsLoading={detailsLoading}
-          propertiesViewMode={propertiesViewMode}
-          onPropertiesViewModeChange={setPropertiesViewMode}
-          onOpenPropertyModal={() => setIsPropertyModalOpen(true)}
-          onPropertyDetails={handlePropertyDetails}
-          onPropertyEdit={handlePropertyEdit}
-          onPropertyDelete={handlePropertyDelete}
-        />
-      )}
+      <BlockDetailsModal
+        isOpen={isBlockDetailsOpen}
+        onClose={() => setIsBlockDetailsOpen(false)}
+        selectedBlock={selectedBlock}
+        detailsLoading={detailsLoading}
+        propertiesViewMode={propertiesViewMode}
+        onPropertiesViewModeChange={setPropertiesViewMode}
+        onOpenPropertyModal={() => setIsPropertyModalOpen(true)}
+        onPropertyDetails={handlePropertyDetails}
+        onPropertyEdit={handlePropertyEdit}
+        onPropertyDelete={handlePropertyDelete}
+      />
 
       <AddBlockModal
         isOpen={isOpen}
