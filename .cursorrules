@@ -1,0 +1,20 @@
+# Proppy Core Rules
+
+- KISS (no overengineering)
+- Mobile-first (Tailwind)
+- UI in components
+- Logic in hooks
+- No API calls in components
+- No hardcoded colors (use globals.css)
+- Use TypeScript (no any)
+- dark and light theme
+
+## Workflow
+- Finish feature before changing approach
+- Do not refactor mid-feature
+- Reuse existing code first
+- Ask if unclear (do not guess)
+
+## Output
+- Return working code only
+- Keep components small

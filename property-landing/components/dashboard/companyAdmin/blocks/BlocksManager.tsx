@@ -15,6 +15,7 @@ import EditBlockModal from "./EditBlockModal";
 import EditPropertyModal from "../properties/EditPropertyModal";
 import PropertyDetailsModal from "../properties/PropertyDetailsModal";
 import BlockDetailsSection from "./BlockDetailsSection";
+import BlocksGroupedView from "./BlocksGroupedView";
 
 export default function BlocksManager() {
   const {
@@ -103,12 +104,24 @@ export default function BlocksManager() {
           </div>
         </div>
 
-        <BlocksTable
+        {/* <BlocksTable
           blocks={blocks as any}
           onEditStart={handleEditStart}
           onAddProperty={handleOpenPropertyModal}
           onDetails={handleDetails}
           onDelete={handleDeleteRequest}
+          viewMode={blocksViewMode}
+        /> */}
+        <BlocksGroupedView
+          blocks={blocks as any}
+          onEditStart={handleEditStart}
+          onAddProperty={handleOpenPropertyModal}
+          onDetails={handleDetails}
+          onDelete={handleDeleteRequest}
+          // onAddBlock={(companyId) => {
+          //   setSelectedCompanyId(companyId);
+          //   setIsOpen(true);
+          // }}
           viewMode={blocksViewMode}
         />
       </section>

@@ -1,34 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { toast } from "sonner";
 
-import type { CreatePropertyResponse } from "@/types/property";
 import apiClient from "@/utils/api/apiClient";
-
-export type PropertyOwner = {
-  id: number;
-  user_email?: string;
-  display_name?: string;
-  comment?: string;
-};
-
-export type Property = {
-  id: number;
-  name: string;
-  comment?: string;
-  owners?: PropertyOwner[];
-};
-
-export type Block = {
-  id: number;
-  name: string;
-  comment?: string;
-  company?: number;
-  company_name?: string;
-  properties?: Property[];
-};
+import type { Block } from "@/types/Block";
+import type { Property, CreatePropertyResponse } from "@/types/property";
 
 type AdminCompany = {
   id: number;
@@ -140,17 +117,13 @@ export function useBlocksManager() {
     setCreating(true);
 
     try {
-      //debug
-      console.log("selectedCompanyId", selectedCompanyId);
+     
+      if (!selectedCompanyId) return;
       
-
-      const payload: { name: string; company: number } = {
+      const payload = {
         name,
-        company: selectedCompanyId!,
+        company: selectedCompanyId,
       };
-
-      // debug
-      console.log("payload", payload);
 
       const res = await apiClient.post("/properties/blocks/", payload);
       setBlocks((prev) => [...prev, res.data]);
@@ -210,7 +183,7 @@ export function useBlocksManager() {
 
     try {
       const response = await apiClient.get(`/properties/blocks/${id}/`);
-      setSelectedBlock(response.data as Block);
+      setSelectedBlock(response.data);
     } catch {
       const fallback = blocks.find((block) => block.id === id) ?? null;
       setSelectedBlock(fallback);

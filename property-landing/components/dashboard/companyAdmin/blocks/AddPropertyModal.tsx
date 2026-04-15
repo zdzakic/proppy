@@ -1,8 +1,9 @@
 "use client";
 
 import { X } from "lucide-react";
-import type { CreatePropertyResponse } from "@/types/property";
+
 import AddPropertyForm from "../properties/AddPropertyForm";
+import type { CreatePropertyResponse } from "@/types/property";
 
 type AddPropertyModalProps = {
   isOpen: boolean;

@@ -5,7 +5,8 @@ import { Plus } from "lucide-react";
 import ActionButton from "@/components/ui/ActionButton";
 import TableLayoutToggle from "@/components/dashboard/shared/common/TableLayoutToggle";
 import type { TableViewMode } from "@/utils/table/viewMode";
-import type { Block, Property } from "@/hooks/useBlocksManager";
+import type { Block } from "@/types/Block";
+import type { Property } from "@/types/property";
 import PropertiesTable from "@/components/dashboard/companyAdmin/properties/PropertiesTable";
 
 type BlockDetailsSectionProps = {
