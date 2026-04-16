@@ -15,6 +15,7 @@ type Props = {
   onDetails: (id: number) => void;
   onDelete: (id: number) => void;
   viewMode?: BlocksViewMode;
+  headerTitle?: string;
 };
 
 type SortKey = "name" | "company_name" | "properties" | "comment";
@@ -27,6 +28,7 @@ export default function BlocksTable({
   onDetails,
   onDelete,
   viewMode = "auto",
+  headerTitle = "Blocks",
 }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const { sortedItems: sortedBlocks, handleSort, getSortIndicator } = useSort<
@@ -72,7 +74,7 @@ export default function BlocksTable({
         className="flex w-full items-center justify-between rounded-lg border border-dashboard-border bg-dashboard-surface px-3 py-2 text-left transition-colors hover:bg-dashboard-hover"
         aria-expanded={!isCollapsed}
       >
-        <span className="text-sm font-semibold text-dashboard-text">Blocks</span>
+        <span className="text-sm font-semibold text-dashboard-text">{headerTitle}</span>
         <span className="inline-flex items-center justify-center rounded-md border border-dashboard-border bg-dashboard-surface p-1.5 text-dashboard-text">
           {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
         </span>

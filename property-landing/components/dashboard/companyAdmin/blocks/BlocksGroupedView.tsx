@@ -54,27 +54,19 @@ export default function BlocksGroupedView({
   }, [blocks]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
+      {onViewModeChange ? (
+        <div className="hidden items-center justify-end md:flex">
+          <TableLayoutToggle
+            value={viewMode}
+            onChange={onViewModeChange}
+            ariaLabelPrefix="Blocks"
+          />
+        </div>
+      ) : null}
+
       {Object.entries(groupedBlocks).map(([companyId, group]) => (
-        <div key={companyId} className="space-y-2">
-          {/* HEADER */}
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-dashboard-text">
-              {group.company_name} ({group.blocks.length})
-            </h3>
-
-            {onViewModeChange ? (
-              <div className="hidden md:block">
-                <TableLayoutToggle
-                  value={viewMode}
-                  onChange={onViewModeChange}
-                  ariaLabelPrefix="Blocks"
-                />
-              </div>
-            ) : null}
-          </div> 
-
-          {/* TABLE */}
+        <div key={companyId}>
           <BlocksTable
             blocks={group.blocks}
             onEditStart={onEditStart}
@@ -82,6 +74,7 @@ export default function BlocksGroupedView({
             onDetails={onDetails}
             onDelete={onDelete}
             viewMode={viewMode}
+            headerTitle={group.company_name}
           />
         </div>
       ))}
