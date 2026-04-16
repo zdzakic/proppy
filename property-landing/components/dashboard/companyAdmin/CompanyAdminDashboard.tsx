@@ -9,7 +9,7 @@
  *   - korisnici
  */
 
-import BlocksOverview from "./blocks/BlocksOverview";
+// import BlocksOverview from "./blocks/BlocksOverview";
 import BlocksManager from "./blocks/BlocksManager";
 
 

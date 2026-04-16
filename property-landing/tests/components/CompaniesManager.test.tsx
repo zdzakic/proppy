@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -100,7 +100,7 @@ describe("CompaniesManager", () => {
     expect((await screen.findAllByText("Gamma")).length).toBeGreaterThan(0);
   });
 
-  it("shows only edit and delete actions in table", async () => {
+  it("shows edit, delete, and details actions in table", async () => {
     mockGet.mockResolvedValueOnce({
       data: [{ id: 11, name: "Delta" }],
     });
@@ -111,7 +111,7 @@ describe("CompaniesManager", () => {
 
     expect(screen.getAllByLabelText("Edit company").length).toBeGreaterThan(0);
     expect(screen.getAllByLabelText("Delete company").length).toBeGreaterThan(0);
-    expect(screen.queryByLabelText("View details")).not.toBeInTheDocument();
+    expect(screen.getAllByLabelText("View details").length).toBeGreaterThan(0);
   });
 
   it("updates company name from edit modal", async () => {
@@ -183,5 +183,67 @@ describe("CompaniesManager", () => {
     render(<CompaniesManager />);
 
     expect((await screen.findAllByText("Failed to load companies.")).length).toBe(2);
+  });
+
+  it("opens details modal via details button and closes it", async () => {
+    const user = userEvent.setup();
+
+    mockGet.mockResolvedValueOnce({
+      data: [
+        {
+          id: 1,
+          name: "Details Co",
+          address: "123 Main St",
+          block_count: 4,
+          property_count: 9,
+        },
+      ],
+    });
+
+    render(<CompaniesManager />);
+
+    await screen.findByRole("cell", { name: /details co/i });
+
+    const [detailsButton] = screen.getAllByLabelText("View details");
+    await user.click(detailsButton);
+
+    const dialog = screen.getByRole("dialog", { name: /details co/i });
+    expect(within(dialog).getByText("Company information")).toBeInTheDocument();
+    expect(within(dialog).getByText("123 Main St")).toBeInTheDocument();
+
+    const closeButton = within(dialog).getByText("Close").closest("button");
+    await user.click(closeButton!);
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("opens details modal when table row is clicked", async () => {
+    const user = userEvent.setup();
+
+    mockGet.mockResolvedValueOnce({
+      data: [
+        {
+          id: 2,
+          name: "Row Co",
+          address: "456 Side Ave",
+          block_count: 2,
+          property_count: 3,
+        },
+      ],
+    });
+
+    render(<CompaniesManager />);
+
+    const cell = await screen.findByRole("cell", { name: /row co/i });
+    const row = cell.closest("tr");
+    expect(row).not.toBeNull();
+
+    await user.click(row!);
+
+    const dialog = await screen.findByRole("dialog", { name: /row co/i });
+    expect(within(dialog).getByText("456 Side Ave")).toBeInTheDocument();
+    expect(within(dialog).getByText("Blocks")).toBeInTheDocument();
   });
 });

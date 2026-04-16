@@ -11,6 +11,7 @@ import { useCompaniesManager } from "@/hooks/useCompaniesManager";
 import type { TableViewMode } from "@/utils/table/viewMode";
 
 import AddCompanyModal from "./AddCompanyModal";
+import CompanyDetailsModal from "./CompanyDetailsModal";
 import CompaniesTable from "./CompaniesTable";
 import EditCompanyModal from "./EditCompanyModal";
 
@@ -39,11 +40,15 @@ export default function CompaniesManager() {
     isDeleteCompanyModalOpen,
     setIsDeleteCompanyModalOpen,
     isDeletingCompany,
+    selectedDetailsCompany,
+    isCompanyDetailsOpen,
+    setIsCompanyDetailsOpen,
     handleCreateCompany,
     handleEditStart,
     handleEditSave,
     handleDeleteRequest,
     handleDeleteConfirm,
+    handleDetails,
   } = useCompaniesManager(user?.email ?? null);
 
   if (loading) {
@@ -95,6 +100,7 @@ export default function CompaniesManager() {
         <CompaniesTable
           companies={companies}
           onEditStart={handleEditStart}
+          onDetails={handleDetails}
           onDelete={handleDeleteRequest}
           viewMode={companiesViewMode}
         />
@@ -131,6 +137,12 @@ export default function CompaniesManager() {
           setPendingDeleteCompany(null);
         }}
         onConfirm={handleDeleteConfirm}
+      />
+
+      <CompanyDetailsModal
+        isOpen={isCompanyDetailsOpen}
+        company={selectedDetailsCompany}
+        onClose={() => setIsCompanyDetailsOpen(false)}
       />
     </>
   );

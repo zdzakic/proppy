@@ -47,6 +47,8 @@ export function useCompaniesManager(userEmail?: string | null) {
   const [pendingDeleteCompany, setPendingDeleteCompany] = useState<Company | null>(null);
   const [isDeleteCompanyModalOpen, setIsDeleteCompanyModalOpen] = useState(false);
   const [isDeletingCompany, setIsDeletingCompany] = useState(false);
+  const [selectedDetailsCompany, setSelectedDetailsCompany] = useState<Company | null>(null);
+  const [isCompanyDetailsOpen, setIsCompanyDetailsOpen] = useState(false);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -196,6 +198,11 @@ export function useCompaniesManager(userEmail?: string | null) {
     }
   };
 
+  const handleDetails = (company: Company) => {
+    setSelectedDetailsCompany(company);
+    setIsCompanyDetailsOpen(true);
+  };
+
   return {
     companies,
     loading,
@@ -217,10 +224,14 @@ export function useCompaniesManager(userEmail?: string | null) {
     isDeleteCompanyModalOpen,
     setIsDeleteCompanyModalOpen,
     isDeletingCompany,
+    selectedDetailsCompany,
+    isCompanyDetailsOpen,
+    setIsCompanyDetailsOpen,
     handleCreateCompany,
     handleEditStart,
     handleEditSave,
     handleDeleteRequest,
     handleDeleteConfirm,
+    handleDetails,
   };
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import type { MouseEvent } from "react";
+
+import { Eye, Pencil, Trash2 } from "lucide-react";
 
 import type { TableViewMode } from "@/utils/table/viewMode";
 import type { Company } from "@/types/company";
@@ -9,6 +11,7 @@ import { useSort } from "@/hooks/useSort";
 type CompaniesTableProps = {
   companies: Company[];
   onEditStart: (company: Company) => void;
+  onDetails: (company: Company) => void;
   onDelete: (id: number) => void;
   viewMode?: TableViewMode;
 };
@@ -19,6 +22,7 @@ type SortKey = "id" | "name" | "address" | "block_count" | "property_count";
 export default function CompaniesTable({
   companies,
   onEditStart,
+  onDetails,
   onDelete,
   viewMode = "auto",
 }: CompaniesTableProps) {
@@ -43,7 +47,7 @@ export default function CompaniesTable({
     },
   });
 
-  const stopRowClick = (event: React.MouseEvent<HTMLElement>) => {
+  const stopRowClick = (event: MouseEvent<HTMLElement>) => {
     event.stopPropagation();
   };
 
@@ -70,13 +74,23 @@ export default function CompaniesTable({
 
   return (
     <div className="space-y-2">
-      {showCards ? (
-        <div className={cardsWrapperClassName}>
-          {sortedCompanies.map((company) => (
-            <article
-              key={company.id}
-              className="rounded-lg border border-dashboard-border bg-dashboard-surface p-3 transition-colors hover:bg-dashboard-hover"
-            >
+          {showCards ? (
+            <div className={cardsWrapperClassName}>
+              {sortedCompanies.map((company) => (
+                <article
+                  key={company.id}
+                  className="cursor-pointer rounded-lg border border-dashboard-border bg-dashboard-surface p-3 transition-colors hover:bg-dashboard-hover"
+                  onClick={() => onDetails(company)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onDetails(company);
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open details for ${company.name}`}
+                >
               <div className="space-y-2">
                 <p className="text-[11px] text-dashboard-muted">ID: {company.id}</p>
 
@@ -92,36 +106,48 @@ export default function CompaniesTable({
                   Blocks: {company.block_count} | Properties: {company.property_count}
                 </p>
 
-                <div className="flex flex-wrap gap-1.5">
-                  <button
-                    onClick={(event) => {
-                      stopRowClick(event);
-                      onEditStart(company);
-                    }}
-                    title="Edit company"
-                    aria-label="Edit company"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
-                  >
-                    <Pencil size={12} />
-                  </button>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onDetails(company);
+                      }}
+                      title="View details"
+                      aria-label="View details"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
+                    >
+                      <Eye size={12} />
+                    </button>
 
-                  <button
-                    onClick={(event) => {
-                      stopRowClick(event);
-                      onDelete(company.id);
-                    }}
-                    title="Delete company"
-                    aria-label="Delete company"
-                    className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
+                    <button
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onEditStart(company);
+                      }}
+                      title="Edit company"
+                      aria-label="Edit company"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
+                    >
+                      <Pencil size={12} />
+                    </button>
+
+                    <button
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onDelete(company.id);
+                      }}
+                      title="Delete company"
+                      aria-label="Delete company"
+                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
               </div>
             </article>
           ))}
         </div>
-      ) : null}
+          ) : null}
 
       {showTable ? (
         <div className={tableWrapperClassName}>
@@ -205,40 +231,53 @@ export default function CompaniesTable({
               {sortedCompanies.map((company) => (
                 <tr
                   key={company.id}
-                  className="border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
+                  className="cursor-pointer border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
+                  onClick={() => onDetails(company)}
                 >
                   <td className="px-3 py-2 text-dashboard-muted">{company.id || "-"}</td>
                   <td className="px-3 py-2 font-medium text-dashboard-text">{company.name}</td>
                   <td className="px-3 py-2 text-dashboard-muted">{company.address || "-"}</td>
                   <td className="px-3 py-2 text-center text-dashboard-muted">{company.block_count || "-"}</td>
                   <td className="px-3 py-2 text-center text-dashboard-muted">{company.property_count || "-"}</td>
-                  <td className="px-3 py-2">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        onClick={(event) => {
-                          stopRowClick(event);
-                          onEditStart(company);
-                        }}
-                        title="Edit company"
-                        aria-label="Edit company"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
-                      >
-                        <Pencil size={12} />
-                      </button>
+                          <td className="px-3 py-2">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <button
+                                onClick={(event) => {
+                                  stopRowClick(event);
+                                  onDetails(company);
+                                }}
+                                title="View details"
+                                aria-label="View details"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
+                              >
+                                <Eye size={12} />
+                              </button>
 
-                      <button
-                        onClick={(event) => {
-                          stopRowClick(event);
-                          onDelete(company.id);
-                        }}
-                        title="Delete company"
-                        aria-label="Delete company"
-                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </td>
+                              <button
+                                onClick={(event) => {
+                                  stopRowClick(event);
+                                  onEditStart(company);
+                                }}
+                                title="Edit company"
+                                aria-label="Edit company"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
+                              >
+                                <Pencil size={12} />
+                              </button>
+
+                              <button
+                                onClick={(event) => {
+                                  stopRowClick(event);
+                                  onDelete(company.id);
+                                }}
+                                title="Delete company"
+                                aria-label="Delete company"
+                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
+                              >
+                                <Trash2 size={12} />
+                              </button>
+                            </div>
+                          </td>
                 </tr>
               ))}
             </tbody>
