@@ -23,7 +23,7 @@ export default function AddPropertyModal({
   if (!isOpen || !blockId) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4">
       <div className="w-full max-w-xl rounded-xl border border-dashboard-border bg-dashboard-surface p-4 shadow-premium sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
