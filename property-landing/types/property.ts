@@ -12,6 +12,13 @@ export type PropertyOwner = {
   comment?: string;
 };
 
+export interface PropertyDetails {
+  id: number;
+  name: string;
+  comment?: string;
+  owners?: PropertyOwner[];
+}
+
 export interface CreatePropertyResponse {
   id: number;
   name: string;

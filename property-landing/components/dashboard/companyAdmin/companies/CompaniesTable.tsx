@@ -1,9 +1,7 @@
 "use client";
 
 import type { MouseEvent } from "react";
-
 import { Eye, Pencil, Trash2 } from "lucide-react";
-
 import type { TableViewMode } from "@/utils/table/viewMode";
 import type { Company } from "@/types/company";
 import { useSort } from "@/hooks/useSort";

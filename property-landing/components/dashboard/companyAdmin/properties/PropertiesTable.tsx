@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import { useState } from "react";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import type { TableViewMode } from "@/utils/table/viewMode";
@@ -63,6 +64,10 @@ export default function PropertiesTable({
       ? "hidden overflow-x-auto rounded-lg border border-dashboard-border md:block"
       : "overflow-x-auto rounded-lg border border-dashboard-border";
 
+  const stopRowClick = (event: MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+  };
+
   return (
     <div className="space-y-2">
       {showCards ? (
@@ -70,7 +75,17 @@ export default function PropertiesTable({
         {sortedProperties.map((property) => (
           <article
             key={property.id}
-            className="rounded-lg border border-dashboard-border bg-dashboard-surface p-3 transition-colors hover:bg-dashboard-hover"
+            className="cursor-pointer rounded-lg border border-dashboard-border bg-dashboard-surface p-3 transition-colors hover:bg-dashboard-hover"
+            onClick={() => onDetails(property)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onDetails(property);
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label={`Open details for ${property.name}`}
           >
             <div className="space-y-2">
               <p className="text-[11px] text-dashboard-muted">ID: {property.id}</p>
@@ -85,7 +100,10 @@ export default function PropertiesTable({
 
               <div className="flex flex-wrap gap-1.5">
                 <button
-                  onClick={() => onDetails(property)}
+                  onClick={(event) => {
+                    stopRowClick(event);
+                    onDetails(property);
+                  }}
                   title="View property details"
                   aria-label="View property details"
                   className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
@@ -94,7 +112,10 @@ export default function PropertiesTable({
                 </button>
 
                 <button
-                  onClick={() => onEdit(property)}
+                  onClick={(event) => {
+                    stopRowClick(event);
+                    onEdit(property);
+                  }}
                   title="Edit property"
                   aria-label="Edit property"
                   className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
@@ -103,7 +124,10 @@ export default function PropertiesTable({
                 </button>
 
                 <button
-                  onClick={() => onDelete(property)}
+                  onClick={(event) => {
+                    stopRowClick(event);
+                    onDelete(property);
+                  }}
                   title="Delete property"
                   aria-label="Delete property"
                   className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
@@ -173,7 +197,8 @@ export default function PropertiesTable({
             {sortedProperties.map((property) => (
               <tr
                 key={property.id}
-                className="border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
+                className="cursor-pointer border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
+                onClick={() => onDetails(property)}
               >
                 <td className="px-3 py-2 text-dashboard-muted">{property.id}</td>
                 <td className="px-3 py-2 font-medium text-dashboard-text">{property.name}</td>
@@ -183,7 +208,10 @@ export default function PropertiesTable({
                 <td className="px-3 py-2">
                   <div className="flex items-center justify-end gap-1.5">
                     <button
-                      onClick={() => onDetails(property)}
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onDetails(property);
+                      }}
                       title="View property details"
                       aria-label="View property details"
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
@@ -192,7 +220,10 @@ export default function PropertiesTable({
                     </button>
 
                     <button
-                      onClick={() => onEdit(property)}
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onEdit(property);
+                      }}
                       title="Edit property"
                       aria-label="Edit property"
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
@@ -201,7 +232,10 @@ export default function PropertiesTable({
                     </button>
 
                     <button
-                      onClick={() => onDelete(property)}
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onDelete(property);
+                      }}
                       title="Delete property"
                       aria-label="Delete property"
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
