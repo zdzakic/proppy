@@ -50,6 +50,7 @@ export default function CompaniesManager() {
     handleDeleteConfirm,
     handleDetails,
   } = useCompaniesManager(user?.email ?? null);
+  const isLastCompany = companies.length === 1;
 
   if (loading) {
     return <p className="text-sm text-dashboard-muted">Loading companies...</p>;
@@ -102,6 +103,7 @@ export default function CompaniesManager() {
           onEditStart={handleEditStart}
           onDetails={handleDetails}
           onDelete={handleDeleteRequest}
+          isLastCompany={isLastCompany}
           viewMode={companiesViewMode}
         />
       </section>

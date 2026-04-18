@@ -11,6 +11,7 @@ type CompaniesTableProps = {
   onEditStart: (company: Company) => void;
   onDetails: (company: Company) => void;
   onDelete: (id: number) => void;
+  isLastCompany?: boolean;
   viewMode?: TableViewMode;
 };
 
@@ -22,6 +23,7 @@ export default function CompaniesTable({
   onEditStart,
   onDetails,
   onDelete,
+  isLastCompany = false,
   viewMode = "auto",
 }: CompaniesTableProps) {
   const { sortedItems: sortedCompanies, handleSort, getSortIndicator } = useSort<
@@ -129,17 +131,19 @@ export default function CompaniesTable({
                       <Pencil size={12} />
                     </button>
 
-                    <button
-                      onClick={(event) => {
-                        stopRowClick(event);
-                        onDelete(company.id);
-                      }}
-                      title="Delete company"
-                      aria-label="Delete company"
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
-                    >
-                      <Trash2 size={12} />
-                    </button>
+                    {!isLastCompany ? (
+                      <button
+                        onClick={(event) => {
+                          stopRowClick(event);
+                          onDelete(company.id);
+                        }}
+                        title="Delete company"
+                        aria-label="Delete company"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    ) : null}
                   </div>
               </div>
             </article>
@@ -263,17 +267,19 @@ export default function CompaniesTable({
                                 <Pencil size={12} />
                               </button>
 
-                              <button
-                                onClick={(event) => {
-                                  stopRowClick(event);
-                                  onDelete(company.id);
-                                }}
-                                title="Delete company"
-                                aria-label="Delete company"
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
-                              >
-                                <Trash2 size={12} />
-                              </button>
+                              {!isLastCompany ? (
+                                <button
+                                  onClick={(event) => {
+                                    stopRowClick(event);
+                                    onDelete(company.id);
+                                  }}
+                                  title="Delete company"
+                                  aria-label="Delete company"
+                                  className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              ) : null}
                             </div>
                           </td>
                 </tr>

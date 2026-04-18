@@ -102,6 +102,21 @@ class DeleteCompanyView(APIView):
     def delete(self, request, company_id):
         user = request.user
 
+        admin_roles = UserRookeryRole.objects.filter(
+            user=user,
+            role__code="COMPANYADMIN"
+        )
+
+        is_admin = admin_roles.filter(company_id=company_id).exists()
+        if not is_admin:
+            raise PermissionDenied("You are not admin of this company.")
+
+        admin_companies_count = (
+            admin_roles.values("company_id").distinct().count()
+        )
+        if admin_companies_count <= 1:
+            raise PermissionDenied("You cannot delete your last company.")
+
         try:
             company = Company.objects.get(id=company_id)
         except Company.DoesNotExist:
@@ -109,16 +124,6 @@ class DeleteCompanyView(APIView):
                 {"detail": "Company not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        # provjera da li je admin te firme
-        is_admin = UserRookeryRole.objects.filter(
-            user=user,
-            company=company,
-            role__code="COMPANYADMIN"
-        ).exists()
-
-        if not is_admin:
-            raise PermissionDenied("You are not admin of this company.")
 
         company_id_val = company.id
         company.delete()

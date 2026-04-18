@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect } from "vitest";
 import RegisterCompanyForm from "@/components/ui/auth/RegisterCompanyForm";
 import apiPublic from "@/utils/api/apiPublic";
@@ -65,15 +65,21 @@ describe("RegisterCompanyForm", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /register company/i }));
 
-    expect(mockPost).toHaveBeenCalledWith(
-      "/users/register-company/",
-      {
-        email: "test@test.com",
-        company_name: "TestCo",
-        password: "Password123!",
-        password_confirm: "Password123!",
-      }
-    );
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith(
+        "/users/register-company/",
+        {
+          email: "test@test.com",
+          company_name: "TestCo",
+          password: "Password123!",
+          password_confirm: "Password123!",
+        }
+      );
+    });
+
+    expect(
+      await screen.findByText(/registration successful! redirecting to login/i)
+    ).toBeInTheDocument();
   });
 
 });

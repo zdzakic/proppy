@@ -171,6 +171,12 @@ export function useCompaniesManager(userEmail?: string | null) {
   };
 
   const handleDeleteRequest = (id: number) => {
+    const isLastCompany = companies.length === 1;
+    if (isLastCompany) {
+      toast.error("You cannot delete your last company.");
+      return;
+    }
+
     const target = companies.find((company) => company.id === id) ?? null;
     setPendingDeleteCompany(target);
     setIsDeleteCompanyModalOpen(true);
@@ -191,8 +197,22 @@ export function useCompaniesManager(userEmail?: string | null) {
       setPendingDeleteCompany(null);
       setIsDeleteCompanyModalOpen(false);
       toast.success("Company deleted successfully.");
-    } catch {
-      toast.error("Failed to delete company.");
+    } catch (unknownError: unknown) {
+      const maybeError = unknownError as {
+        response?: {
+          data?: {
+            detail?: string;
+            message?: string;
+          };
+        };
+      };
+
+      const message =
+        maybeError.response?.data?.detail ||
+        maybeError.response?.data?.message ||
+        "Failed to delete company.";
+
+      toast.error(message);
     } finally {
       setIsDeletingCompany(false);
     }

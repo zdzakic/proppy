@@ -348,17 +348,18 @@ export default function BlocksStep() {
                       </span>
                     </p>
                   ) : null}
-                  <p className="text-sm text-dashboard-muted">
+                  {/* <p className="text-sm text-dashboard-muted">
                     A block represents a building or property group. Start by
                     adding your first one.
-                  </p>
+                  </p> */}
                 </div>
               </div>
 
               {/* Step 1 — Form */}
               <div className="flex flex-1 flex-col gap-4 px-6 py-5 md:px-8 md:py-6">
                 <p className="text-xs text-dashboard-muted">
-                  You can add more blocks later.
+                A block represents a building or property group. Start by
+                adding your first one.
                 </p>
 
                 {showCompanySelect ? (
@@ -429,7 +430,7 @@ export default function BlocksStep() {
                     Step 2 of 2
                   </p>
                   <h3 className="text-lg font-semibold text-dashboard-text">
-                    Add properties
+                    Add your property to the block
                   </h3>
                   {createdBlock ? (
                     <p className="text-sm text-dashboard-muted">
@@ -439,15 +440,17 @@ export default function BlocksStep() {
                       </span>
                     </p>
                   ) : null}
-                  <p className="text-sm text-dashboard-muted">
-                    Add your first property to the block. You can add more
-                    later.
-                  </p>
+
                 </div>
               </div>
 
               {/* Step 2 — Form */}
+
               <div className="flex flex-1 flex-col gap-4 px-6 py-5 md:px-8 md:py-6">
+              <p className="text-xs text-dashboard-muted">
+                Add your first property to the block. You can add more
+                later.
+              </p>
                 <fieldset
                   disabled={propLoading}
                   className="m-0 w-full border-0 p-0 disabled:pointer-events-none disabled:opacity-60 md:max-w-[420px]"
@@ -456,7 +459,7 @@ export default function BlocksStep() {
                     <div className="space-y-1">
                       <label
                         htmlFor="property-name"
-                        className="text-sm text-dashboard-muted"
+                        className="text-xs text-dashboard-muted"
                       >
                         Property Name
                       </label>
@@ -478,7 +481,7 @@ export default function BlocksStep() {
                     <div className="space-y-1">
                       <label
                         htmlFor="property-comment"
-                        className="text-sm text-dashboard-muted"
+                        className="text-xs text-dashboard-muted"
                       >
                         Comment (Optional)
                       </label>

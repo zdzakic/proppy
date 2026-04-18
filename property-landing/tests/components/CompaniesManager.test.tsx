@@ -102,7 +102,10 @@ describe("CompaniesManager", () => {
 
   it("shows edit, delete, and details actions in table", async () => {
     mockGet.mockResolvedValueOnce({
-      data: [{ id: 11, name: "Delta" }],
+      data: [
+        { id: 11, name: "Delta" },
+        { id: 12, name: "Echo" },
+      ],
     });
 
     render(<CompaniesManager />);
@@ -147,7 +150,10 @@ describe("CompaniesManager", () => {
     const user = userEvent.setup();
 
     mockGet.mockResolvedValueOnce({
-      data: [{ id: 7, name: "Remove Me" }],
+      data: [
+        { id: 7, name: "Remove Me" },
+        { id: 8, name: "Keep Me" },
+      ],
     });
     mockDelete.mockResolvedValueOnce({ data: {} });
 
@@ -165,6 +171,18 @@ describe("CompaniesManager", () => {
     await waitFor(() => {
       expect(screen.queryByText("Remove Me")).not.toBeInTheDocument();
     });
+  });
+
+  it("hides delete action when user has only one company", async () => {
+    mockGet.mockResolvedValueOnce({
+      data: [{ id: 21, name: "Only Co" }],
+    });
+
+    render(<CompaniesManager />);
+
+    await screen.findAllByText("Only Co");
+
+    expect(screen.queryAllByLabelText("Delete company")).toHaveLength(0);
   });
 
   it("shows empty state when there are no companies", async () => {
