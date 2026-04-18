@@ -120,21 +120,8 @@ class DeleteCompanyView(APIView):
         if not is_admin:
             raise PermissionDenied("You are not admin of this company.")
 
-        # da li user ima još firmi
-        has_other_companies = UserRookeryRole.objects.filter(
-            user=user
-        ).exclude(company=company).exists()
-
         company_id_val = company.id
         company.delete()
-
-        # ako nema drugih firmi → briši usera
-        if not has_other_companies:
-            user.delete()
-            return Response(
-                {"message": f"Company {company_id_val} and user deleted"},
-                status=status.HTTP_200_OK
-            )
 
         return Response(
             {"message": f"Company {company_id_val} deleted"},
