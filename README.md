@@ -57,7 +57,7 @@ Proppy is a full-stack application for tracking and managing property-related ex
    ```bash
    python manage.py runserver
    ```
-   The backend will be available at `http://127.0.0.1:8000/`
+   The backend will be available at `http://127.0.0.1:8000/admin/`
 
 ### Frontend Setup
 

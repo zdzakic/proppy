@@ -1,5 +1,14 @@
 # Proppy Core Rules
 
+## Tech Stack
+Frontend: in property-landing folder
+- Next.js (App Router) + Tailwind
+- Mobile-first
+
+Backend: in proppy-backend
+- Django REST Framework (DRF)
+- Always filter data by company (multi-tenant)
+
 - KISS (no overengineering)
 - Mobile-first (Tailwind)
 - UI in components

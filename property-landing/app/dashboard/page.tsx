@@ -17,11 +17,48 @@
  * - jednostavna role separacija bez novog routing sistema
  */
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { useAuth } from "@/context/AuthContext";
 import CompaniesManager from "@/components/dashboard/companyAdmin/companies/CompaniesManager";
 import OwnerDashboard from "@/components/dashboard/owner/OwnerDashboard";
 import TenantDashboard from "@/components/dashboard/tenant/TenantDashboard";
+import apiClient from "@/utils/api/apiClient";
 
+function CompanyAdminHome() {
+  const router = useRouter();
+  const [checkingBlocks, setCheckingBlocks] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const res = await apiClient.get("/properties/blocks/");
+        const blocks = Array.isArray(res.data) ? res.data : [];
+        if (cancelled) return;
+        if (blocks.length === 0) {
+          router.replace("/dashboard/onboarding");
+          return;
+        }
+      } catch {
+        // Allow dashboard if the check fails.
+      }
+      if (!cancelled) setCheckingBlocks(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
+
+  if (checkingBlocks) {
+    return <p className="text-sm text-dashboard-muted">Loading...</p>;
+  }
+
+  return <CompaniesManager />;
+}
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -33,7 +70,7 @@ export default function DashboardPage() {
    * 🔴 COMPANY ADMIN (PRVI!)
    */
   if (user.roles?.includes("COMPANYADMIN")) {
-    return <CompaniesManager />;
+    return <CompanyAdminHome />;
   }
 
   /**
