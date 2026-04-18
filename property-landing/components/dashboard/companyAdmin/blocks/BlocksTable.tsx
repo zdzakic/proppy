@@ -21,6 +21,13 @@ type Props = {
 type SortKey = "name" | "company_name" | "properties" | "comment";
 export type BlocksViewMode = TableViewMode;
 
+/**
+ * Add-property chip: use dashboard tokens only (no `dark:` — same tokens as theme vars).
+ * Avoids brand-primary in dark (#132a46) which matches row hover and was invisible (see screenshot).
+ */
+const addPropertyIconButtonClassName =
+  "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-1 border-dashboard-accent bg-dashboard-surface text-dashboard-accent shadow-sm transition-colors hover:bg-dashboard-accent/25";
+
 export default function BlocksTable({
   blocks,
   onEditStart,
@@ -129,9 +136,9 @@ export default function BlocksTable({
                             }}
                             title="Add property"
                             aria-label="Add property"
-                            className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-primary bg-brand-primary/10 text-brand-primary transition-colors hover:bg-brand-primary/20"
+                            className={addPropertyIconButtonClassName}
                           >
-                            <Plus size={12} />
+                            <Plus size={12} className="text-dashboard-accent" aria-hidden />
                           </button>
 
                           <button
@@ -273,9 +280,9 @@ export default function BlocksTable({
                                 }}
                                 title="Add property"
                                 aria-label="Add property"
-                                className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-primary bg-brand-primary/10 text-brand-primary transition-colors hover:bg-brand-primary/20"
+                                className={addPropertyIconButtonClassName}
                               >
-                                <Plus size={12} />
+                                <Plus size={12} className="text-dashboard-accent" aria-hidden />
                               </button>
 
                               <button

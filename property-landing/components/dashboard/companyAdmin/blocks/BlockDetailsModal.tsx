@@ -53,7 +53,11 @@ export default function BlockDetailsModal({
             variant="neutral"
             className="border-dashboard-ring bg-dashboard-active text-dashboard-text shadow-sm hover:bg-dashboard-hover"
           >
-            <Plus size={16} />
+            <Plus
+              size={16}
+              className="shrink-0 dark:text-dashboard-accent"
+              aria-hidden
+            />
             Add Property
           </ActionButton>
         ) : null
