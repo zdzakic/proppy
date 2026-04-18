@@ -5,13 +5,13 @@ import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import ActionButton from "@/components/ui/ActionButton";
-import FormInput from "@/components/ui/FormInput";
-import FormError from "@/components/ui/FormError";
 import apiClient from "@/utils/api/apiClient";
 import { useCreateProperty } from "@/hooks/useCreateProperty";
 import type { Block } from "@/types/Block";
 import { ROUTES } from "@/config/routes";
+
+import Step1BlockForm from "./Step1BlockForm";
+import Step2PropertyForm from "./Step2PropertyForm";
 
 type AdminCompany = {
   id: number;
@@ -330,200 +330,41 @@ export default function BlocksStep() {
         {/* Right panel */}
         <div className="flex flex-1 flex-col">
           {step === 1 ? (
-            <>
-              {/* Step 1 — Header */}
-              <div className="flex flex-col gap-4 border-b border-dashboard-border px-6 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6 md:px-8 md:py-6">
-                <div className="min-w-0 space-y-1">
-                  <p className="text-xs font-medium text-dashboard-muted">
-                    Step 1 of 2
-                  </p>
-                  <h3 className="text-lg font-semibold text-dashboard-text">
-                    Set up your property structure
-                  </h3>
-                  {selectedCompany ? (
-                    <p className="text-sm text-dashboard-muted">
-                      Company:{" "}
-                      <span className="font-medium text-dashboard-text">
-                        {selectedCompany.name}
-                      </span>
-                    </p>
-                  ) : null}
-                  {/* <p className="text-sm text-dashboard-muted">
-                    A block represents a building or property group. Start by
-                    adding your first one.
-                  </p> */}
-                </div>
-              </div>
-
-              {/* Step 1 — Form */}
-              <div className="flex flex-1 flex-col gap-4 px-6 py-5 md:px-8 md:py-6">
-                <p className="text-xs text-dashboard-muted">
-                A block represents a building or property group. Start by
-                adding your first one.
-                </p>
-
-                {showCompanySelect ? (
-                  <div className="w-full space-y-1 md:max-w-[420px]">
-                    <label
-                      htmlFor="onboarding-company"
-                      className="text-sm text-dashboard-muted"
-                    >
-                      Company
-                    </label>
-                    <select
-                      id="onboarding-company"
-                      value={selectedCompanyId ?? ""}
-                      onChange={(event) => {
-                        const raw = event.target.value;
-                        setSelectedCompanyId(raw ? Number(raw) : null);
-                      }}
-                      className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-                    >
-                      <option value="">Select company</option>
-                      {companies.map((company) => (
-                        <option key={company.id} value={company.id}>
-                          {company.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ) : null}
-
-                <fieldset
-                  disabled={loading}
-                  className="m-0 w-full border-0 p-0 disabled:pointer-events-none disabled:opacity-60 md:max-w-[420px]"
-                >
-                  <div className="[&_input]:rounded-md [&_input]:border-dashboard-border [&_input]:bg-dashboard-surface [&_input]:px-3 [&_input]:py-2 [&_input]:text-sm [&_input]:text-dashboard-text [&_input]:placeholder:text-dashboard-muted [&_input]:focus:ring-2 [&_input]:focus:ring-dashboard-ring">
-                    <FormInput
-                      placeholder="Block name"
-                      value={blockName}
-                      onChange={(event) => {
-                        setBlockName(event.target.value);
-                        setError(null);
-                      }}
-                      error={error ?? undefined}
-                      autoComplete="off"
-                    />
-                  </div>
-                </fieldset>
-
-                <div className="mt-auto flex justify-end pt-2">
-                  <ActionButton
-                    type="button"
-                    variant="neutral"
-                    fullWidth
-                    className={btnClass}
-                    disabled={step1NextDisabled}
-                    onClick={() => void handleNextStep1()}
-                  >
-                    {loading ? "Saving..." : "Next"}
-                  </ActionButton>
-                </div>
-              </div>
-            </>
+            <Step1BlockForm
+              selectedCompany={selectedCompany}
+              showCompanySelect={showCompanySelect}
+              companies={companies}
+              selectedCompanyId={selectedCompanyId}
+              onCompanyChange={setSelectedCompanyId}
+              blockName={blockName}
+              onBlockNameChange={(value) => {
+                setBlockName(value);
+                setError(null);
+              }}
+              error={error}
+              loading={loading}
+              step1NextDisabled={step1NextDisabled}
+              onNext={handleNextStep1}
+              btnClass={btnClass}
+            />
           ) : (
-            <>
-              {/* Step 2 — Header */}
-              <div className="flex flex-col gap-4 border-b border-dashboard-border px-6 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6 md:px-8 md:py-6">
-                <div className="min-w-0 space-y-1">
-                  <p className="text-xs font-medium text-dashboard-muted">
-                    Step 2 of 2
-                  </p>
-                  <h3 className="text-lg font-semibold text-dashboard-text">
-                    Add your property to the block
-                  </h3>
-                  {createdBlock ? (
-                    <p className="text-sm text-dashboard-muted">
-                      Block:{" "}
-                      <span className="font-medium text-dashboard-text">
-                        {createdBlock.name}
-                      </span>
-                    </p>
-                  ) : null}
-
-                </div>
-              </div>
-
-              {/* Step 2 — Form */}
-
-              <div className="flex flex-1 flex-col gap-4 px-6 py-5 md:px-8 md:py-6">
-              <p className="text-xs text-dashboard-muted">
-                Add your first property to the block. You can add more
-                later.
-              </p>
-                <fieldset
-                  disabled={propLoading}
-                  className="m-0 w-full border-0 p-0 disabled:pointer-events-none disabled:opacity-60 md:max-w-[420px]"
-                >
-                  <div className="space-y-4">
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="property-name"
-                        className="text-xs text-dashboard-muted"
-                      >
-                        Property Name
-                      </label>
-                      <div className="[&_input]:rounded-md [&_input]:border-dashboard-border [&_input]:bg-dashboard-surface [&_input]:px-3 [&_input]:py-2 [&_input]:text-sm [&_input]:text-dashboard-text [&_input]:placeholder:text-dashboard-muted [&_input]:focus:ring-2 [&_input]:focus:ring-dashboard-ring">
-                        <FormInput
-                          placeholder="Sunset Residency"
-                          value={propertyName}
-                          onChange={(event) => {
-                            setPropertyName(event.target.value);
-                            setPropertyNameError(null);
-                            clearPropError();
-                          }}
-                          error={propertyNameError ?? undefined}
-                          autoComplete="off"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <label
-                        htmlFor="property-comment"
-                        className="text-xs text-dashboard-muted"
-                      >
-                        Comment (Optional)
-                      </label>
-                      <textarea
-                        id="property-comment"
-                        value={propertyComment}
-                        onChange={(e) => setPropertyComment(e.target.value)}
-                        placeholder="Optional note about this property"
-                        rows={4}
-                        className="w-full resize-y rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-                      />
-                    </div>
-                  </div>
-                </fieldset>
-
-                <FormError message={propApiError ?? undefined} />
-
-                <div className="mt-auto flex justify-end gap-2 pt-2">
-                  <ActionButton
-                    type="button"
-                    variant="neutral"
-                    fullWidth
-                    className="sm:w-[140px] border-dashboard-border text-dashboard-muted shadow-sm hover:bg-dashboard-hover"
-                    disabled={propLoading}
-                    onClick={handleGoBack}
-                  >
-                    ← Back
-                  </ActionButton>
-
-                  <ActionButton
-                    type="button"
-                    variant="neutral"
-                    fullWidth
-                    className={btnClass}
-                    disabled={propLoading}
-                    onClick={() => void handleSaveProperty()}
-                  >
-                    {propLoading ? "Saving..." : "Save Property"}
-                  </ActionButton>
-                </div>
-              </div>
-            </>
+            <Step2PropertyForm
+              blockName={createdBlock?.name ?? null}
+              propertyName={propertyName}
+              onPropertyNameChange={(value) => {
+                setPropertyName(value);
+                setPropertyNameError(null);
+                clearPropError();
+              }}
+              propertyComment={propertyComment}
+              onPropertyCommentChange={setPropertyComment}
+              propertyNameError={propertyNameError}
+              propApiError={propApiError}
+              propLoading={propLoading}
+              onBack={handleGoBack}
+              onSave={handleSaveProperty}
+              btnClass={btnClass}
+            />
           )}
         </div>
       </div>
