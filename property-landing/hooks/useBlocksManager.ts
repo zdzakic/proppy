@@ -40,11 +40,9 @@ export function useBlocksManager() {
   const [loading, setLoading] = useState(true);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [newBlockName, setNewBlockName] = useState("");
   const [creating, setCreating] = useState(false);
   const [createBlockError, setCreateBlockError] = useState<string | null>(null);
   const [adminCompanies, setAdminCompanies] = useState<AdminCompany[]>([]);
-  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
 
   const [selectedEditBlock, setSelectedEditBlock] = useState<Block | null>(null);
   const [isEditBlockModalOpen, setIsEditBlockModalOpen] = useState(false);
@@ -87,47 +85,21 @@ export function useBlocksManager() {
     fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    if (adminCompanies.length === 1) {
-      setSelectedCompanyId(adminCompanies[0].id);
-      return;
-    }
-
-    setSelectedCompanyId((prev) => {
-      if (prev && adminCompanies.some((company) => company.id === prev)) {
-        return prev;
-      }
-      return null;
-    });
-  }, [adminCompanies]);
-
-  const handleCreate = async () => {
-    const name = newBlockName.trim();
-    if (!name) return;
+  const handleCreate = async (values: { name: string; companyId: number | null }) => {
+    const name = values.name.trim();
+    if (!name || !values.companyId) return;
 
     setCreateBlockError(null);
-
-    if (adminCompanies.length > 1 && !selectedCompanyId) {
-      const message = "Please select company.";
-      setCreateBlockError(message);
-      toast.error(message);
-      return;
-    }
-
     setCreating(true);
 
     try {
-     
-      if (!selectedCompanyId) return;
-      
       const payload = {
         name,
-        company: selectedCompanyId,
+        company: values.companyId,
       };
 
       const res = await apiClient.post("/properties/blocks/", payload);
       setBlocks((prev) => [...prev, res.data]);
-      setNewBlockName("");
       setIsOpen(false);
       setCreateBlockError(null);
       toast.success("Block created successfully.");
@@ -396,13 +368,9 @@ export function useBlocksManager() {
     loading,
     isOpen,
     setIsOpen,
-    newBlockName,
-    setNewBlockName,
     creating,
     createBlockError,
     adminCompanies,
-    selectedCompanyId,
-    setSelectedCompanyId,
     selectedEditBlock,
     isEditBlockModalOpen,
     setIsEditBlockModalOpen,

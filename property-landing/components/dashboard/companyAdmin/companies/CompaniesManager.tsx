@@ -25,10 +25,6 @@ export default function CompaniesManager() {
     error,
     isAddModalOpen,
     setIsAddModalOpen,
-    newCompanyName,
-    setNewCompanyName,
-    newCompanyAddress,
-    setNewCompanyAddress,
     isCreating,
     selectedEditCompany,
     isEditCompanyModalOpen,
@@ -111,12 +107,8 @@ export default function CompaniesManager() {
       <AddCompanyModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        onCreate={handleCreateCompany}
-        value={newCompanyName}
-        setValue={setNewCompanyName}
-        addressValue={newCompanyAddress}
-        setAddressValue={setNewCompanyAddress}
-        loading={isCreating}
+        onSubmit={handleCreateCompany}
+        isSubmitting={isCreating}
       />
 
       <EditCompanyModal

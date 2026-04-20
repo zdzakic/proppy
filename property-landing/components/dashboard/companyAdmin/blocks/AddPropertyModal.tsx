@@ -1,8 +1,8 @@
 "use client";
 
-import { X } from "lucide-react";
-
-import AddPropertyForm from "../properties/AddPropertyForm";
+import BaseModal from "@/components/ui/modal/BaseModal";
+import PropertyForm, { type PropertyFormValues } from "@/components/forms/PropertyForm";
+import { useCreateProperty } from "@/hooks/useCreateProperty";
 import type { CreatePropertyResponse } from "@/types/property";
 
 type AddPropertyModalProps = {
@@ -13,6 +13,10 @@ type AddPropertyModalProps = {
   onCreated?: (property: CreatePropertyResponse) => void;
 };
 
+/**
+ * Thin wrapper: opens BaseModal with PropertyForm for the "Add Property" flow.
+ * Owns the API call (useCreateProperty) so PropertyForm stays UI-only.
+ */
 export default function AddPropertyModal({
   isOpen,
   blockId,
@@ -20,38 +24,33 @@ export default function AddPropertyModal({
   onClose,
   onCreated,
 }: AddPropertyModalProps) {
-  if (!isOpen || !blockId) return null;
+  const { createProperty, isLoading, error, clearError } = useCreateProperty();
+
+  if (!blockId) return null;
+
+  const handleSubmit = async (values: PropertyFormValues) => {
+    clearError();
+    const created = await createProperty(blockId, values);
+    if (!created) return;
+    onCreated?.(created);
+    onClose();
+  };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4">
-      <div className="w-full max-w-xl rounded-xl border border-dashboard-border bg-dashboard-surface p-4 shadow-premium sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-dashboard-text">Add Property</h2>
-            {blockName ? (
-              <p className="text-xs text-dashboard-muted">Block: {blockName}</p>
-            ) : null}
-          </div>
-
-          <button
-            onClick={onClose}
-            className="inline-flex items-center justify-center rounded-md border border-dashboard-border bg-dashboard-surface p-2 text-dashboard-text transition-colors hover:bg-dashboard-hover"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <AddPropertyForm
-          blockId={blockId}
-          onCreated={(property) => {
-            onCreated?.(property);
-            onClose();
-          }}
-          onCancel={onClose}
-          submitLabel="Save Property"
-        />
-      </div>
-    </div>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add Property"
+      subtitle={blockName ? `Block: ${blockName}` : undefined}
+      maxWidthClassName="max-w-xl"
+    >
+      <PropertyForm
+        onSubmit={(values) => void handleSubmit(values)}
+        isSubmitting={isLoading}
+        error={error}
+        submitLabel="Save Property"
+        onCancel={onClose}
+      />
+    </BaseModal>
   );
 }

@@ -1,113 +1,50 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
-import ActionButton from "@/components/ui/ActionButton";
+import BaseModal from "@/components/ui/modal/BaseModal";
+import BlockForm, { type BlockFormValues } from "@/components/forms/BlockForm";
 
 type CompanyOption = {
   id: number;
   name: string;
 };
 
-type Props = {
+type AddBlockModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: () => void;
-  value: string;
-  setValue: (v: string) => void;
-  loading: boolean;
+  /** Called with form values when the user submits. API call lives in the hook. */
+  onSubmit: (values: BlockFormValues) => void;
+  isSubmitting: boolean;
   error?: string | null;
   companyOptions?: CompanyOption[];
-  selectedCompanyId?: number | null;
-  onCompanyChange?: (companyId: number | null) => void;
 };
 
+/**
+ * Thin wrapper: opens BaseModal with BlockForm inside for the "Add Block" flow.
+ * No business logic here — onSubmit wires to useBlocksManager.handleCreate.
+ */
 export default function AddBlockModal({
   isOpen,
   onClose,
-  onCreate,
-  value,
-  setValue,
-  loading,
+  onSubmit,
+  isSubmitting,
   error,
   companyOptions = [],
-  selectedCompanyId = null,
-  onCompanyChange,
-}: Props) {
-  if (!isOpen) return null;
-
-  const shouldShowCompanySelect = companyOptions.length > 1;
-  const isSubmitDisabled =
-    !value.trim() || loading || (shouldShowCompanySelect && !selectedCompanyId);
-
+}: AddBlockModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4">
-      <div className="w-full max-w-md rounded-xl border border-dashboard-border bg-dashboard-surface p-4 shadow-premium sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-dashboard-text">Add Block</h2>
-          <button
-            onClick={onClose}
-            className="inline-flex items-center justify-center rounded-md border border-dashboard-border bg-dashboard-surface p-2 text-dashboard-text transition-colors hover:bg-dashboard-hover"
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Block name"
-          className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-        />
-
-        {shouldShowCompanySelect ? (
-          <div className="mt-3 space-y-1">
-            <label htmlFor="add-block-company" className="text-sm text-dashboard-muted">
-              Company
-            </label>
-            <select
-              id="add-block-company"
-              value={selectedCompanyId ?? ""}
-              onChange={(event) => {
-                const rawValue = event.target.value;
-                onCompanyChange?.(rawValue ? Number(rawValue) : null);
-              }}
-              className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-            >
-              <option value="">Select company</option>
-              {companyOptions.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
-
-        {error ? <p className="mt-2 text-xs text-error">{error}</p> : null}
-
-        <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <ActionButton
-            onClick={onClose}
-            variant="neutral"
-            fullWidth
-            className="sm:w-auto"
-          >
-            Cancel
-          </ActionButton>
-
-          <ActionButton
-            onClick={onCreate}
-            disabled={isSubmitDisabled}
-            variant="primary"
-            fullWidth
-            className="sm:w-auto disabled:cursor-not-allowed disabled:opacity-60 dark:border-brand-accent dark:bg-brand-accent dark:text-dashboard-sidebar dark:hover:opacity-95"
-          >
-            <Plus size={14} />
-            {loading ? "Saving..." : "Save"}
-          </ActionButton>
-        </div>
-      </div>
-    </div>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add Block"
+      maxWidthClassName="max-w-md"
+    >
+      <BlockForm
+        companyOptions={companyOptions}
+        onSubmit={onSubmit}
+        isSubmitting={isSubmitting}
+        error={error}
+        submitLabel="Save"
+        onCancel={onClose}
+      />
+    </BaseModal>
   );
 }

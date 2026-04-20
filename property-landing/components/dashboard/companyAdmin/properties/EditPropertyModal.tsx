@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { X } from "lucide-react";
-import ActionButton from "@/components/ui/ActionButton";
-import FormError from "@/components/ui/FormError";
+import BaseModal from "@/components/ui/modal/BaseModal";
+import PropertyForm, { type PropertyFormValues } from "@/components/forms/PropertyForm";
 
 type EditableProperty = {
   id: number;
@@ -11,20 +9,20 @@ type EditableProperty = {
   comment?: string;
 };
 
-type UpdatePropertyPayload = {
-  name: string;
-  comment: string;
-};
-
 type EditPropertyModalProps = {
   isOpen: boolean;
   property: EditableProperty | null;
   isSaving: boolean;
   error: string | null;
-  onSave: (payload: UpdatePropertyPayload) => Promise<void>;
+  /** Called with { name, comment } when the user submits. API call lives in the hook. */
+  onSave: (payload: { name: string; comment: string }) => Promise<void>;
   onClose: () => void;
 };
 
+/**
+ * Thin wrapper: opens BaseModal with PropertyForm for the "Edit Property" flow.
+ * Passes the current property as defaultValues so the form starts pre-filled.
+ */
 export default function EditPropertyModal({
   isOpen,
   property,
@@ -33,97 +31,27 @@ export default function EditPropertyModal({
   onSave,
   onClose,
 }: EditPropertyModalProps) {
-  const [name, setName] = useState("");
-  const [comment, setComment] = useState("");
+  if (!property) return null;
 
-  useEffect(() => {
-    if (!property) return;
-    setName(property.name);
-    setComment(property.comment ?? "");
-  }, [property]);
-
-  if (!isOpen || !property) return null;
-
-  const isSubmitDisabled = !name.trim() || isSaving;
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isSubmitDisabled) return;
-
-    await onSave({
-      name: name.trim(),
-      comment: comment.trim(),
-    });
+  const handleSubmit = (values: PropertyFormValues) => {
+    void onSave(values);
   };
 
   return (
-    <div className="fixed inset-0 z-60 flex items-end justify-center bg-black/40 p-3 sm:items-center sm:p-4">
-      <div className="w-full max-w-xl rounded-xl border border-dashboard-border bg-dashboard-surface p-4 shadow-premium sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-dashboard-text">Update Property</h2>
-          <button
-            onClick={onClose}
-            className="inline-flex items-center justify-center rounded-md border border-dashboard-border bg-dashboard-surface p-2 text-dashboard-text transition-colors hover:bg-dashboard-hover"
-            aria-label="Close"
-            disabled={isSaving}
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-          <div className="space-y-1">
-            <label htmlFor="edit-property-name" className="text-sm text-dashboard-muted">
-              Property Name
-            </label>
-            <input
-              id="edit-property-name"
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label htmlFor="edit-property-comment" className="text-sm text-dashboard-muted">
-              Comment (Optional)
-            </label>
-            <textarea
-              id="edit-property-comment"
-              rows={4}
-              value={comment}
-              onChange={(event) => setComment(event.target.value)}
-              className="w-full resize-y rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
-            />
-          </div>
-
-          <FormError message={error ?? undefined} />
-
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <ActionButton
-              type="button"
-              onClick={onClose}
-              variant="neutral"
-              fullWidth
-              className="sm:w-auto"
-              disabled={isSaving}
-            >
-              Cancel
-            </ActionButton>
-
-            <ActionButton
-              type="submit"
-              variant="primary"
-              fullWidth
-              className="sm:w-auto disabled:cursor-not-allowed disabled:opacity-60"
-              disabled={isSubmitDisabled}
-            >
-              {isSaving ? "Saving..." : "Save Changes"}
-            </ActionButton>
-          </div>
-        </form>
-      </div>
-    </div>
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Update Property"
+      maxWidthClassName="max-w-xl"
+    >
+      <PropertyForm
+        defaultValues={{ name: property.name, comment: property.comment ?? "" }}
+        onSubmit={handleSubmit}
+        isSubmitting={isSaving}
+        error={error}
+        submitLabel="Save Changes"
+        onCancel={onClose}
+      />
+    </BaseModal>
   );
 }

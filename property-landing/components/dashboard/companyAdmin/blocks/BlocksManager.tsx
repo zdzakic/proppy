@@ -22,13 +22,9 @@ export default function BlocksManager() {
     loading,
     isOpen,
     setIsOpen,
-    newBlockName,
-    setNewBlockName,
     creating,
     createBlockError,
     adminCompanies,
-    selectedCompanyId,
-    setSelectedCompanyId,
     selectedEditBlock,
     isEditBlockModalOpen,
     setIsEditBlockModalOpen,
@@ -141,14 +137,10 @@ export default function BlocksManager() {
       <AddBlockModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
-        onCreate={handleCreate}
-        value={newBlockName}
-        setValue={setNewBlockName}
-        loading={creating}
+        onSubmit={handleCreate}
+        isSubmitting={creating}
         error={createBlockError}
         companyOptions={adminCompanies}
-        selectedCompanyId={selectedCompanyId}
-        onCompanyChange={setSelectedCompanyId}
       />
 
       <AddPropertyModal

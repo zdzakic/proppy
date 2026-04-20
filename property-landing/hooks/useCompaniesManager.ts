@@ -35,8 +35,6 @@ export function useCompaniesManager(userEmail?: string | null) {
   const [error, setError] = useState<string | null>(null);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newCompanyName, setNewCompanyName] = useState("");
-  const [newCompanyAddress, setNewCompanyAddress] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
   const [selectedEditCompany, setSelectedEditCompany] = useState<Company | null>(null);
@@ -69,8 +67,8 @@ export function useCompaniesManager(userEmail?: string | null) {
     fetchCompanies();
   }, []);
 
-  const handleCreateCompany = async () => {
-    const name = newCompanyName.trim();
+  const handleCreateCompany = async (values: { name: string; address: string }) => {
+    const name = values.name.trim();
     if (!name) return;
 
     if (!userEmail) {
@@ -89,7 +87,7 @@ export function useCompaniesManager(userEmail?: string | null) {
         {
           email: userEmail,
           name,
-          address: newCompanyAddress.trim(),
+          address: values.address.trim(),
         }
       );
 
@@ -97,13 +95,11 @@ export function useCompaniesManager(userEmail?: string | null) {
         id: response.data.company_id,
         name: response.data.company_name,
         address: response.data.company_address ?? "",
-        block_count:0,
-        property_count:0,
+        block_count: 0,
+        property_count: 0,
       };
 
       setCompanies((prev) => [...prev, createdCompany]);
-      setNewCompanyName("");
-      setNewCompanyAddress("");
       setIsAddModalOpen(false);
       toast.success("Company created successfully.");
     } catch {
@@ -229,10 +225,6 @@ export function useCompaniesManager(userEmail?: string | null) {
     error,
     isAddModalOpen,
     setIsAddModalOpen,
-    newCompanyName,
-    setNewCompanyName,
-    newCompanyAddress,
-    setNewCompanyAddress,
     isCreating,
     selectedEditCompany,
     isEditCompanyModalOpen,
