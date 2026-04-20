@@ -246,7 +246,7 @@ export default function BlocksStep() {
           aria-label="Onboarding steps"
         >
           {/* Vertical connector */}
-          <div className="absolute left-[17px] top-10 h-[calc(100%-40px)] w-px bg-white/10" />
+          {/* <div className="absolute left-[17px] top-10 h-10 w-px  w-px bg-white/10" /> */}
 
           {/* Step 1 */}
           <div className="flex items-start gap-3">

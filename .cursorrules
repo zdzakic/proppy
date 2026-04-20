@@ -1,6 +1,7 @@
 # Proppy Core Rules
 
 ## Tech Stack
+
 Frontend: in property-landing folder
 - Next.js (App Router) + Tailwind
 - Mobile-first
@@ -16,13 +17,33 @@ Backend: in proppy-backend
 - No API calls in components
 - No hardcoded colors (use globals.css)
 - Use TypeScript (no any)
-- dark and light theme
+- Dark and light theme
 
 ## Workflow
 - Finish feature before changing approach
 - Do not refactor mid-feature
 - Reuse existing code first
 - Ask if unclear (do not guess)
+
+## Code Explanation (IMPORTANT)
+- After EVERY new component or function, add a SHORT comment block explaining:
+  - What it does (1 sentence)
+  - Why it exists (1 sentence)
+  - What would break if removed
+- Use inline comments for any logic that isn't obvious
+- If a pattern is used (e.g. controlled form, modal wrapper), name it and explain it once
+
+## Teaching Rules
+- I am a Next.js beginner — never assume I know why something is done
+- When introducing a new concept or pattern, explain it in 1-2 sentences before the code
+- If there are two ways to do something, briefly say why you chose this one
+- Flag anything I should learn more about with a // LEARN: comment
+
+## KISS Enforcement
+- If a solution needs more than ~50 lines, stop and ask if we can simplify
+- Prefer boring, readable code over clever code
+- One file = one responsibility, no exceptions
+- If you're creating a new abstraction, justify it first — do not just do it
 
 ## Output
 - Return working code only
