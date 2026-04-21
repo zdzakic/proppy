@@ -3,7 +3,7 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from users.models import Role
@@ -218,30 +218,108 @@ class PropertyOwnerListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
 
 
 class PropertyOwnerCreateAPIView(CompanyAdminScopedMixin, generics.CreateAPIView):
+    """
+    Create Property Owner
+
+    WHAT:
+    - CompanyAdmin creates owner for a property
+
+    DOES:
+    - creates or reuses User (by email)
+    - creates PropertyOwner (link user ↔ property)
+    - assigns OWNER role in company
+    """
     serializer_class = PropertyOwnerSerializer
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
 
     def perform_create(self, serializer):
+        """
+        Create Property Owner
+        
+        WHAT:
+        - creates or reuses User (by email)
+        - creates PropertyOwner (link user ↔ property)
+        - assigns OWNER role in company
+        """
         prop = self.get_property_for_scope()
-        email = serializer.validated_data.pop("email").lower()
+        data = serializer.validated_data
+
+        email = data.get("email").lower()
+        first_name = data.get("first_name", "")
+        last_name = data.get("last_name", "")
+        phone = data.get("phone", "")
+        address_1 = data.get("address_1", "")
+        postcode = data.get("postcode", "")
+        country = data.get("country", "")
+
+        # ✅ CREATE OR REUSE USER
         user = User.objects.filter(email=email).first()
 
         if not user:
             import uuid
-            user = User.objects.create_user(email=email, password=str(uuid.uuid4()))
+            user = User.objects.create_user(
+                email=email,
+                password=str(uuid.uuid4()),  # random → reset later
+                first_name=first_name,
+                last_name=last_name,
+                phone=phone,
+                address_1=address_1,
+                postcode=postcode,
+                country=country,
+            )
 
+        # ✅ CREATE OWNER + ROLE
         with transaction.atomic():
-            owner = serializer.save(property=prop, user=user)
+
+            display_name = (
+                data.get("display_name")
+                or f"{first_name} {last_name}".strip()
+                or email
+            )
+
+            # 🚫 Prevent duplicate owner for same property
+            if user and PropertyOwner.objects.filter(property=prop, user=user).exists():
+                raise ValidationError("This user is already an owner of this property.")
+
+            owner = serializer.save(
+                property=prop,
+                user=user,
+                display_name=display_name
+            )
+
             role_owner, _ = Role.objects.get_or_create(
                 code="OWNER",
                 defaults={"name": "Owner"},
             )
+
             UserRookeryRole.objects.get_or_create(
                 user=user,
                 company=prop.block.company,
                 role=role_owner,
                 property_owner=owner,
             )
+
+    # def perform_create(self, serializer):
+    #     prop = self.get_property_for_scope()
+    #     email = serializer.validated_data.pop("email").lower()
+    #     user = User.objects.filter(email=email).first()
+
+    #     if not user:
+    #         import uuid
+    #         user = User.objects.create_user(email=email, password=str(uuid.uuid4()))
+
+    #     with transaction.atomic():
+    #         owner = serializer.save(property=prop, user=user)
+    #         role_owner, _ = Role.objects.get_or_create(
+    #             code="OWNER",
+    #             defaults={"name": "Owner"},
+    #         )
+    #         UserRookeryRole.objects.get_or_create(
+    #             user=user,
+    #             company=prop.block.company,
+    #             role=role_owner,
+    #             property_owner=owner,
+    #         )
 
 
 class PropertyOwnerRetrieveAPIView(CompanyAdminScopedMixin, generics.RetrieveAPIView):

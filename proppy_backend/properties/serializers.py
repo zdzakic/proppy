@@ -17,6 +17,13 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(write_only=True)
     user_email = serializers.EmailField(source="user.email", read_only=True)
 
+    first_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    last_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    phone = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    address_1 = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    postcode = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    country = serializers.CharField(required=False, allow_blank=True, write_only=True)
+
     class Meta:
         model = PropertyOwner
         fields = [
@@ -28,7 +35,13 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
             "date_to",
             "comment",
             "order",
-        ]
+            "first_name",
+            "last_name",
+            "phone",
+            "address_1",
+            "postcode",
+            "country",
+            ]
 
     def get_fields(self):
         fields = super().get_fields()
@@ -44,6 +57,20 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Email is required.")
 
         return data
+
+    def create(self, validated_data):
+        for field in [
+            "email",
+            "first_name",
+            "last_name",
+            "phone",
+            "address_1",
+            "postcode",
+            "country",
+        ]:
+            validated_data.pop(field, None)
+
+        return super().create(validated_data)
 
 
 class PropertySerializer(serializers.ModelSerializer):
