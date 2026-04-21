@@ -14,7 +14,8 @@ export type Step2PropertyFormProps = {
   propApiError: string | null;
   propLoading: boolean;
   onBack: () => void;
-  onSave: () => void;
+  onSave: () => Promise<number | null>;
+  onNext: (propertyId: number) => void;
   btnClass: string;
 };
 
@@ -29,14 +30,22 @@ export default function Step2PropertyForm({
   propLoading,
   onBack,
   onSave,
+  onNext,
   btnClass,
 }: Step2PropertyFormProps) {
+  const handleNext = async () => {
+    const propertyId = await onSave();
+    if (propertyId) {
+      onNext(propertyId);
+    }
+  };
+
   return (
     <>
       <div className="flex flex-col gap-4 border-b border-dashboard-border px-6 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6 md:px-8 md:py-6">
         <div className="min-w-0 space-y-1">
           <p className="text-xs font-medium text-dashboard-muted">
-            Step 2 of 2
+            Step 2 of 3
           </p>
           <h3 className="text-lg font-semibold text-dashboard-text">
             Add your property to the block
@@ -75,7 +84,7 @@ export default function Step2PropertyForm({
                   onChange={(event) => {
                     onPropertyNameChange(event.target.value);
                   }}
-                  error={propertyNameError ?? undefined}
+                  error={propertyNameError ?? "\u00A0"}
                   autoComplete="off"
                 />
               </div>
@@ -120,9 +129,9 @@ export default function Step2PropertyForm({
             fullWidth
             className={btnClass}
             disabled={propLoading}
-            onClick={() => void onSave()}
+            onClick={() => void handleNext()}
           >
-            {propLoading ? "Saving..." : "Save Property"}
+            {propLoading ? "Saving..." : "Next"}
           </ActionButton>
         </div>
       </div>

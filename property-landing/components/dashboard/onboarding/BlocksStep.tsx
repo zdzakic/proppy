@@ -12,6 +12,7 @@ import { ROUTES } from "@/config/routes";
 
 import Step1BlockForm from "./Step1BlockForm";
 import Step2PropertyForm from "./Step2PropertyForm";
+import Step3OwnerForm from "./Step3OwnerForm";
 
 type AdminCompany = {
   id: number;
@@ -47,8 +48,9 @@ export default function BlocksStep() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
 
   // ── Step tracking ─────────────────────────────────────────────────────
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [createdBlock, setCreatedBlock] = useState<Block | null>(null);
+  const [createdPropertyId, setCreatedPropertyId] = useState<number | null>(null);
 
   // ── Step 2 ────────────────────────────────────────────────────────────
   const [propertyName, setPropertyName] = useState("");
@@ -193,27 +195,34 @@ export default function BlocksStep() {
     setStep(1);
   };
 
-  const handleSaveProperty = async () => {
+  const handleGoBackFromOwner = () => {
+    setStep(2);
+  };
+
+  const handleSaveProperty = async (): Promise<number | null> => {
+    // Property already created — go to step 3 without a second API call
+    if (createdPropertyId) return createdPropertyId;
+
     const name = propertyName.trim();
 
     if (!name) {
       setPropertyNameError("Property name is required");
-      return;
+      return null;
     }
 
-    if (!createdBlock) return;
+    if (!createdBlock) return null;
 
     const property = await createProperty(createdBlock.id, {
       name,
       comment: propertyComment.trim(),
     });
 
-    if (property) {
-      toast.success(
-        `U firmi je dodat blok "${createdBlock.name}" sa nekretninom "${name}".`
-      );
-      router.push(ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.PROPERTIES);
-    }
+    return property?.id ?? null;
+  };
+
+  const handleNextFromProperty = (propertyId: number) => {
+    setCreatedPropertyId(propertyId);
+    setStep(3);
   };
 
   // ── Derived ───────────────────────────────────────────────────────────
@@ -252,17 +261,17 @@ export default function BlocksStep() {
           <div className="flex items-start gap-3">
             <div
               className={`relative z-10 mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm shadow-sm ${
-                step === 2
+                step === 2 || step === 3
                   ? "bg-dashboard-active font-bold text-white"
                   : "bg-white font-bold text-dashboard-sidebar"
               }`}
             >
-              {step === 2 ? <Check size={16} /> : "1"}
+              {step === 2 || step === 3 ? <Check size={16} /> : "1"}
             </div>
             <div className="py-1">
               <p
                 className={`text-sm font-semibold ${
-                  step === 2 ? "text-white/50" : "text-white"
+                  step === 2 || step === 3 ? "text-white/50" : "text-white"
                 }`}
               >
                 Add Block
@@ -277,27 +286,66 @@ export default function BlocksStep() {
               className={`relative z-10 mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm shadow-sm ${
                 step === 2
                   ? "bg-white font-bold text-dashboard-sidebar"
-                  : "border border-white/15 font-medium text-white/30"
+                  : step === 3
+                    ? "bg-dashboard-active font-bold text-white"
+                    : "border border-white/15 font-medium text-white/30"
               }`}
             >
-              2
+              {step === 3 ? <Check size={16} /> : "2"}
             </div>
             <div className="py-1">
               <p
                 className={`text-sm ${
                   step === 2
                     ? "font-semibold text-white"
-                    : "font-medium text-white/40"
+                    : step === 3
+                      ? "font-semibold text-white/50"
+                      : "font-medium text-white/40"
                 }`}
               >
                 Add Properties
               </p>
               <p
                 className={`mt-0.5 text-xs ${
-                  step === 2 ? "text-white/50" : "text-white/25"
+                  step === 2
+                    ? "text-white/50"
+                    : step === 3
+                      ? "text-white/40"
+                      : "text-white/25"
                 }`}
               >
                 Manage your units
+              </p>
+            </div>
+          </div>
+
+          {/* Step 3 */}
+          <div className="mt-7 flex items-start gap-3">
+            <div
+              className={`relative z-10 mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm shadow-sm ${
+                step === 3
+                  ? "bg-white font-bold text-dashboard-sidebar"
+                  : "border border-white/15 font-medium text-white/30"
+              }`}
+            >
+              3
+            </div>
+            <div className="py-1">
+              <p
+                className={`text-sm ${
+                  step === 3
+                    ? "font-semibold text-white"
+                    : "font-medium text-white/40"
+                }`}
+              >
+                Add Owner
+              </p>
+              <p
+                className={`mt-0.5 text-xs ${
+                  step === 3 ? "text-white/50" : "text-white/25"
+                }`}
+              >
+                Link first owner
               </p>
             </div>
           </div>
@@ -312,7 +360,7 @@ export default function BlocksStep() {
   if (blocks === null) {
     return (
       <section className={cardClass}>
-        <div className="flex min-h-[28rem] flex-col items-stretch md:flex-row">
+        <div className="flex min-h-[36rem] flex-col items-stretch md:flex-row">
           {stepsSidebar}
           <div className="flex flex-1 items-center justify-center px-6 py-10">
             <p className="text-sm text-dashboard-muted">Loading...</p>
@@ -324,7 +372,7 @@ export default function BlocksStep() {
 
   return (
     <section className={cardClass}>
-      <div className="flex min-h-[28rem] flex-col items-stretch md:flex-row">
+      <div className="flex min-h-[36rem] flex-col items-stretch md:flex-row">
         {stepsSidebar}
 
         {/* Right panel */}
@@ -347,7 +395,7 @@ export default function BlocksStep() {
               onNext={handleNextStep1}
               btnClass={btnClass}
             />
-          ) : (
+          ) : step === 2 ? (
             <Step2PropertyForm
               blockName={createdBlock?.name ?? null}
               propertyName={propertyName}
@@ -363,9 +411,22 @@ export default function BlocksStep() {
               propLoading={propLoading}
               onBack={handleGoBack}
               onSave={handleSaveProperty}
+              onNext={handleNextFromProperty}
               btnClass={btnClass}
             />
-          )}
+          ) : createdBlock && createdPropertyId ? (
+            <div className="flex flex-1 flex-col">
+              <Step3OwnerForm
+                blockId={createdBlock.id}
+                propertyId={createdPropertyId}
+                onBack={handleGoBackFromOwner}
+                onSuccess={() => {
+                  toast.success("Owner added successfully.");
+                  router.push(ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.PROPERTIES);
+                }}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </section>

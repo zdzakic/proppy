@@ -33,10 +33,16 @@ describe("BlocksStep — onboarding logic", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    vi.mocked(useRouter).mockReturnValue({
-      push: mockPush,
-      replace: mockReplace,
-    } as ReturnType<typeof useRouter>);
+    vi.mocked(useRouter).mockReturnValue(
+      ({
+        push: mockPush,
+        replace: mockReplace,
+        back: vi.fn(),
+        forward: vi.fn(),
+        refresh: vi.fn(),
+        prefetch: vi.fn(),
+      } as unknown) as ReturnType<typeof useRouter>
+    );
 
     // Default: no blocks yet → onboarding starts; one company → auto-selected
     mockGet.mockImplementation(async (url: string) => {
@@ -55,7 +61,7 @@ describe("BlocksStep — onboarding logic", () => {
 
     render(<BlocksStep />);
 
-    await screen.findByText("Step 1 of 2");
+    await screen.findByText("Step 1 of 3");
 
     await user.type(screen.getByPlaceholderText("Block name"), "Tower A");
     await user.click(screen.getByRole("button", { name: /next/i }));
@@ -67,7 +73,7 @@ describe("BlocksStep — onboarding logic", () => {
       });
     });
 
-    expect(await screen.findByText("Step 2 of 2")).toBeInTheDocument();
+    expect(await screen.findByText("Step 2 of 3")).toBeInTheDocument();
   });
 
   it("does not call block API again when going Back then Next", async () => {
@@ -79,16 +85,16 @@ describe("BlocksStep — onboarding logic", () => {
 
     render(<BlocksStep />);
 
-    await screen.findByText("Step 1 of 2");
+    await screen.findByText("Step 1 of 3");
     await user.type(screen.getByPlaceholderText("Block name"), "Tower A");
     await user.click(screen.getByRole("button", { name: /next/i }));
-    await screen.findByText("Step 2 of 2");
+    await screen.findByText("Step 2 of 3");
 
     await user.click(screen.getByRole("button", { name: /back/i }));
-    await screen.findByText("Step 1 of 2");
+    await screen.findByText("Step 1 of 3");
 
     await user.click(screen.getByRole("button", { name: /next/i }));
-    await screen.findByText("Step 2 of 2");
+    await screen.findByText("Step 2 of 3");
 
     // Block POST fired exactly once — not duplicated on second Next
     expect(mockPost).toHaveBeenCalledTimes(1);
@@ -103,13 +109,13 @@ describe("BlocksStep — onboarding logic", () => {
 
     render(<BlocksStep />);
 
-    await screen.findByText("Step 1 of 2");
+    await screen.findByText("Step 1 of 3");
     await user.type(screen.getByPlaceholderText("Block name"), "Tower A");
     await user.click(screen.getByRole("button", { name: /next/i }));
-    await screen.findByText("Step 2 of 2");
+    await screen.findByText("Step 2 of 3");
 
     await user.type(screen.getByPlaceholderText("Sunset Residency"), "Apartment 101");
-    await user.click(screen.getByRole("button", { name: /save property/i }));
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
 
     await waitFor(() => {
       expect(mockPost).toHaveBeenCalledWith(
@@ -118,7 +124,8 @@ describe("BlocksStep — onboarding logic", () => {
       );
     });
 
-    expect(mockPush).toHaveBeenCalled();
+    expect(await screen.findByText("Step 3 of 3")).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("shows inline error and does not advance when block name is empty", async () => {
@@ -126,12 +133,12 @@ describe("BlocksStep — onboarding logic", () => {
 
     render(<BlocksStep />);
 
-    await screen.findByText("Step 1 of 2");
+    await screen.findByText("Step 1 of 3");
     await user.click(screen.getByRole("button", { name: /next/i }));
 
     expect(await screen.findByText("Block name is required")).toBeInTheDocument();
     expect(mockPost).not.toHaveBeenCalled();
-    expect(screen.queryByText("Step 2 of 2")).not.toBeInTheDocument();
+    expect(screen.queryByText("Step 2 of 3")).not.toBeInTheDocument();
   });
 
   it("shows inline error and does not save when property name is empty", async () => {
@@ -143,16 +150,42 @@ describe("BlocksStep — onboarding logic", () => {
 
     render(<BlocksStep />);
 
-    await screen.findByText("Step 1 of 2");
+    await screen.findByText("Step 1 of 3");
     await user.type(screen.getByPlaceholderText("Block name"), "Tower A");
     await user.click(screen.getByRole("button", { name: /next/i }));
-    await screen.findByText("Step 2 of 2");
+    await screen.findByText("Step 2 of 3");
 
-    await user.click(screen.getByRole("button", { name: /save property/i }));
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
 
     expect(await screen.findByText("Property name is required")).toBeInTheDocument();
     // Only the block POST fired — property POST never called
     expect(mockPost).toHaveBeenCalledTimes(1);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("shows inline error and does not save when owner email is empty", async () => {
+    const user = userEvent.setup();
+
+    mockPost
+      .mockResolvedValueOnce({ data: { id: 42, name: "Tower A", comment: "" } })
+      .mockResolvedValueOnce({ data: { id: 7, name: "Apartment 101", comment: "" } });
+
+    render(<BlocksStep />);
+
+    await screen.findByText("Step 1 of 3");
+    await user.type(screen.getByPlaceholderText("Block name"), "Tower A");
+    await user.click(screen.getByRole("button", { name: /next/i }));
+    await screen.findByText("Step 2 of 3");
+
+    await user.type(screen.getByPlaceholderText("Sunset Residency"), "Apartment 101");
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+    await screen.findByText("Step 3 of 3");
+
+    await user.click(screen.getByRole("button", { name: /finish setup/i }));
+
+    expect(await screen.findByText("Email is required.")).toBeInTheDocument();
+    // Only block + property POST fired — owner POST never called
+    expect(mockPost).toHaveBeenCalledTimes(2);
     expect(mockPush).not.toHaveBeenCalled();
   });
 });

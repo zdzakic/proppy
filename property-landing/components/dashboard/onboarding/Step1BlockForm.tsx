@@ -42,7 +42,7 @@ export default function Step1BlockForm({
       <div className="flex flex-col gap-4 border-b border-dashboard-border px-6 py-5 sm:flex-row sm:items-start sm:justify-between sm:gap-6 md:px-8 md:py-6">
         <div className="min-w-0 space-y-1">
           <p className="text-xs font-medium text-dashboard-muted">
-            Step 1 of 2
+            Step 1 of 3
           </p>
           <h3 className="text-lg font-semibold text-dashboard-text">
             Set up your property structure
@@ -102,7 +102,7 @@ export default function Step1BlockForm({
               onChange={(event) => {
                 onBlockNameChange(event.target.value);
               }}
-              error={error ?? undefined}
+              error={error ?? "\u00A0"}
               autoComplete="off"
             />
           </div>
