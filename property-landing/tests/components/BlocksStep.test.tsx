@@ -181,9 +181,39 @@ describe("BlocksStep — onboarding logic", () => {
     await user.click(screen.getByRole("button", { name: /^next$/i }));
     await screen.findByText("Step 3 of 3");
 
+    await user.type(screen.getByPlaceholderText("Ana"), "Ana");
+    await user.type(screen.getByPlaceholderText("Owner"), "Owner");
     await user.click(screen.getByRole("button", { name: /finish setup/i }));
 
     expect(await screen.findByText("Email is required.")).toBeInTheDocument();
+    // Only block + property POST fired — owner POST never called
+    expect(mockPost).toHaveBeenCalledTimes(2);
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it("shows inline error and does not save when owner name is empty", async () => {
+    const user = userEvent.setup();
+
+    mockPost
+      .mockResolvedValueOnce({ data: { id: 42, name: "Tower A", comment: "" } })
+      .mockResolvedValueOnce({ data: { id: 7, name: "Apartment 101", comment: "" } });
+
+    render(<BlocksStep />);
+
+    await screen.findByText("Step 1 of 3");
+    await user.type(screen.getByPlaceholderText("Block name"), "Tower A");
+    await user.click(screen.getByRole("button", { name: /next/i }));
+    await screen.findByText("Step 2 of 3");
+
+    await user.type(screen.getByPlaceholderText("Sunset Residency"), "Apartment 101");
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+    await screen.findByText("Step 3 of 3");
+
+    await user.type(screen.getByPlaceholderText("owner@example.com"), "owner@example.com");
+    await user.click(screen.getByRole("button", { name: /finish setup/i }));
+
+    expect(await screen.findByText("First name is required.")).toBeInTheDocument();
+    expect(await screen.findByText("Last name is required.")).toBeInTheDocument();
     // Only block + property POST fired — owner POST never called
     expect(mockPost).toHaveBeenCalledTimes(2);
     expect(mockPush).not.toHaveBeenCalled();

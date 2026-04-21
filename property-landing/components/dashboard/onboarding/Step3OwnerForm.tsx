@@ -49,6 +49,8 @@ export default function Step3OwnerForm({
 
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [firstNameError, setFirstNameError] = useState<string | null>(null);
+  const [lastNameError, setLastNameError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
 
   const setField =
@@ -56,18 +58,34 @@ export default function Step3OwnerForm({
     (event: React.ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [key]: event.target.value }));
       setApiError(null);
+      if (key === "first_name") setFirstNameError(null);
+      if (key === "last_name") setLastNameError(null);
       if (key === "email") setEmailError(null);
     };
 
   const handleSubmit = async () => {
+    const firstName = form.first_name.trim();
+    const lastName = form.last_name.trim();
     const email = form.email.trim();
+
+    if (!firstName) {
+      setFirstNameError("First name is required.");
+    }
+
+    if (!lastName) {
+      setLastNameError("Last name is required.");
+    }
+
     if (!email) {
       setEmailError("Email is required.");
-      return;
     }
+
+    if (!firstName || !lastName || !email) return;
 
     setLoading(true);
     setApiError(null);
+    setFirstNameError(null);
+    setLastNameError(null);
     setEmailError(null);
 
     try {
@@ -75,8 +93,8 @@ export default function Step3OwnerForm({
         `/properties/blocks/${blockId}/properties/${propertyId}/owners/create/`,
         {
           email,
-          first_name: form.first_name.trim(),
-          last_name: form.last_name.trim(),
+          first_name: firstName,
+          last_name: lastName,
           phone: form.phone.trim(),
           address_1: form.address_1.trim(),
           postcode: form.postcode.trim(),
@@ -158,6 +176,7 @@ export default function Step3OwnerForm({
                   placeholder="Ana"
                   value={form.first_name}
                   onChange={setField("first_name")}
+                  error={firstNameError ?? "\u00A0"}
                   autoComplete="given-name"
                 />
               </div>
@@ -175,6 +194,7 @@ export default function Step3OwnerForm({
                   placeholder="Owner"
                   value={form.last_name}
                   onChange={setField("last_name")}
+                  error={lastNameError ?? "\u00A0"}
                   autoComplete="family-name"
                 />
               </div>
