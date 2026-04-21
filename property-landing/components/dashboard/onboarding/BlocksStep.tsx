@@ -12,7 +12,7 @@ import { ROUTES } from "@/config/routes";
 
 import Step1BlockForm from "./Step1BlockForm";
 import Step2PropertyForm from "./Step2PropertyForm";
-import Step3OwnerForm from "./Step3OwnerForm";
+import Step3OwnerForm, { type OwnerFormState } from "./Step3OwnerForm";
 
 type AdminCompany = {
   id: number;
@@ -62,6 +62,17 @@ export default function BlocksStep() {
     error: propApiError,
     clearError: clearPropError,
   } = useCreateProperty();
+
+  // ── Step 3 ────────────────────────────────────────────────────────────
+  const [ownerForm, setOwnerForm] = useState<OwnerFormState>({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    address_1: "",
+    postcode: "",
+    country: "",
+  });
 
   // ── Initial load ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -419,6 +430,8 @@ export default function BlocksStep() {
               <Step3OwnerForm
                 blockId={createdBlock.id}
                 propertyId={createdPropertyId}
+                form={ownerForm}
+                setForm={setOwnerForm}
                 onBack={handleGoBackFromOwner}
                 onSuccess={() => {
                   toast.success("Owner added successfully.");

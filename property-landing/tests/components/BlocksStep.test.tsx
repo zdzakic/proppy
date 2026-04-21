@@ -218,4 +218,45 @@ describe("BlocksStep — onboarding logic", () => {
     expect(mockPost).toHaveBeenCalledTimes(2);
     expect(mockPush).not.toHaveBeenCalled();
   });
+
+  it("keeps Step 3 form values when going back to Step 2", async () => {
+    const user = userEvent.setup();
+
+    mockPost
+      .mockResolvedValueOnce({ data: { id: 42, name: "Tower A", comment: "" } })
+      .mockResolvedValueOnce({ data: { id: 7, name: "Apartment 101", comment: "" } });
+
+    render(<BlocksStep />);
+
+    await screen.findByText("Step 1 of 3");
+    await user.type(screen.getByPlaceholderText("Block name"), "Tower A");
+    await user.click(screen.getByRole("button", { name: /next/i }));
+    await screen.findByText("Step 2 of 3");
+
+    await user.type(screen.getByPlaceholderText("Sunset Residency"), "Apartment 101");
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+    await screen.findByText("Step 3 of 3");
+
+    await user.type(screen.getByPlaceholderText("Ana"), "Ana");
+    await user.type(screen.getByPlaceholderText("Owner"), "Owner");
+    await user.type(
+      screen.getByPlaceholderText("owner@example.com"),
+      "owner@example.com"
+    );
+    await user.type(screen.getByPlaceholderText("+44 64 123 456"), "123");
+
+    await user.click(screen.getByRole("button", { name: /back/i }));
+    await screen.findByText("Step 2 of 3");
+
+    // Go forward again (property should not be re-created)
+    await user.click(screen.getByRole("button", { name: /^next$/i }));
+    await screen.findByText("Step 3 of 3");
+
+    expect(screen.getByPlaceholderText("Ana")).toHaveValue("Ana");
+    expect(screen.getByPlaceholderText("Owner")).toHaveValue("Owner");
+    expect(screen.getByPlaceholderText("owner@example.com")).toHaveValue(
+      "owner@example.com"
+    );
+    expect(screen.getByPlaceholderText("+44 64 123 456")).toHaveValue("123");
+  });
 });

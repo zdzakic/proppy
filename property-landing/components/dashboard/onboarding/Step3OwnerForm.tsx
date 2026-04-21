@@ -10,11 +10,13 @@ import apiClient from "@/utils/api/apiClient";
 export type Step3OwnerFormProps = {
   blockId: number;
   propertyId: number;
+  form: OwnerFormState;
+  setForm: React.Dispatch<React.SetStateAction<OwnerFormState>>;
   onSuccess: () => void;
   onBack: () => void;
 };
 
-type OwnerFormState = {
+export type OwnerFormState = {
   first_name: string;
   last_name: string;
   email: string;
@@ -34,19 +36,11 @@ type OwnerFormState = {
 export default function Step3OwnerForm({
   blockId,
   propertyId,
+  form,
+  setForm,
   onSuccess,
   onBack,
 }: Step3OwnerFormProps) {
-  const [form, setForm] = useState<OwnerFormState>({
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    address_1: "",
-    postcode: "",
-    country: "",
-  });
-
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [firstNameError, setFirstNameError] = useState<string | null>(null);
