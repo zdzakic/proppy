@@ -380,3 +380,31 @@ class AddCompanyView(APIView):
             "company_name": company.name,
             "company_address": company.address,
         }, status=status.HTTP_201_CREATED)
+
+
+class PropertyGlobalListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
+    """
+    GLOBAL PROPERTY LIST (WITH OWNERS)
+
+    WHAT:
+    - returns all properties for companies where user is COMPANYADMIN
+
+    WHY:
+    - used for ownership management UI
+    - shows properties WITH and WITHOUT owners
+    """
+
+    serializer_class = PropertySerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+    pagination_class = OptionalPageNumberPagination
+
+    def get_queryset(self):
+        company_ids = self.get_admin_company_ids()
+
+        return (
+            Property.objects
+            .filter(block__company_id__in=company_ids)
+            .select_related("block", "block__company")
+            .prefetch_related("owners", "owners__user")
+            .order_by("id")
+        )

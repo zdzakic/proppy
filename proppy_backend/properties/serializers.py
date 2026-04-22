@@ -24,6 +24,10 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
     postcode = serializers.CharField(required=False, allow_blank=True, write_only=True)
     country = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
+    property_name = serializers.SerializerMethodField()
+    block_name = serializers.SerializerMethodField()
+    company_name = serializers.SerializerMethodField()
+
     class Meta:
         model = PropertyOwner
         fields = [
@@ -41,9 +45,35 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
             "address_1",
             "postcode",
             "country",
+            "property_name",
+            "block_name",
+            "company_name",
             ]
 
+    def get_property_name(self, obj):
+        """
+        Get the property name for the property owner.
+        """
+        return obj.property.name if obj.property else None
+
+    def get_block_name(self, obj):
+        """
+        Get the block name for the property owner.
+        """
+        return obj.property.block.name if obj.property and obj.property.block else None
+
+    def get_company_name(self, obj):
+        """
+        Get the company name for the property owner.
+        """
+        if obj.property and obj.property.block and obj.property.block.company:
+            return obj.property.block.company.name
+        return None
+
     def get_fields(self):
+        """
+        Get the fields for the serializer.
+        """
         fields = super().get_fields()
         # On update allow changing only metadata fields (display_name/comment/etc),
         # while 'email' is an input-only field for create.

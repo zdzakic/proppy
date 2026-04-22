@@ -12,6 +12,7 @@ from .views import (
     PropertyOwnerUpdateAPIView,
     PropertyOwnerDestroyAPIView, 
     AddCompanyView,
+    PropertyGlobalListAPIView,
 )
 
 
@@ -62,6 +63,11 @@ urlpatterns = [
         'blocks/<int:block_id>/properties/<int:property_id>/owners/<int:pk>/delete/',
         PropertyOwnerDestroyAPIView.as_view(),
         name='property-owner-delete',
+    ),
+    path(
+        "properties/all/",
+        PropertyGlobalListAPIView.as_view(),
+        name="property-global-list",
     ),
     path(
         'companies/create/',
