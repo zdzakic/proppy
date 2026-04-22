@@ -1,12 +1,13 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import OwnersManager from "@/components/dashboard/companyAdmin/owners/OwnersManager";
 
 /**
  * DashboardOwnersPage
  *
- * What it does: Renders the Owners dashboard section (placeholder).
- * Why it exists: Adds a dedicated entry point for company admins to manage owners.
+ * What it does: Entry point for the /dashboard/owners route — guards by role then renders OwnersManager.
+ * Why it exists: Matches the Blocks page pattern: page = auth guard + manager component.
  * What would break if removed: The sidebar "Owners" link would lead to a missing page (404).
  */
 export default function DashboardOwnersPage() {
@@ -22,13 +23,5 @@ export default function DashboardOwnersPage() {
     );
   }
 
-  return (
-    <section className="space-y-2 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
-      <div>
-        <h1 className="text-xl font-semibold text-dashboard-text">Owners</h1>
-        <p className="text-xs text-dashboard-muted">Manage property owners</p>
-      </div>
-    </section>
-  );
+  return <OwnersManager />;
 }
-
