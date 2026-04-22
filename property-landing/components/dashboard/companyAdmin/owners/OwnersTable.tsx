@@ -49,8 +49,8 @@ export default function OwnersTable({
     getSortValueType: () => "string",
     getSortValue: (key, property) => {
       if (key === "name") return property.name;
-      if (key === "block_name") return property.owners?.[0]?.block_name ?? "";
-      if (key === "company_name") return property.owners?.[0]?.company_name ?? "";
+      if (key === "block_name") return property.block_name ?? "";
+      if (key === "company_name") return property.company_name ?? "";
       if (key === "owner") {
         const first = property.owners?.[0];
         return first?.display_name ?? first?.user_email ?? "";
@@ -95,8 +95,8 @@ export default function OwnersTable({
             const ownerLabel =
               firstOwner?.display_name ?? firstOwner?.user_email ?? null;
             const hasOwner = ownerLabel !== null;
-            const blockLabel = hasOwner ? firstOwner?.block_name ?? "—" : "—";
-            const companyLabel = hasOwner ? firstOwner?.company_name ?? "—" : "—";
+            const blockLabel = property.block_name ?? "—";
+            const companyLabel = property.company_name ?? "—";
 
             return (
               <article
@@ -248,8 +248,8 @@ export default function OwnersTable({
                 const ownerLabel =
                   firstOwner?.display_name ?? firstOwner?.user_email ?? null;
                 const hasOwner = ownerLabel !== null;
-                const blockLabel = hasOwner ? firstOwner?.block_name ?? "—" : "—";
-                const companyLabel = hasOwner ? firstOwner?.company_name ?? "—" : "—";
+                const blockLabel =  property.block_name ?? "—";
+                const companyLabel = property.company_name ?? "—";
 
                 return (
                   <tr
