@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import apiClient from "@/utils/api/apiClient";
 import type { PropertyWithMeta } from "@/types/property";
 
@@ -16,28 +16,38 @@ export function useOwnersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchProperties() {
-      try {
-        const response = await apiClient.get<PropertyWithMeta[] | { results: PropertyWithMeta[] }>(
-          "/properties/properties/all/"
-        );
-        const data = response.data;
-        if (Array.isArray(data)) {
-          setProperties(data);
-        } else {
-          // Paginated response shape { results: [] }
-          setProperties(data.results ?? []);
-        }
-      } catch {
-        setError("Failed to load properties.");
-      } finally {
-        setLoading(false);
+  const fetchProperties = useCallback(async () => {
+    try {
+      const response = await apiClient.get<PropertyWithMeta[] | { results: PropertyWithMeta[] }>(
+        "/properties/properties/all/"
+      );
+      const data = response.data;
+      if (Array.isArray(data)) {
+        setProperties(data);
+      } else {
+        setProperties(data.results ?? []);
       }
+      setError(null);
+    } catch {
+      setError("Failed to load properties.");
     }
-
-    fetchProperties();
   }, []);
 
-  return { properties, loading, error };
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      await fetchProperties();
+      if (!cancelled) setLoading(false);
+    }
+
+    void load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [fetchProperties]);
+
+  return { properties, loading, error, refetch: fetchProperties };
 }

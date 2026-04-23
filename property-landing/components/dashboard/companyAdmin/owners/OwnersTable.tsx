@@ -130,7 +130,7 @@ export default function OwnersTable({
                       </button>
                     ) : null}
 
-                    <button
+                    {/* <button
                       onClick={(event) => {
                         stopRowClick(event);
                         onView(property);
@@ -140,7 +140,7 @@ export default function OwnersTable({
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
                     >
                       <Eye size={12} />
-                    </button>
+                    </button> */}
 
                     <button
                       onClick={(event) => {
@@ -154,7 +154,7 @@ export default function OwnersTable({
                       <Pencil size={12} />
                     </button>
 
-                    <button
+                    {/* <button
                       onClick={(event) => {
                         stopRowClick(event);
                         onDelete(property);
@@ -164,7 +164,7 @@ export default function OwnersTable({
                       className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
                     >
                       <Trash2 size={12} />
-                    </button>
+                    </button> */}
                   </div>
                 </div>
               </article>
@@ -290,7 +290,7 @@ export default function OwnersTable({
                           </button>
                         ) : null}
 
-                        <button
+                        {/* <button
                           onClick={(event) => {
                             stopRowClick(event);
                             onView(property);
@@ -300,21 +300,21 @@ export default function OwnersTable({
                           className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
                         >
                           <Eye size={12} />
-                        </button>
+                        </button> */}
 
                         <button
                           onClick={(event) => {
                             stopRowClick(event);
                             onEdit(property);
                           }}
-                          title="Edit property"
-                          aria-label="Edit property"
+                          title="Edit owner"
+                          aria-label="Edit owner"
                           className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20"
                         >
                           <Pencil size={12} />
                         </button>
 
-                        <button
+                        {/* <button
                           onClick={(event) => {
                             stopRowClick(event);
                             onDelete(property);
@@ -324,7 +324,7 @@ export default function OwnersTable({
                           className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20"
                         >
                           <Trash2 size={12} />
-                        </button>
+                        </button> */}
                       </div>
                     </td>
                   </tr>

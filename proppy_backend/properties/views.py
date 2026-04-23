@@ -2,6 +2,7 @@
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.db.models import Prefetch
 from rest_framework import generics, permissions
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -267,6 +268,16 @@ class PropertyOwnerCreateAPIView(CompanyAdminScopedMixin, generics.CreateAPIView
                 postcode=postcode,
                 country=country,
             )
+        else:
+            # User already exists (e.g. re-assigned after delete in edit flow).
+            # Update their profile so the edit form reflects the submitted values on next open.
+            user.first_name = first_name
+            user.last_name = last_name
+            user.phone = phone
+            user.address_1 = address_1
+            user.postcode = postcode
+            user.country = country
+            user.save(update_fields=["first_name", "last_name", "phone", "address_1", "postcode", "country"])
 
         # ✅ CREATE OWNER + ROLE
         with transaction.atomic():
@@ -299,27 +310,6 @@ class PropertyOwnerCreateAPIView(CompanyAdminScopedMixin, generics.CreateAPIView
                 property_owner=owner,
             )
 
-    # def perform_create(self, serializer):
-    #     prop = self.get_property_for_scope()
-    #     email = serializer.validated_data.pop("email").lower()
-    #     user = User.objects.filter(email=email).first()
-
-    #     if not user:
-    #         import uuid
-    #         user = User.objects.create_user(email=email, password=str(uuid.uuid4()))
-
-    #     with transaction.atomic():
-    #         owner = serializer.save(property=prop, user=user)
-    #         role_owner, _ = Role.objects.get_or_create(
-    #             code="OWNER",
-    #             defaults={"name": "Owner"},
-    #         )
-    #         UserRookeryRole.objects.get_or_create(
-    #             user=user,
-    #             company=prop.block.company,
-    #             role=role_owner,
-    #             property_owner=owner,
-    #         )
 
 
 class PropertyOwnerRetrieveAPIView(CompanyAdminScopedMixin, generics.RetrieveAPIView):
@@ -357,6 +347,7 @@ class PropertyOwnerDestroyAPIView(CompanyAdminScopedMixin, generics.DestroyAPIVi
             {"message": f"Property owner {owner_id} deleted successfully"},
             status=status.HTTP_200_OK,
         )
+
 
 class AddCompanyView(APIView):
     """
@@ -401,10 +392,12 @@ class PropertyGlobalListAPIView(CompanyAdminScopedMixin, generics.ListAPIView):
     def get_queryset(self):
         company_ids = self.get_admin_company_ids()
 
+        owners_qs = PropertyOwner.objects.select_related("property", "property__block", "user")
+
         return (
             Property.objects
             .filter(block__company_id__in=company_ids)
             .select_related("block", "block__company")
-            .prefetch_related("owners", "owners__user")
+            .prefetch_related(Prefetch("owners", queryset=owners_qs))
             .order_by("id")
         )

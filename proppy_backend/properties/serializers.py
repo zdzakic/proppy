@@ -24,17 +24,26 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
     postcode = serializers.CharField(required=False, allow_blank=True, write_only=True)
     country = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
-    # property_name = serializers.SerializerMethodField()
-    # block_name = serializers.SerializerMethodField()
-    # company_name = serializers.SerializerMethodField()
-   
+    # Read-only profile fields for nested property lists / edit forms (sourced from linked User).
+    user_first_name = serializers.CharField(source="user.first_name", read_only=True)
+    user_last_name = serializers.CharField(source="user.last_name", read_only=True)
+    user_phone = serializers.CharField(source="user.phone", read_only=True)
+    user_address_1 = serializers.CharField(source="user.address_1", read_only=True)
+    user_postcode = serializers.CharField(source="user.postcode", read_only=True)
+    user_country = serializers.CharField(source="user.country", read_only=True)
 
+    # FK property → block id (URLs for owner create/delete). Duplicate of Property.block_id but
+    # survives clients that omit root-level block_id on Property.
+    block_id = serializers.IntegerField(source="property.block_id", read_only=True)
+
+ 
     class Meta:
         model = PropertyOwner
         fields = [
             "id",
             "email",
             "user_email",
+            "block_id",
             "display_name",
             "date_from",
             "date_to",
@@ -46,30 +55,14 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
             "address_1",
             "postcode",
             "country",
-            # "property_name",
-            # "block_name",
-            # "company_name",
+            "user_first_name",
+            "user_last_name",
+            "user_phone",
+            "user_address_1",
+            "user_postcode",
+            "user_country",
                 ]
 
-    # def get_property_name(self, obj):
-    #     """
-    #     Get the property name for the property owner.
-    #     """
-    #     return obj.property.name if obj.property else None
-
-    # def get_block_name(self, obj):
-    #     """
-    #     Get the block name for the property owner.
-    #     """
-    #     return obj.property.block.name if obj.property and obj.property.block else None
-
-    # def get_company_name(self, obj):
-    #     """
-    #     Get the company name for the property owner.
-    #     """
-    #     if obj.property and obj.property.block and obj.property.block.company:
-    #         return obj.property.block.company.name
-    #     return None
 
     def get_fields(self):
         """
@@ -117,10 +110,11 @@ class PropertySerializer(serializers.ModelSerializer):
 
     block_name = serializers.CharField(source="block.name", read_only=True)
     company_name = serializers.CharField(source="block.company.name", read_only=True)
+    block_id = serializers.IntegerField(source="block.id", read_only=True)
 
     class Meta:
         model = Property
-        fields = ["id", "name", "comment", "owners", "block_name", "company_name"]
+        fields = ["id", "name", "comment", "owners", "block_name", "company_name", "block_id"]
 
 
 class BlockSerializer(serializers.ModelSerializer):

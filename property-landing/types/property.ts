@@ -10,8 +10,17 @@ export type PropertyOwner = {
   user_email?: string;
   display_name?: string;
   comment?: string;
+  /** Same as Property.block_id — included on nested owner for owner URL construction. */
+  block_id?: number;
   block_name?: string;
   company_name?: string;
+  /** Profile fields from linked User (read-only API) — used to pre-fill edit owner modal. */
+  user_first_name?: string;
+  user_last_name?: string;
+  user_phone?: string;
+  user_address_1?: string;
+  user_postcode?: string;
+  user_country?: string;
 };
 
 export interface PropertyDetails {
@@ -48,4 +57,6 @@ export type PropertyWithMeta = {
   owners?: PropertyOwner[];
   block_name?: string;
   company_name?: string;
+  /** Required for owner create/delete URLs when present from API. */
+  block_id?: number;
 };
