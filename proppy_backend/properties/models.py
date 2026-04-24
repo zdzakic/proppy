@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from users.models import Role
+from .constants import TITLE_CHOICES
 
 User = get_user_model()
 
@@ -106,6 +107,7 @@ class PropertyOwner(models.Model):
     )
 
     display_name = models.CharField(max_length=255, blank=True)
+    title = models.CharField(max_length=10, blank=True, choices=TITLE_CHOICES, default='', help_text='Title of the owner')
 
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=True, blank=True)

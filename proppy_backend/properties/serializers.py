@@ -4,6 +4,7 @@ from users.models import Role
 from .models import Block, Property, PropertyOwner, UserRookeryRole, Company
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from .constants import TITLE_CHOICES
 
 
 User = get_user_model()
@@ -16,6 +17,7 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
 
     email = serializers.EmailField(write_only=True)
     user_email = serializers.EmailField(source="user.email", read_only=True)
+    title = serializers.ChoiceField(choices=TITLE_CHOICES, required=False, allow_blank=True, write_only=True)
 
     first_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
     last_name = serializers.CharField(required=False, allow_blank=True, write_only=True)
@@ -31,6 +33,7 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
     user_address_1 = serializers.CharField(source="user.address_1", read_only=True)
     user_postcode = serializers.CharField(source="user.postcode", read_only=True)
     user_country = serializers.CharField(source="user.country", read_only=True)
+    user_title = serializers.CharField(source="user.title", read_only=True)
 
     # FK property → block id (URLs for owner create/delete). Duplicate of Property.block_id but
     # survives clients that omit root-level block_id on Property.
@@ -43,6 +46,7 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
             "id",
             "email",
             "user_email",
+            "title",
             "block_id",
             "display_name",
             "date_from",
@@ -61,6 +65,7 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
             "user_address_1",
             "user_postcode",
             "user_country",
+            "user_title",
                 ]
 
 
