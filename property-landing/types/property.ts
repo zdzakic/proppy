@@ -21,6 +21,7 @@ export type PropertyOwner = {
   user_address_1?: string;
   user_postcode?: string;
   user_country?: string;
+  user_title?: string;
 };
 
 export interface PropertyDetails {
