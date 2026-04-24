@@ -7,7 +7,7 @@ import type { TableViewMode } from "@/utils/table/viewMode";
 import { useOwnersPage } from "@/hooks/useOwnersPage";
 import { usePropertyOwnerSave } from "@/hooks/usePropertyOwnerSave";
 import type { PropertyWithMeta } from "@/types/property";
-import type { OwnerFormValues } from "@/types/ownerForm";
+import type { OwnerFormValues } from "@/components/forms/OwnerForm";
 import OwnersTable from "./OwnersTable";
 import OwnerModal from "./OwnerModal";
 

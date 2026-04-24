@@ -53,7 +53,9 @@ export default function OwnersTable({
       if (key === "company_name") return property.company_name ?? "";
       if (key === "owner") {
         const first = property.owners?.[0];
-        return first?.display_name ?? first?.user_email ?? "";
+        const title = first?.user_title;
+        const name = first?.display_name ?? first?.user_email ?? "";
+        return title ? `${title} ${name}` : name;
       }
       return "";
     },
@@ -92,8 +94,9 @@ export default function OwnersTable({
         <div className={cardsWrapperClassName}>
           {sortedItems.map((property) => {
             const firstOwner = property.owners?.[0];
-            const ownerLabel =
-              firstOwner?.display_name ?? firstOwner?.user_email ?? null;
+            const title = firstOwner?.user_title;
+            const name = firstOwner?.display_name ?? firstOwner?.user_email ?? null;
+            const ownerLabel = title ? `${title} ${name}` : name;
             const hasOwner = ownerLabel !== null;
             const blockLabel = property.block_name ?? "—";
             const companyLabel = property.company_name ?? "—";
@@ -177,11 +180,11 @@ export default function OwnersTable({
         <div className={tableWrapperClassName}>
           <table className="w-full table-fixed text-xs">
             <colgroup>
-              <col className="w-[22%]" />
-              <col className="w-[18%]" />
+              <col className="w-[25%]" />
+              <col className="w-[25%]" />
               <col className="w-[20%]" />
               <col className="w-[20%]" />
-              <col className="w-[20%]" />
+              <col className="w-[10%]" />
             </colgroup>
 
             <thead className="bg-dashboard-hover text-left text-dashboard-muted">
@@ -202,12 +205,12 @@ export default function OwnersTable({
                 <th className="px-3 py-2 font-medium">
                   <button
                     type="button"
-                    onClick={() => handleSort("company_name")}
+                    onClick={() => handleSort("owner")}
                     className="inline-flex items-center gap-1 hover:text-dashboard-text"
                   >
-                    <span>Company</span>
+                    <span>Owner</span>
                     <span className="inline-flex w-4 justify-center text-dashboard-text">
-                      {getSortIndicator("company_name")}
+                      {getSortIndicator("owner")}
                     </span>
                   </button>
                 </th>
@@ -228,12 +231,12 @@ export default function OwnersTable({
                 <th className="px-3 py-2 font-medium">
                   <button
                     type="button"
-                    onClick={() => handleSort("owner")}
+                    onClick={() => handleSort("company_name")}
                     className="inline-flex items-center gap-1 hover:text-dashboard-text"
                   >
-                    <span>Owner</span>
+                    <span>Company</span>
                     <span className="inline-flex w-4 justify-center text-dashboard-text">
-                      {getSortIndicator("owner")}
+                      {getSortIndicator("company_name")}
                     </span>
                   </button>
                 </th>
@@ -245,8 +248,9 @@ export default function OwnersTable({
             <tbody>
               {sortedItems.map((property) => {
                 const firstOwner = property.owners?.[0];
-                const ownerLabel =
-                  firstOwner?.display_name ?? firstOwner?.user_email ?? null;
+                const title = firstOwner?.user_title;
+                const name = firstOwner?.display_name ?? firstOwner?.user_email ?? null;
+                const ownerLabel = title ? `${title} ${name}` : name;
                 const hasOwner = ownerLabel !== null;
                 const blockLabel =  property.block_name ?? "—";
                 const companyLabel = property.company_name ?? "—";
@@ -263,7 +267,7 @@ export default function OwnersTable({
                     </td>
 
                     <td className="px-3 py-2 text-dashboard-muted">
-                      {companyLabel}
+                      {ownerLabel ?? "—"}
                     </td>
 
                     <td className="px-3 py-2 text-dashboard-muted">
@@ -271,7 +275,7 @@ export default function OwnersTable({
                     </td>
 
                     <td className="px-3 py-2 text-dashboard-muted">
-                      {ownerLabel ?? "—"}
+                      {companyLabel}
                     </td>
 
                     <td className="px-3 py-2">

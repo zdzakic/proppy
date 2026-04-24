@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import OwnerForm from "@/components/forms/OwnerForm";
 import type { PropertyOwner, PropertyWithMeta } from "@/types/property";
-import type { OwnerFormValues } from "@/types/ownerForm";
+import type { OwnerFormValues } from "@/components/forms/OwnerForm";
 
 type OwnerModalProps = {
   isOpen: boolean;

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import apiClient from "@/utils/api/apiClient";
-import type { OwnerFormValues } from "@/types/ownerForm";
+import type { OwnerFormValues } from "@/components/forms/OwnerForm";
 
 type SaveArgs = {
   mode: "assign" | "edit";
