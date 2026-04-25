@@ -17,6 +17,7 @@ export function sortByNumber<T>(
 
 /**
  * Reusable string sorting helper for table rows.
+ * Supports natural sorting (e.g. "Flat 2" < "Flat 11").
  */
 export function sortByString<T>(
   rows: T[],
@@ -24,11 +25,14 @@ export function sortByString<T>(
   direction: SortDirection
 ): T[] {
   return [...rows].sort((left, right) => {
-    const a = String(selector(left) ?? "").trim().toLowerCase();
-    const b = String(selector(right) ?? "").trim().toLowerCase();
+    const a = String(selector(left) ?? "").trim();
+    const b = String(selector(right) ?? "").trim();
 
-    if (a === b) return 0;
-    if (direction === "asc") return a > b ? 1 : -1;
-    return a < b ? 1 : -1;
+    const result = a.localeCompare(b, undefined, {
+      numeric: true,       // 🔥 ključna stvar
+      sensitivity: "base", // case-insensitive
+    });
+
+    return direction === "asc" ? result : -result;
   });
 }
