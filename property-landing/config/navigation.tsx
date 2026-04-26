@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   LogOut,
   type LucideIcon,
+  ReceiptText,
   Settings,
   User,
   Users,
@@ -63,6 +64,11 @@ const dashboardSidebarByRole: Record<AppRole, DashboardMenuItemConfig[]> = {
       label: "Owners",
       href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.OWNERS,
       icon: Users,
+    },
+    {
+      label: "Service Charges",
+      href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.SERVICE_CHARGES,
+      icon: ReceiptText,
     },
     {
       label: "How To Use",
