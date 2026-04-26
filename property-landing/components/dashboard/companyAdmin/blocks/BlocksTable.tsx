@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp, Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
+import CollapsibleTable from "@/components/ui/dashboard/CollapsibleTable";
 import type { TableViewMode } from "@/utils/table/viewMode";
 import { useSort } from "@/hooks/useSort";
 
@@ -37,7 +37,6 @@ export default function BlocksTable({
   viewMode = "auto",
   headerTitle = "Blocks",
 }: Props) {
-  const [isCollapsed, setIsCollapsed] = useState(true);
   const { sortedItems: sortedBlocks, handleSort, getSortIndicator } = useSort<
     Block,
     SortKey
@@ -74,22 +73,8 @@ export default function BlocksTable({
       : "overflow-x-auto rounded-lg border border-dashboard-border";
 
   return (
-    <div className="space-y-2">
-      <button
-        type="button"
-        onClick={() => setIsCollapsed((prev) => !prev)}
-        className="flex w-full items-center justify-between rounded-lg border border-dashboard-border bg-dashboard-surface px-3 py-2 text-left transition-colors hover:bg-dashboard-hover"
-        aria-expanded={!isCollapsed}
-      >
-        <span className="text-sm font-semibold text-dashboard-text">{headerTitle}</span>
-        <span className="inline-flex items-center justify-center rounded-md border border-dashboard-border bg-dashboard-surface p-1.5 text-dashboard-text">
-          {isCollapsed ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-        </span>
-      </button>
-
-      {!isCollapsed ? (
-        <>
-          {blocks.length === 0 ? (
+    <CollapsibleTable title={headerTitle}>
+      {blocks.length === 0 ? (
             <div className="rounded-lg border border-dashboard-border bg-dashboard-surface p-4 text-center">
               <p className="text-xs text-dashboard-muted">
                 No blocks yet. Add your first block.
@@ -330,8 +315,6 @@ export default function BlocksTable({
               ) : null}
             </>
           )}
-        </>
-      ) : null}
-    </div>
+    </CollapsibleTable>
   );
 }

@@ -8,7 +8,7 @@ import { useOwnersPage } from "@/hooks/useOwnersPage";
 import { usePropertyOwnerSave } from "@/hooks/usePropertyOwnerSave";
 import type { PropertyWithMeta } from "@/types/property";
 import type { OwnerFormValues } from "@/components/forms/OwnerForm";
-import OwnersTable from "./OwnersTable";
+import OwnersGroupedView from "./OwnersGroupedView";
 import OwnerModal from "./OwnerModal";
 
 /** Block id for API paths: prefer root Property.block_id, else nested owners[0].block_id from API. */
@@ -149,7 +149,7 @@ export default function OwnersManager() {
           {error ? <p className="text-xs text-error md:hidden">{error}</p> : null}
         </div>
 
-        <OwnersTable
+        <OwnersGroupedView
           properties={properties}
           onView={handleView}
           onEdit={handleEdit}
