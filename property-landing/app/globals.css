@@ -22,7 +22,10 @@
 
   /* Error color */
   --color-error: var(--error);
-  
+
+  /* Warning color */
+  --color-warning: var(--warning);
+
   /* Success color */
   --color-success: var(--success);
   
@@ -65,7 +68,10 @@
 
   /* 🔴 ERROR COLOR */
   --error: #DC2626;
-  
+
+  /* 🟡 WARNING COLOR */
+  --warning: #D97706;
+
   /* 🟢 SUCCESS COLOR */
   --success: #16A34A;
 
@@ -100,7 +106,10 @@
   --header-muted: rgba(243, 244, 246, 0.78);
   /* 🔴 ERROR COLOR */
   --error: #EF4444;
-  
+
+  /* 🟡 WARNING COLOR */
+  --warning: #F59E0B;
+
   /* 🟢 SUCCESS COLOR */
   --success: #22C55E;
 

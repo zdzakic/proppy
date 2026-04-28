@@ -26,7 +26,7 @@ vi.mock("sonner", () => ({
  * OwnersManager tests
  *
  * Mirrors CompaniesManager.test.tsx conventions:
- * - mock apiClient, render component, assert directly (no collapsible to expand).
+ * - mock apiClient, render component, expand collapsed company section, then assert.
  *
  * Note: jsdom does not apply CSS so both the cards section (md:hidden) and the table
  * section (hidden md:block) render — text appears in both. We use findAllByText /
@@ -35,11 +35,18 @@ vi.mock("sonner", () => ({
 describe("OwnersManager", () => {
   const mockGet = vi.mocked(apiClient.get);
 
+  const expandFirstCompanySection = async (user: ReturnType<typeof userEvent.setup>) => {
+    // Company groups are rendered in CollapsibleTable and start collapsed by default.
+    const [toggle] = await screen.findAllByRole("button", { expanded: false });
+    await user.click(toggle);
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("renders properties list", async () => {
+    const user = userEvent.setup();
     mockGet.mockResolvedValueOnce({
       data: [
         { id: 1, name: "Apartment 101", owners: [{ id: 1, display_name: "John Doe" }] },
@@ -48,17 +55,20 @@ describe("OwnersManager", () => {
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     expect((await screen.findAllByText("Apartment 101")).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Apartment 102").length).toBeGreaterThan(0);
   });
 
   it("shows — when property has no owner", async () => {
+    const user = userEvent.setup();
     mockGet.mockResolvedValueOnce({
       data: [{ id: 1, name: "Unit C", owners: [] }],
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit C");
     // "—" appears in both cards and table in jsdom (CSS breakpoints are not applied).
@@ -66,37 +76,44 @@ describe("OwnersManager", () => {
   });
 
   it("shows owner display_name when owner exists", async () => {
+    const user = userEvent.setup();
     mockGet.mockResolvedValueOnce({
       data: [{ id: 1, name: "Unit A", owners: [{ id: 10, display_name: "Jane Smith" }] }],
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     expect((await screen.findAllByText("Jane Smith")).length).toBeGreaterThan(0);
   });
 
   it("falls back to user_email when display_name is absent", async () => {
+    const user = userEvent.setup();
     mockGet.mockResolvedValueOnce({
       data: [{ id: 1, name: "Unit B", owners: [{ id: 11, user_email: "owner@example.com" }] }],
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     expect((await screen.findAllByText("owner@example.com")).length).toBeGreaterThan(0);
   });
 
   it("shows Assign Owner button when property has no owner", async () => {
+    const user = userEvent.setup();
     mockGet.mockResolvedValueOnce({
       data: [{ id: 1, name: "Unit D", owners: [] }],
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit D");
     expect(screen.getAllByLabelText("Assign owner").length).toBeGreaterThan(0);
   });
 
   it("shows Edit button for every row (View/Delete are not yet implemented)", async () => {
+    const user = userEvent.setup();
     mockGet.mockResolvedValueOnce({
       data: [
         { id: 1, name: "Unit E", owners: [{ id: 20, display_name: "Alice" }] },
@@ -105,6 +122,7 @@ describe("OwnersManager", () => {
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit E");
     // Cards render "Edit property"; table renders "Edit owner" — both are present in jsdom.
@@ -113,11 +131,13 @@ describe("OwnersManager", () => {
   });
 
   it("does NOT show Assign Owner button when owner exists", async () => {
+    const user = userEvent.setup();
     mockGet.mockResolvedValueOnce({
       data: [{ id: 1, name: "Unit G", owners: [{ id: 30, display_name: "Bob" }] }],
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit G");
     expect(screen.queryAllByLabelText("Assign owner")).toHaveLength(0);
@@ -135,6 +155,11 @@ describe("OwnersManager – owner modal flows", () => {
   const mockGet = vi.mocked(apiClient.get);
   const mockPost = vi.mocked(apiClient.post);
   const mockDelete = vi.mocked(apiClient.delete);
+
+  const expandFirstCompanySection = async (user: ReturnType<typeof userEvent.setup>) => {
+    const [toggle] = await screen.findAllByRole("button", { expanded: false });
+    await user.click(toggle);
+  };
 
   // Minimal property fixture with a known block_id so resolveBlockId works.
   const propertyNoOwner = { id: 1, name: "Unit A", block_id: 5, owners: [] };
@@ -164,6 +189,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyNoOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit A");
     await user.click(screen.getAllByLabelText("Assign owner")[0]);
@@ -180,6 +206,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyNoOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit A");
     await user.click(screen.getAllByLabelText("Assign owner")[0]);
@@ -213,6 +240,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyNoOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit A");
     await user.click(screen.getAllByLabelText("Assign owner")[0]);
@@ -240,6 +268,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyWithOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     // jsdom renders the table row button ("Edit owner") and the card button ("Edit property").
     // Both call onEdit — we use the table button.
@@ -265,6 +294,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyWithOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit B");
     await user.click(screen.getAllByLabelText("Edit owner")[0]);
@@ -299,6 +329,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyWithOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit B");
     await user.click(screen.getAllByLabelText("Edit owner")[0]);
@@ -322,6 +353,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyNoOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit A");
     await user.click(screen.getAllByLabelText("Assign owner")[0]);
@@ -338,6 +370,7 @@ describe("OwnersManager – owner modal flows", () => {
     mockGet.mockResolvedValueOnce({ data: [propertyNoOwner] });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit A");
     await user.click(screen.getAllByLabelText("Assign owner")[0]);
@@ -360,6 +393,7 @@ describe("OwnersManager – owner modal flows", () => {
     });
 
     render(<OwnersManager />);
+    await expandFirstCompanySection(user);
 
     await screen.findAllByText("Unit A");
     await user.click(screen.getAllByLabelText("Assign owner")[0]);

@@ -1,13 +1,14 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import ServiceChargesManager from "@/components/dashboard/companyAdmin/billing/ServiceChargesManager";
 
 /**
  * DashboardServiceChargesPage
  *
- * What it does: Placeholder page for /dashboard/service-charges.
- * Why it exists: Reserves the route and navigation entry while the feature is being built.
- * What would break if removed: The sidebar link would 404 and we couldn't iterate on the UI incrementally.
+ * What it does: Entry point for /dashboard/service-charges — guards by role then renders ServiceChargesManager.
+ * Why it exists: Matches the Owners page pattern: page = auth guard + manager component.
+ * What would break if removed: The sidebar "Service Charges" link would lead to a 404.
  */
 export default function DashboardServiceChargesPage() {
   const { user } = useAuth();
@@ -22,13 +23,6 @@ export default function DashboardServiceChargesPage() {
     );
   }
 
-  return (
-    <section className="space-y-2 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
-      <div>
-        <h1 className="text-xl font-semibold text-dashboard-text">Service Charges</h1>
-        <p className="text-xs text-dashboard-muted">Coming soon.</p>
-      </div>
-    </section>
-  );
+  return <ServiceChargesManager />;
 }
 

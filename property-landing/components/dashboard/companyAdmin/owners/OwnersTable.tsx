@@ -84,7 +84,7 @@ export default function OwnersTable({
       : "overflow-x-auto rounded-lg border border-dashboard-border";
 
   return (
-    <CollapsibleTable title={headerTitle} defaultCollapsed={false}>
+    <CollapsibleTable title={headerTitle} defaultCollapsed={true}>
       {properties.length === 0 ? (
         <div className="rounded-lg border border-dashboard-border bg-dashboard-surface p-4 text-center">
           <p className="text-xs text-dashboard-muted">No properties found.</p>
