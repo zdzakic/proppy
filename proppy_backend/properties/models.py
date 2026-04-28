@@ -286,3 +286,105 @@ class UserService(models.Model):
                 name="unique_user_service"
             )
         ]
+
+
+# =========================================================
+# SERVICE PERIOD (billing cycle)
+# =========================================================
+class ServicePeriod(models.Model):
+    """
+    Defines a billing period (e.g. June 2026).
+
+    WHY:
+    - Groups charges per cycle
+    - Enables filtering and reporting
+    """
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="service_periods"
+    )
+
+    name = models.CharField(max_length=100)
+    due_date = models.DateField()
+    is_active = models.BooleanField(default=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.company.name})"
+    
+    
+# =========================================================
+# SERVICE CHARGE (what is owed)
+# =========================================================
+class ServiceCharge(models.Model):
+    """
+    Represents the amount owed by a property for a given period.
+
+    WHY:
+    - Core financial entity
+    - Tracks debt per property
+    """
+
+    company = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        related_name="service_charges"
+    )
+
+    property = models.ForeignKey(
+        Property,
+        on_delete=models.CASCADE,
+        related_name="service_charges"
+    )
+
+    service_period = models.ForeignKey(
+        ServicePeriod,
+        on_delete=models.CASCADE,
+        related_name="charges"
+    )
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    notice_sent_at = models.DateTimeField(null=True, blank=True)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["property", "service_period"],
+                name="unique_property_service_period_charge"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.property} - {self.amount} ({self.service_period})"
+    
+
+# =========================================================
+# PAYMENT (what is paid)
+# =========================================================
+class Payment(models.Model):
+    """
+    Represents a payment towards a ServiceCharge.
+
+    WHY:
+    - Allows tracking payments separately
+    - Supports partial payments
+    """
+
+    service_charge = models.ForeignKey(
+        ServiceCharge,
+        on_delete=models.CASCADE,
+        related_name="payments"
+    )
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date_paid = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    comment = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.amount} paid on {self.date_paid}"

@@ -1,10 +1,11 @@
 # properties/serializers.py
 from rest_framework import serializers
 from users.models import Role
-from .models import Block, Property, PropertyOwner, UserRookeryRole, Company
+from .models import Block, Property, PropertyOwner, UserRookeryRole, Company, ServiceCharge, Payment, ServicePeriod
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from .constants import TITLE_CHOICES
+from django.db.models import Sum, Max
 
 
 User = get_user_model()
@@ -203,3 +204,97 @@ class AddCompanyAdminSerializer(serializers.Serializer):
         except User.DoesNotExist:
             raise serializers.ValidationError("User with this email does not exist.")
         return email
+    
+    
+
+class ServiceChargeListSerializer(serializers.ModelSerializer):
+    """
+    ServiceChargeListSerializer
+
+    WHAT:
+    - Flat serializer for CompanyAdmin billing table
+
+    WHY:
+    - FE needs simple structure:
+      Block | Property | Owner | Charge | Paid | Remaining | Status
+
+    APPROACH:
+    - No nesting
+    - Aggregates for payments
+    - Derived fields for status
+    """
+
+    block_name = serializers.CharField(source="property.block.name", read_only=True)
+    property_name = serializers.CharField(source="property.name", read_only=True)
+    period_name = serializers.CharField(source="service_period.name", read_only=True)
+
+    owner_name = serializers.SerializerMethodField()
+
+    paid = serializers.SerializerMethodField()
+    remaining = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    last_payment_date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ServiceCharge
+        fields = [
+            "id",
+            "block_name",
+            "property_name",
+            "owner_name",
+            "period_name",  # ostavljamo (debug + FE context)
+            "amount",
+            "paid",
+            "remaining",
+            "status",
+            "last_payment_date",
+            "notice_sent_at",
+        ]
+
+    def get_owner_name(self, obj):
+        """
+        Returns first owner (simple version)
+
+        NOTE:
+        - Later we can improve with active owner logic
+        """
+        owner = obj.property.owners.first()
+
+        if not owner:
+            return "-"
+
+        if owner.user:
+            full_name = f"{owner.user.first_name} {owner.user.last_name}".strip()
+            return full_name or owner.user.email
+
+        return owner.display_name or "-"
+
+    def get_paid(self, obj):
+        """
+        Sum of all payments
+        """
+        return obj.payments.aggregate(total=Sum("amount"))["total"] or 0
+
+    def get_remaining(self, obj):
+        """
+        Remaining = charge - paid
+        """
+        return obj.amount - self.get_paid(obj)
+
+    def get_status(self, obj):
+        """
+        UI status logic
+        """
+        paid = self.get_paid(obj)
+
+        if paid == 0:
+            return "unpaid"
+        elif paid >= obj.amount:
+            return "paid"
+        return "partial"
+
+    def get_last_payment_date(self, obj):
+        """
+        Last payment date (optional UI info)
+        """
+        return obj.payments.aggregate(last=Max("date_paid"))["last"]
