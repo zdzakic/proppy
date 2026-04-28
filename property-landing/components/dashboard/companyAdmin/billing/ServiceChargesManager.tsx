@@ -20,8 +20,11 @@ import { Eye, Plus } from "lucide-react";
 
 import CollapsibleTable from "@/components/ui/dashboard/CollapsibleTable";
 import TableLayoutToggle from "@/components/dashboard/shared/common/TableLayoutToggle";
+import AddPaymentModal from "@/components/dashboard/companyAdmin/billing/AddPaymentModal";
+import type { PaymentFormValues } from "@/components/forms/PaymentForm";
 import { useSort } from "@/hooks/useSort";
 import { useServiceCharges } from "@/hooks/useServiceCharges";
+import { usePayments } from "@/hooks/usePayments";
 import type { TableViewMode } from "@/utils/table/viewMode";
 import type { ServiceCharge } from "@/types/serviceCharge";
 
@@ -80,10 +83,12 @@ function ChargesBlock({
   charges,
   title,
   viewMode = "auto",
+  onAddPayment,
 }: {
   charges: ServiceCharge[];
   title: string;
   viewMode?: TableViewMode;
+  onAddPayment: (serviceChargeId: number) => void;
 }) {
   const { sortedItems, handleSort, getSortIndicator } = useSort<
     ServiceCharge,
@@ -184,7 +189,10 @@ function ChargesBlock({
                         type="button"
                         title="Add payment"
                         aria-label="Add payment"
-                        onClick={stopPropagation}
+                      onClick={(e) => {
+                        stopPropagation(e);
+                        onAddPayment(c.id);
+                      }}
                         className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashboard-accent bg-dashboard-surface text-dashboard-accent shadow-sm transition-colors hover:bg-dashboard-accent/25"
                       >
                         <Plus size={12} aria-hidden />
@@ -348,7 +356,10 @@ function ChargesBlock({
                             type="button"
                             title="Add payment"
                             aria-label="Add payment"
-                            onClick={stopPropagation}
+                          onClick={(e) => {
+                            stopPropagation(e);
+                            onAddPayment(c.id);
+                          }}
                             className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-dashboard-accent bg-dashboard-surface text-dashboard-accent shadow-sm transition-colors hover:bg-dashboard-accent/25"
                           >
                             <Plus size={12} aria-hidden />
@@ -386,15 +397,57 @@ export default function ServiceChargesManager() {
   const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
   // LEARN: same viewMode pattern as BlocksManager — "auto" is the default responsive behaviour.
   const [viewMode, setViewMode] = useState<TableViewMode>("auto");
+  const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
+  const [selectedServiceChargeId, setSelectedServiceChargeId] = useState<number | null>(null);
+  const [selectedServiceChargePropertyName, setSelectedServiceChargePropertyName] =
+    useState<string>("");
 
   const {
     data: charges,
     loading,
+    error,
+    refetch,
   } = useServiceCharges(selectedPeriod);
 
   // This manager currently doesn't render a period selector UI; we still keep the state here
   // so adding a selector later doesn't require moving fetch logic back into the component.
   void setSelectedPeriod;
+
+  const { isCreating: isCreatingPayment, createError, createPayment } = usePayments();
+
+  const handleAddPaymentOpen = (serviceChargeId: number) => {
+    const charge = charges.find((c) => c.id === serviceChargeId);
+    setSelectedServiceChargePropertyName(charge?.property_name ?? "");
+    setSelectedServiceChargeId(serviceChargeId);
+    setIsAddPaymentOpen(true);
+  };
+
+  const handleAddPaymentClose = () => {
+    setIsAddPaymentOpen(false);
+    setSelectedServiceChargeId(null);
+    setSelectedServiceChargePropertyName("");
+  };
+
+  const handleAddPaymentSubmit = async (values: PaymentFormValues) => {
+    if (!selectedServiceChargeId) return;
+
+    const flatName = selectedServiceChargePropertyName.trim();
+    const successMessage = flatName
+      ? `Payment for ${flatName} added.`
+      : "Payment added.";
+
+    const ok = await createPayment({
+      service_charge: selectedServiceChargeId,
+      amount: values.amount,
+      date_paid: values.date_paid,
+    }, { successMessage });
+
+    if (!ok) return;
+
+    handleAddPaymentClose();
+    // Keep UI mounted during refresh so open CollapsibleTable state doesn't reset.
+    void refetch();
+  };
 
   // Group strictly by company_name — each key produces one ChargesBlock section.
   // LEARN: useMemo reruns only when `charges` changes — avoids re-grouping on unrelated renders.
@@ -410,9 +463,19 @@ export default function ServiceChargesManager() {
     );
   }, [charges]);
 
-  if (loading) {
+  if (loading && charges.length === 0) {
     return (
       <p className="text-sm text-dashboard-muted">Loading billing data...</p>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="space-y-2 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
+        <div className="rounded-lg border border-dashboard-border bg-dashboard-surface p-4 text-center">
+          <p className="text-xs text-error">{error}</p>
+        </div>
+      </section>
     );
   }
 
@@ -455,10 +518,20 @@ export default function ServiceChargesManager() {
               title={companyName}
               charges={companyCharges}
               viewMode={viewMode}
+              onAddPayment={handleAddPaymentOpen}
             />
           ))}
         </div>
       )}
+
+      <AddPaymentModal
+        isOpen={isAddPaymentOpen}
+        onClose={handleAddPaymentClose}
+        serviceChargeId={selectedServiceChargeId}
+        onSubmit={handleAddPaymentSubmit}
+        isSubmitting={isCreatingPayment}
+        error={createError}
+      />
     </section>
   );
 }
