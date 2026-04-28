@@ -140,34 +140,35 @@ def test_service_charge_list_filters_by_period_query_param():
 
 
 @pytest.mark.django_db
-def test_service_charge_list_falls_back_to_active_period_when_period_missing():
+def test_service_charge_list_returns_all_charges_when_no_period_param():
+    """No ?period → all charges for the admin's companies are returned."""
     client = APIClient()
     user, company = create_company_admin(email="active@admin.test", company_name="Active Company")
     block = Block.objects.create(name="Active Block", company=company)
 
-    active_period = ServicePeriod.objects.create(
+    period_a = ServicePeriod.objects.create(
         company=company,
         name="Active Period",
         due_date=date(2026, 1, 10),
         is_active=True,
     )
-    latest_period = ServicePeriod.objects.create(
+    period_b = ServicePeriod.objects.create(
         company=company,
         name="Later Period",
         due_date=date(2026, 2, 10),
         is_active=False,
     )
 
-    active_charge = ServiceCharge.objects.create(
+    charge_a = ServiceCharge.objects.create(
         company=company,
         property=Property.objects.create(name="Active Unit", block=block),
-        service_period=active_period,
+        service_period=period_a,
         amount=Decimal("75.00"),
     )
-    ServiceCharge.objects.create(
+    charge_b = ServiceCharge.objects.create(
         company=company,
         property=Property.objects.create(name="Later Unit", block=block),
-        service_period=latest_period,
+        service_period=period_b,
         amount=Decimal("80.00"),
     )
 
@@ -175,12 +176,14 @@ def test_service_charge_list_falls_back_to_active_period_when_period_missing():
     response = client.get(URL)
 
     assert response.status_code == 200
-    assert len(response.data) == 1
-    assert response.data[0]["id"] == active_charge.id
+    assert len(response.data) == 2
+    returned_ids = {row["id"] for row in response.data}
+    assert returned_ids == {charge_a.id, charge_b.id}
 
 
 @pytest.mark.django_db
-def test_service_charge_list_falls_back_to_latest_period_when_no_active_period_exists():
+def test_service_charge_list_returns_all_periods_when_no_active_period_exists():
+    """No ?period and no active period → still returns all charges, not just the latest."""
     client = APIClient()
     user, company = create_company_admin(email="latest@admin.test", company_name="Latest Company")
     block = Block.objects.create(name="Latest Block", company=company)
@@ -198,7 +201,7 @@ def test_service_charge_list_falls_back_to_latest_period_when_no_active_period_e
         is_active=False,
     )
 
-    ServiceCharge.objects.create(
+    older_charge = ServiceCharge.objects.create(
         company=company,
         property=Property.objects.create(name="Older Unit", block=block),
         service_period=older_period,
@@ -215,8 +218,9 @@ def test_service_charge_list_falls_back_to_latest_period_when_no_active_period_e
     response = client.get(URL)
 
     assert response.status_code == 200
-    assert len(response.data) == 1
-    assert response.data[0]["id"] == latest_charge.id
+    assert len(response.data) == 2
+    returned_ids = {row["id"] for row in response.data}
+    assert returned_ids == {older_charge.id, latest_charge.id}
 
 
 @pytest.mark.django_db

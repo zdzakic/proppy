@@ -1,7 +1,8 @@
 from django.contrib import admin
-from django.db.models import Count
+from django.db.models import Count, Sum
 
-from .models import Company, Block, Property, PropertyOwner, UserRookeryRole
+from .models import Company, Block, Property, PropertyOwner, \
+    UserRookeryRole, ServiceCharge, Payment, ServicePeriod
 
 
 class GhostCompanyFilter(admin.SimpleListFilter):
@@ -111,3 +112,100 @@ class UserRookeryRoleAdmin(admin.ModelAdmin):
     @admin.display(description="Nekretnine (firma)", ordering="property_count")
     def property_count_display(self, obj):
         return getattr(obj, "property_count", 0)
+    
+    
+@admin.register(ServiceCharge)
+class ServiceChargeAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "id",
+        "property",
+        "company",
+        "service_period",
+        "amount",
+        "paid_amount",
+        "remaining_amount",
+        "status",
+    )
+
+    list_filter = ("service_period", "property__block__company")
+
+    search_fields = (
+        "property__name",
+        "property__block__name",
+        "property__block__company__name",
+    )
+
+    def company(self, obj):
+        return obj.property.block.company
+
+    def paid_amount(self, obj):
+        return obj.payments.aggregate(total=Sum("amount"))["total"] or 0
+
+    def remaining_amount(self, obj):
+        return obj.amount - self.paid_amount(obj)
+
+    def status(self, obj):
+        paid = self.paid_amount(obj)
+
+        if paid == 0:
+            return "UNPAID"
+        elif paid >= obj.amount:
+            return "PAID"
+        return "PARTIAL"
+    
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    """
+    What:
+    Admin for payments
+
+    Why:
+    Quick manual entry and debugging
+    """
+
+    list_display = (
+        "id",
+        "service_charge",
+        "property",
+        "company",
+        "amount",
+        "date_paid",
+    )
+
+    list_filter = ("date_paid", "service_charge__property__block__company")
+
+    search_fields = ("service_charge__property__name",)
+
+    def property(self, obj):
+        return obj.service_charge.property
+
+    def company(self, obj):
+        return obj.service_charge.property.block.company
+    
+
+
+@admin.register(ServicePeriod)
+class ServicePeriodAdmin(admin.ModelAdmin):
+    """
+    What:
+    Billing periods per company
+
+    Why:
+    Needed for filtering and organization
+    """
+
+    list_display = (
+        "id",
+        "name",
+        "company",
+        "start_date",
+        "end_date",
+        "is_active",
+    )
+
+    list_filter = ("company", "is_active")
+
+    search_fields = ("name", "company__name")

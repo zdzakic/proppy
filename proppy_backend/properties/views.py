@@ -12,6 +12,7 @@ from users.models import Role
 from .models import Block, UserRookeryRole, Property, PropertyOwner, ServiceCharge, Payment, ServicePeriod
 from .serializers import BlockSerializer, PropertySerializer, PropertyOwnerSerializer, \
     AddCompanyAdminSerializer, ServiceChargeListSerializer
+from .serializers_payment import PaymentCreateSerializer
 from .permissions import IsCompanyAdmin
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -416,18 +417,15 @@ class ServiceChargeListView(CompanyAdminScopedMixin, ListAPIView):
     - Main dashboard for tracking payments
 
     LOGIC:
-    - Filter by period (query param)
-    - If no period → fallback to active/latest
     - Scoped to user's companies
+    - If ?period is provided → filter by that service_period
+    - If no ?period → return all charges across all periods
     """
 
     serializer_class = ServiceChargeListSerializer
     permission_classes = [IsCompanyAdmin]
 
     def get_queryset(self):
-        user = self.request.user
-
-        # 1) sve firme admina
         company_ids = self.get_admin_company_ids()
 
         qs = ServiceCharge.objects.filter(
@@ -440,28 +438,32 @@ class ServiceChargeListView(CompanyAdminScopedMixin, ListAPIView):
             "property__owners",
         )
 
-        # 2) filter po periodu
         period_id = self.request.query_params.get("period")
-
         if period_id:
-            return qs.filter(service_period_id=period_id)
+            qs = qs.filter(service_period_id=period_id)
 
-        # 3) fallback → active period
-        active_period = ServicePeriod.objects.filter(
-            company_id__in=company_ids,
-            is_active=True
-        ).order_by("-due_date").first()
+        return qs
 
-        if active_period:
-            return qs.filter(service_period=active_period)
 
-        # 4) fallback → latest period
-        latest_period = ServicePeriod.objects.filter(
-            company_id__in=company_ids
-        ).order_by("-due_date").first()
+class PaymentCreateView(CompanyAdminScopedMixin, generics.CreateAPIView):
+    """
+    PaymentCreateView
+    - POST /payments/
 
-        if latest_period:
-            return qs.filter(service_period=latest_period)
+    Creates a payment for a ServiceCharge, scoped to the admin's companies.
+    """
 
-        # 5) ako ništa → prazno
-        return qs.none()
+    serializer_class = PaymentCreateSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def perform_create(self, serializer):
+        company_ids = self.get_admin_company_ids()
+        service_charge = serializer.validated_data.get("service_charge")
+
+        allowed_charge = get_object_or_404(
+            ServiceCharge.objects.select_related("property__block__company"),
+            id=service_charge.id,
+            property__block__company_id__in=company_ids,
+        )
+
+        serializer.save(service_charge=allowed_charge)

@@ -226,6 +226,7 @@ class ServiceChargeListSerializer(serializers.ModelSerializer):
 
     block_name = serializers.CharField(source="property.block.name", read_only=True)
     property_name = serializers.CharField(source="property.name", read_only=True)
+    company_name = serializers.CharField(source="company.name", read_only=True)
     period_name = serializers.CharField(source="service_period.name", read_only=True)
 
     owner_name = serializers.SerializerMethodField()
@@ -241,6 +242,7 @@ class ServiceChargeListSerializer(serializers.ModelSerializer):
             "id",
             "block_name",
             "property_name",
+            "company_name",
             "owner_name",
             "period_name",  # ostavljamo (debug + FE context)
             "amount",

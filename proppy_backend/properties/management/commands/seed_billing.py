@@ -12,92 +12,129 @@ from properties.models import (
 
 
 class Command(BaseCommand):
-    help = "Seed billing data (ServicePeriod, ServiceCharge, Payment)"
+    """
+    Seed billing data for ALL companies and ALL properties.
+
+    WHAT:
+    - Creates one ServicePeriod per company (June 2026)
+    - Creates ServiceCharge per property
+    - Creates payments with mixed states:
+        - paid
+        - partial
+        - unpaid
+
+    WHY:
+    - Needed for realistic UI testing (green / yellow / red states)
+
+    DESIGN:
+    - Idempotent → can run multiple times
+    - Clears payments before re-seeding (prevents duplicates)
+    - Does NOT duplicate charges
+    """
+
+    help = "Seed billing data (all companies, all properties)"
 
     def handle(self, *args, **kwargs):
-        self.stdout.write(self.style.WARNING("Seeding billing data..."))
+        self.stdout.write(self.style.WARNING("Seeding billing..."))
 
-        # 1) Company
-        company = Company.objects.filter(name="DEMO").first()
+        companies = Company.objects.all()
 
-        if not company:
-            self.stdout.write(self.style.ERROR("Company DEMO not found"))
+        if not companies.exists():
+            self.stdout.write(self.style.ERROR("No companies found"))
             return
 
-        # 2) Properties
-        properties = Property.objects.filter(block__company=company)
+        for company in companies:
+            self.stdout.write(f"\n🏢 Company: {company.name}")
 
-        if not properties.exists():
-            self.stdout.write(self.style.ERROR("No properties found"))
-            return
+            properties = Property.objects.filter(block__company=company)
 
-        self.stdout.write(f"Company: {company.name} | Properties: {properties.count()}")
+            if not properties.exists():
+                self.stdout.write("  ⚠️ No properties → skipping")
+                continue
 
-        # 3) FIX: uzmi prvi period ako postoji (bez crash-a)
-        period = ServicePeriod.objects.filter(
-            company=company,
-            name="June 2026"
-        ).first()
-
-        # ako ne postoji → kreiraj
-        if not period:
-            period = ServicePeriod.objects.create(
+            # --------------------------------------------------
+            # PERIOD
+            # --------------------------------------------------
+            period, _ = ServicePeriod.objects.get_or_create(
                 company=company,
                 name="June 2026",
-                due_date="2026-06-01",
-                is_active=True,
-                start_date="2026-06-01",
-                end_date="2026-06-30",
-            )
-            self.stdout.write(self.style.SUCCESS("Created new ServicePeriod"))
-        else:
-            self.stdout.write(self.style.SUCCESS("Using existing ServicePeriod"))
-
-        charges = []
-
-        # 4) Charges
-        for p in properties:
-            sc, _ = ServiceCharge.objects.get_or_create(
-                company=company,
-                property=p,
-                service_period=period,
                 defaults={
-                    "amount": 3000,
-                    "notice_sent_at": timezone.now(),
-                    "description": "Service charge June 2026",
+                    "due_date": "2026-06-01",
+                    "is_active": True,
+                    "start_date": "2026-06-01",
+                    "end_date": "2026-06-30",
                 },
             )
-            charges.append(sc)
 
-        self.stdout.write(self.style.SUCCESS(f"Charges ready: {len(charges)}"))
+            self.stdout.write(f"  📅 Period: {period.name}")
 
-        # 5) Payments (različiti scenariji)
-        for i, sc in enumerate(charges):
-            if i % 3 == 0:
-                Payment.objects.get_or_create(
-                    service_charge=sc,
-                    amount=3000,
-                    date_paid="2026-06-05",
+            charges = []
+
+            # --------------------------------------------------
+            # CHARGES
+            # --------------------------------------------------
+            for p in properties:
+                sc, _ = ServiceCharge.objects.get_or_create(
+                    company=company,
+                    property=p,
+                    service_period=period,
+                    defaults={
+                        "amount": 3000,
+                        "notice_sent_at": timezone.now(),
+                        "description": f"Service charge {period.name}",
+                    },
                 )
-            elif i % 3 == 1:
-                Payment.objects.get_or_create(
-                    service_charge=sc,
-                    amount=1500,
-                    date_paid="2026-06-06",
+                charges.append(sc)
+
+            self.stdout.write(self.style.SUCCESS(f"  Charges: {len(charges)}"))
+
+            # --------------------------------------------------
+            # PAYMENTS (mix scenarios)
+            # --------------------------------------------------
+            for i, sc in enumerate(charges):
+                # reset payments (important for repeatable seed)
+                sc.payments.all().delete()
+
+                if i % 3 == 0:
+                    # 🟢 FULL PAID
+                    Payment.objects.create(
+                        service_charge=sc,
+                        amount=3000,
+                        date_paid="2026-06-05",
+                    )
+
+                elif i % 3 == 1:
+                    # 🟡 PARTIAL
+                    Payment.objects.create(
+                        service_charge=sc,
+                        amount=1500,
+                        date_paid="2026-06-06",
+                    )
+
+                else:
+                    # 🔴 UNPAID
+                    pass
+
+            self.stdout.write(self.style.SUCCESS("  Payments seeded"))
+
+            # --------------------------------------------------
+            # CHECK
+            # --------------------------------------------------
+            self.stdout.write("  === CHECK ===")
+
+            for sc in charges:
+                paid = sc.payments.aggregate(total=Sum("amount"))["total"] or 0
+                remaining = sc.amount - paid
+
+                if paid == 0:
+                    status = "UNPAID"
+                elif paid >= sc.amount:
+                    status = "PAID"
+                else:
+                    status = "PARTIAL"
+
+                self.stdout.write(
+                    f"  {sc.property.name} | Paid: {paid} | Remaining: {remaining} | {status}"
                 )
-            # ostali unpaid
-
-        self.stdout.write(self.style.SUCCESS("Payments seeded"))
-
-        # 6) CHECK
-        self.stdout.write("\n=== CHECK ===")
-
-        for sc in charges:
-            paid = sc.payments.aggregate(total=Sum("amount"))["total"] or 0
-            remaining = sc.amount - paid
-
-            self.stdout.write(
-                f"{sc.property.name} | Charge: {sc.amount} | Paid: {paid} | Remaining: {remaining}"
-            )
 
         self.stdout.write(self.style.SUCCESS("\nSeeding complete 🚀"))
