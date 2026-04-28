@@ -313,3 +313,94 @@ def test_service_charge_list_returns_dash_when_property_has_no_owner():
     assert response.status_code == 200
     assert response.data[0]["id"] == charge.id
     assert response.data[0]["owner_name"] == "-"
+
+
+@pytest.mark.django_db
+def test_service_charge_list_period_filter_returns_all_admin_companies_for_same_named_period():
+    """
+    When multiple companies have ServicePeriod rows with the same display name, the UI
+    deduplicates by name and sends all matching IDs as a CSV: ?period=1,2.
+
+    This endpoint must return charges for *all* admin-scoped companies for that period name
+    (i.e. must not appear to "hide" one company).
+    """
+    client = APIClient()
+
+    user = User.objects.create_user(email="multi@admin.test", password="1234")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Company Admin"})[0]
+    company_a = Company.objects.create(name="Company A")
+    company_b = Company.objects.create(name="Company B")
+    UserRookeryRole.objects.create(user=user, company=company_a, role=role)
+    UserRookeryRole.objects.create(user=user, company=company_b, role=role)
+
+    period_name = "Dec 2026"
+    charge_a, _, period_a = create_charge(
+        company=company_a,
+        block_name="A Block",
+        property_name="A Unit",
+        period_name=period_name,
+        due_date=date(2026, 12, 10),
+        amount=Decimal("100.00"),
+    )
+    charge_b, _, period_b = create_charge(
+        company=company_b,
+        block_name="B Block",
+        property_name="B Unit",
+        period_name=period_name,
+        due_date=date(2026, 12, 10),
+        amount=Decimal("110.00"),
+    )
+
+    client.force_authenticate(user=user)
+    response = client.get(URL, {"period": f"{period_a.id},{period_b.id}"})
+
+    assert response.status_code == 200
+    returned_ids = {row["id"] for row in response.data}
+    assert returned_ids == {charge_a.id, charge_b.id}
+    returned_companies = {row["company_name"] for row in response.data}
+    assert returned_companies == {"Company A", "Company B"}
+
+
+@pytest.mark.django_db
+def test_service_charge_list_no_period_returns_multiple_periods_across_multiple_companies():
+    """No ?period → returns all charges for all admin-scoped companies, across periods."""
+    client = APIClient()
+
+    user = User.objects.create_user(email="noparam@admin.test", password="1234")
+    role = Role.objects.get_or_create(code="COMPANYADMIN", defaults={"name": "Company Admin"})[0]
+    company_a = Company.objects.create(name="Company A")
+    company_b = Company.objects.create(name="Company B")
+    UserRookeryRole.objects.create(user=user, company=company_a, role=role)
+    UserRookeryRole.objects.create(user=user, company=company_b, role=role)
+
+    charge_a1, _, _ = create_charge(
+        company=company_a,
+        block_name="A Block",
+        property_name="A Unit 1",
+        period_name="Jan 2026",
+        due_date=date(2026, 1, 10),
+        amount=Decimal("50.00"),
+    )
+    charge_a2, _, _ = create_charge(
+        company=company_a,
+        block_name="A Block",
+        property_name="A Unit 2",
+        period_name="Feb 2026",
+        due_date=date(2026, 2, 10),
+        amount=Decimal("60.00"),
+    )
+    charge_b1, _, _ = create_charge(
+        company=company_b,
+        block_name="B Block",
+        property_name="B Unit 1",
+        period_name="Jan 2026",
+        due_date=date(2026, 1, 10),
+        amount=Decimal("70.00"),
+    )
+
+    client.force_authenticate(user=user)
+    response = client.get(URL)
+
+    assert response.status_code == 200
+    returned_ids = {row["id"] for row in response.data}
+    assert returned_ids == {charge_a1.id, charge_a2.id, charge_b1.id}

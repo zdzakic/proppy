@@ -1,7 +1,9 @@
 {
 	"folders": [
         {
-            "name": "proppy",
+            "path": "../../scripting/python/WEB_APPS/django_realtor/portal-nekretnina-bih/zon"
+        },
+        {
             "path": "."
         }
     ],

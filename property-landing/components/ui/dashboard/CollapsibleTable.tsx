@@ -8,6 +8,13 @@ type Props = {
   children: React.ReactNode;
   /** Start collapsed (default: true — matches BlocksTable behaviour). */
   defaultCollapsed?: boolean;
+  /**
+   * Optional controlled mode: when provided, the component uses these instead of
+   * internal state. Pass both or neither — mixing is unsupported.
+   * Why: lets a parent preserve open/closed state across data refetches.
+   */
+  isCollapsed?: boolean;
+  onToggle?: () => void;
 };
 
 /**
@@ -22,14 +29,20 @@ export default function CollapsibleTable({
   title,
   children,
   defaultCollapsed = true,
+  isCollapsed: controlledCollapsed,
+  onToggle,
 }: Props) {
-  const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
+  const [internalCollapsed, setInternalCollapsed] = useState(defaultCollapsed);
+
+  // Prefer controlled props when provided; fall back to internal state.
+  const isCollapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
+  const toggle = onToggle ?? (() => setInternalCollapsed((prev) => !prev));
 
   return (
     <div className="space-y-2">
       <button
         type="button"
-        onClick={() => setIsCollapsed((prev) => !prev)}
+        onClick={toggle}
         className="flex w-full items-center justify-between rounded-lg border border-dashboard-border bg-dashboard-surface px-3 py-2 text-left transition-colors hover:bg-dashboard-hover"
         aria-expanded={!isCollapsed}
       >

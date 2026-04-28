@@ -11,7 +11,7 @@ from rest_framework import status
 from users.models import Role
 from .models import Block, UserRookeryRole, Property, PropertyOwner, ServiceCharge, Payment, ServicePeriod
 from .serializers import BlockSerializer, PropertySerializer, PropertyOwnerSerializer, \
-    AddCompanyAdminSerializer, ServiceChargeListSerializer
+    AddCompanyAdminSerializer, ServiceChargeListSerializer, ServicePeriodSerializer
 from .serializers_payment import PaymentCreateSerializer
 from .permissions import IsCompanyAdmin
 from django.contrib.auth import get_user_model
@@ -438,11 +438,35 @@ class ServiceChargeListView(CompanyAdminScopedMixin, ListAPIView):
             "property__owners",
         )
 
-        period_id = self.request.query_params.get("period")
-        if period_id:
-            qs = qs.filter(service_period_id=period_id)
+        # Accept a single id or a comma-separated list: ?period=1,2,3
+        # Needed so the FE can pass all period IDs that share the same display name
+        # (different companies create separate ServicePeriod rows for the same month).
+        period_param = self.request.query_params.get("period")
+        if period_param:
+            ids = [int(x) for x in period_param.split(",") if x.strip().isdigit()]
+            if ids:
+                qs = qs.filter(service_period_id__in=ids)
 
         return qs
+
+
+class ServicePeriodListView(CompanyAdminScopedMixin, ListAPIView):
+    """
+    GET /properties/service-periods/
+
+    Returns service periods for companies where the user is COMPANYADMIN.
+    Ordered by start_date DESC so the most recent period is first (FE default selection).
+    Read-only — no create/update/delete.
+    """
+
+    serializer_class = ServicePeriodSerializer
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def get_queryset(self):
+        company_ids = self.get_admin_company_ids()
+        return ServicePeriod.objects.filter(
+            company_id__in=company_ids
+        ).order_by("-start_date", "-id")
 
 
 class PaymentCreateView(CompanyAdminScopedMixin, generics.CreateAPIView):

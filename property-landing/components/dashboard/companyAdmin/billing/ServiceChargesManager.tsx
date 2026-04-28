@@ -14,12 +14,13 @@
  *   there are no modals or hooks to separate out.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { MouseEvent } from "react";
 import { Eye, Plus } from "lucide-react";
 
 import CollapsibleTable from "@/components/ui/dashboard/CollapsibleTable";
 import TableLayoutToggle from "@/components/dashboard/shared/common/TableLayoutToggle";
+import FormSelect from "@/components/ui/FormSelect";
 import AddPaymentModal from "@/components/dashboard/companyAdmin/billing/AddPaymentModal";
 import type { PaymentFormValues } from "@/components/forms/PaymentForm";
 import { useSort } from "@/hooks/useSort";
@@ -27,6 +28,8 @@ import { useServiceCharges } from "@/hooks/useServiceCharges";
 import { usePayments } from "@/hooks/usePayments";
 import type { TableViewMode } from "@/utils/table/viewMode";
 import type { ServiceCharge } from "@/types/serviceCharge";
+import type { ServicePeriod } from "@/types/servicePeriod";
+import apiClient from "@/utils/api/apiClient";
 
 
 // ---------------------------------------------------------------------------
@@ -84,11 +87,15 @@ function ChargesBlock({
   title,
   viewMode = "auto",
   onAddPayment,
+  isCollapsed,
+  onToggle,
 }: {
   charges: ServiceCharge[];
   title: string;
   viewMode?: TableViewMode;
   onAddPayment: (serviceChargeId: number) => void;
+  isCollapsed?: boolean;
+  onToggle?: () => void;
 }) {
   const { sortedItems, handleSort, getSortIndicator } = useSort<
     ServiceCharge,
@@ -127,7 +134,7 @@ function ChargesBlock({
       : "overflow-x-auto rounded-lg border border-dashboard-border";
 
   return (
-    <CollapsibleTable title={title}>
+    <CollapsibleTable title={title} isCollapsed={isCollapsed} onToggle={onToggle}>
       {charges.length === 0 ? (
         <div className="rounded-lg border border-dashboard-border bg-dashboard-surface p-4 text-center">
           <p className="text-xs text-dashboard-muted">No charges found.</p>
@@ -394,24 +401,54 @@ function ChargesBlock({
 // ---------------------------------------------------------------------------
 
 export default function ServiceChargesManager() {
-  const [selectedPeriod, setSelectedPeriod] = useState<number | null>(null);
+  // Selected period by display name — deduplicates companies that share the same period name.
+  const [selectedPeriodName, setSelectedPeriodName] = useState<string | null>(null);
+  const [periods, setPeriods] = useState<ServicePeriod[]>([]);
   // LEARN: same viewMode pattern as BlocksManager — "auto" is the default responsive behaviour.
   const [viewMode, setViewMode] = useState<TableViewMode>("auto");
   const [isAddPaymentOpen, setIsAddPaymentOpen] = useState(false);
   const [selectedServiceChargeId, setSelectedServiceChargeId] = useState<number | null>(null);
   const [selectedServiceChargePropertyName, setSelectedServiceChargePropertyName] =
     useState<string>("");
+  // Lifted collapse state keyed by company name so period switches don't reset open tables.
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  // Fetch periods once on mount; default to the first unique period name.
+  useEffect(() => {
+    apiClient
+      .get<ServicePeriod[]>("/properties/service-periods/")
+      .then((res) => {
+        setPeriods(res.data);
+        if (res.data.length > 0) setSelectedPeriodName(res.data[0].name);
+      })
+      .catch(() => {
+        // Silent fail — charges still load without a period filter.
+      });
+  }, []);
+
+  // Deduplicate dropdown options by name (multiple companies may have same period name).
+  const uniquePeriodNames = useMemo(() => {
+    const seen = new Set<string>();
+    return periods.filter((p) => {
+      if (seen.has(p.name)) return false;
+      seen.add(p.name);
+      return true;
+    });
+  }, [periods]);
+
+  // Collect ALL period IDs for the selected name so charges from every company are returned.
+  const selectedPeriodIds = useMemo(() => {
+    if (!selectedPeriodName) return null;
+    const ids = periods.filter((p) => p.name === selectedPeriodName).map((p) => p.id);
+    return ids.length ? ids : null;
+  }, [selectedPeriodName, periods]);
 
   const {
     data: charges,
     loading,
     error,
     refetch,
-  } = useServiceCharges(selectedPeriod);
-
-  // This manager currently doesn't render a period selector UI; we still keep the state here
-  // so adding a selector later doesn't require moving fetch logic back into the component.
-  void setSelectedPeriod;
+  } = useServiceCharges(selectedPeriodIds);
 
   const { isCreating: isCreatingPayment, createError, createPayment } = usePayments();
 
@@ -479,32 +516,57 @@ export default function ServiceChargesManager() {
     );
   }
 
+  const periodOptions = uniquePeriodNames.map((p) => ({ value: p.name, label: p.name }));
+
+  const isCompanyCollapsed = (name: string) => openSections[name] ?? true;
+  const toggleCompany = (name: string) =>
+    setOpenSections((prev) => ({ ...prev, [name]: !(prev[name] ?? true) }));
+
   return (
     // Outer section — identical wrapper to BlocksManager.
     <section className="space-y-2 rounded-2xl border border-dashboard-border bg-dashboard-surface p-4 sm:p-6">
-      <div className="space-y-2">
+      <div className="space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-xl font-semibold text-dashboard-text">
               Service Charges
             </h2>
             <p className="text-xs text-dashboard-muted">
-              Billing overview for the current period — grouped by company.
+              Billing overview — grouped by company.
             </p>
           </div>
         </div>
+
+        {/* Period filter + view toggle row */}
+        {periods.length > 0 && (
+          <div className="flex items-center justify-between gap-2">
+            <FormSelect
+              value={selectedPeriodName ?? ""}
+              onChange={(v) => setSelectedPeriodName(v || null)}
+              options={periodOptions}
+            />
+            <div className="hidden md:block">
+              <TableLayoutToggle
+                value={viewMode}
+                onChange={setViewMode}
+                ariaLabelPrefix="Service Charges"
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {charges.length === 0 ? (
         <div className="rounded-lg border border-dashboard-border bg-dashboard-surface p-4 text-center">
           <p className="text-xs text-dashboard-muted">
-            No service charges found for the current period.
+            No service charges found for the selected period.
           </p>
         </div>
       ) : (
         // Inner grouped view — identical structure to BlocksGroupedView.
         <div className="space-y-2">
-          <div className="hidden items-center justify-end md:flex">
+          {/* View toggle — desktop shows in filter row above; mobile shows here */}
+          <div className="flex justify-end md:hidden">
             <TableLayoutToggle
               value={viewMode}
               onChange={setViewMode}
@@ -519,6 +581,8 @@ export default function ServiceChargesManager() {
               charges={companyCharges}
               viewMode={viewMode}
               onAddPayment={handleAddPaymentOpen}
+              isCollapsed={isCompanyCollapsed(companyName)}
+              onToggle={() => toggleCompany(companyName)}
             />
           ))}
         </div>

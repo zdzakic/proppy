@@ -300,3 +300,14 @@ class ServiceChargeListSerializer(serializers.ModelSerializer):
         Last payment date (optional UI info)
         """
         return obj.payments.aggregate(last=Max("date_paid"))["last"]
+
+
+class ServicePeriodSerializer(serializers.ModelSerializer):
+    """
+    Minimal serializer for period dropdown data.
+    Only id + name are needed by the FE filter select.
+    """
+
+    class Meta:
+        model = ServicePeriod
+        fields = ["id", "name"]

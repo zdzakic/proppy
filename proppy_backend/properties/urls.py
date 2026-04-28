@@ -14,6 +14,7 @@ from .views import (
     AddCompanyView,
     PropertyGlobalListAPIView,
     ServiceChargeListView,
+    ServicePeriodListView,
     PaymentCreateView,
 )
 
@@ -80,6 +81,11 @@ urlpatterns = [
         'service-charges/',
         ServiceChargeListView.as_view(),
         name='service-charge-list',
+    ),
+    path(
+        'service-periods/',
+        ServicePeriodListView.as_view(),
+        name='service-period-list',
     ),
     path(
         'payments/',

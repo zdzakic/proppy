@@ -13,7 +13,10 @@ import type { ServiceCharge } from "@/types/serviceCharge";
  * Why it exists: Keeps ServiceChargesManager focused on rendering + grouping only.
  * What would break if removed: The Service Charges page would lose its data source.
  */
-export function useServiceCharges(periodId: number | null) {
+// Accepts an array of period IDs so the FE can filter across multiple companies'
+// ServicePeriod rows that share the same display name. Passed as a single
+// comma-separated ?period param that the backend splits on its side.
+export function useServiceCharges(periodIds: number[] | null) {
   const [data, setData] = useState<ServiceCharge[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,7 +38,7 @@ export function useServiceCharges(periodId: number | null) {
         // LEARN: pass query params via axios `params` so URL building stays clean.
         const response = await apiClient.get<ServiceCharge[]>(
           "/properties/service-charges/",
-          periodId ? { params: { period: periodId } } : undefined,
+          periodIds?.length ? { params: { period: periodIds.join(",") } } : undefined,
         );
         setData(response.data);
       } catch {
@@ -52,7 +55,9 @@ export function useServiceCharges(periodId: number | null) {
         }
       }
     },
-    [periodId],
+    // Stringify so useCallback detects array reference changes correctly.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [periodIds?.join(",") ?? null],
   );
 
   useEffect(() => {
