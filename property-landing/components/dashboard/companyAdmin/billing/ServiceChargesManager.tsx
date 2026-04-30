@@ -11,7 +11,7 @@
  *
  * Pattern: mirrors BlocksManager (outer section) → BlocksGroupedView (toggle + grouping)
  *   → BlocksTable (viewMode-aware collapsible table), all collapsed into one file since
- *   there are no modals or hooks to separate out.
+ *   there are no extra data hooks to separate out.
  */
 
 import { useEffect, useMemo, useState } from "react";
@@ -22,6 +22,7 @@ import CollapsibleTable from "@/components/ui/dashboard/CollapsibleTable";
 import TableLayoutToggle from "@/components/dashboard/shared/common/TableLayoutToggle";
 import FormSelect from "@/components/ui/FormSelect";
 import AddPaymentModal from "@/components/dashboard/companyAdmin/billing/AddPaymentModal";
+import ViewPaymentsModal from "@/components/dashboard/companyAdmin/billing/ViewPaymentsModal";
 import type { PaymentFormValues } from "@/components/forms/PaymentForm";
 import { useSort } from "@/hooks/useSort";
 import { useServiceCharges } from "@/hooks/useServiceCharges";
@@ -87,6 +88,7 @@ function ChargesBlock({
   title,
   viewMode = "auto",
   onAddPayment,
+  onViewPayments,
   isCollapsed,
   onToggle,
 }: {
@@ -94,6 +96,7 @@ function ChargesBlock({
   title: string;
   viewMode?: TableViewMode;
   onAddPayment: (serviceChargeId: number) => void;
+  onViewPayments: (charge: ServiceCharge) => void;
   isCollapsed?: boolean;
   onToggle?: () => void;
 }) {
@@ -207,9 +210,12 @@ function ChargesBlock({
 
                       <button
                         type="button"
-                        title="View charge"
-                        aria-label="View charge"
-                        onClick={stopPropagation}
+                        title="View payments"
+                        aria-label="View payments"
+                        onClick={(e) => {
+                          stopPropagation(e);
+                          onViewPayments(c);
+                        }}
                         className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
                       >
                         <Eye size={12} aria-hidden />
@@ -374,9 +380,12 @@ function ChargesBlock({
 
                           <button
                             type="button"
-                            title="View charge"
-                            aria-label="View charge"
-                            onClick={stopPropagation}
+                            title="View payments"
+                            aria-label="View payments"
+                            onClick={(e) => {
+                              stopPropagation(e);
+                              onViewPayments(c);
+                            }}
                             className="inline-flex h-7 w-7 items-center justify-center rounded-md border border-success bg-success/10 text-success transition-colors hover:bg-success/20"
                           >
                             <Eye size={12} aria-hidden />
@@ -410,6 +419,12 @@ export default function ServiceChargesManager() {
   const [selectedServiceChargeId, setSelectedServiceChargeId] = useState<number | null>(null);
   const [selectedServiceChargePropertyName, setSelectedServiceChargePropertyName] =
     useState<string>("");
+  const [viewPaymentsContext, setViewPaymentsContext] = useState<{
+    serviceChargeId: number;
+    propertyName: string;
+    periodName: string;
+    totalAmount: number;
+  } | null>(null);
   // Lifted collapse state keyed by company name so period switches don't reset open tables.
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
@@ -463,6 +478,19 @@ export default function ServiceChargesManager() {
     setIsAddPaymentOpen(false);
     setSelectedServiceChargeId(null);
     setSelectedServiceChargePropertyName("");
+  };
+
+  const handleViewPaymentsOpen = (charge: ServiceCharge) => {
+    setViewPaymentsContext({
+      serviceChargeId: charge.id,
+      propertyName: charge.property_name,
+      periodName: charge.period_name,
+      totalAmount: Number(charge.amount),
+    });
+  };
+
+  const handleViewPaymentsClose = () => {
+    setViewPaymentsContext(null);
   };
 
   const handleAddPaymentSubmit = async (values: PaymentFormValues) => {
@@ -581,6 +609,7 @@ export default function ServiceChargesManager() {
               charges={companyCharges}
               viewMode={viewMode}
               onAddPayment={handleAddPaymentOpen}
+              onViewPayments={handleViewPaymentsOpen}
               isCollapsed={isCompanyCollapsed(companyName)}
               onToggle={() => toggleCompany(companyName)}
             />
@@ -595,6 +624,15 @@ export default function ServiceChargesManager() {
         onSubmit={handleAddPaymentSubmit}
         isSubmitting={isCreatingPayment}
         error={createError}
+      />
+
+      <ViewPaymentsModal
+        isOpen={viewPaymentsContext !== null}
+        onClose={handleViewPaymentsClose}
+        serviceChargeId={viewPaymentsContext?.serviceChargeId ?? 0}
+        propertyName={viewPaymentsContext?.propertyName ?? ""}
+        periodName={viewPaymentsContext?.periodName ?? ""}
+        totalAmount={viewPaymentsContext?.totalAmount ?? 0}
       />
     </section>
   );
