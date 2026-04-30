@@ -54,9 +54,9 @@ describe("ViewPaymentsModal", () => {
     expect(await screen.findByText("11-04-2026")).toBeInTheDocument();
     expect(screen.getByText("10-04-2026")).toBeInTheDocument();
 
-    // Totals: 20 + 5 = 25, remaining 75.
-    expect(screen.getByText("25.00")).toBeInTheDocument();
-    expect(screen.getByText("75.00")).toBeInTheDocument();
+    // Totals: 20 + 5 = 25, remaining 75. (integer formatting)
+    expect(screen.getByText("25")).toBeInTheDocument();
+    expect(screen.getByText("75")).toBeInTheDocument();
 
     const table = screen.getByRole("table");
     const getAmounts = () => {
@@ -65,15 +65,15 @@ describe("ViewPaymentsModal", () => {
     };
 
     // Default sort: date_paid asc => 10-04 first, then 11-04.
-    expect(getAmounts()).toEqual(["5.00", "20.00"]);
+    expect(getAmounts()).toEqual(["5", "20"]);
 
     // Sort by amount asc (first click switches key => asc)
     await user.click(within(table).getByRole("button", { name: /amount/i }));
-    expect(getAmounts()).toEqual(["5.00", "20.00"]);
+    expect(getAmounts()).toEqual(["5", "20"]);
 
     // Toggle amount desc
     await user.click(within(table).getByRole("button", { name: /amount/i }));
-    expect(getAmounts()).toEqual(["20.00", "5.00"]);
+    expect(getAmounts()).toEqual(["20", "5"]);
   });
 });
 

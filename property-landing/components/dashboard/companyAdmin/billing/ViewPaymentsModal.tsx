@@ -3,8 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 
 import BaseModal from "@/components/ui/modal/BaseModal";
-import { useSort } from "@/hooks/useSort";
+import PaymentsTable, {
+  type PaymentRow,
+} from "@/components/dashboard/companyAdmin/billing/PaymentsTable";
 import apiClient from "@/utils/api/apiClient";
+import { fmtInt } from "@/utils/common/formatNumber";
 
 type Props = {
   isOpen: boolean;
@@ -14,113 +17,6 @@ type Props = {
   periodName: string;
   totalAmount: number;
 };
-
-/** One row from GET /properties/payments/?service_charge= */
-type PaymentRow = {
-  id: number;
-  amount: string | number;
-  date_paid: string;
-  comment: string;
-};
-
-type SortKey = "date_paid" | "amount" | "comment";
-
-function fmtMoney(n: number) {
-  return n.toFixed(2);
-}
-
-function fmtDateDDMMYYYY(value: string) {
-  // Expected: "YYYY-MM-DD" from DRF DateField; fall back to original if unexpected.
-  const parts = String(value).split("-");
-  if (parts.length !== 3) return value;
-  const [yyyy, mm, dd] = parts;
-  if (!yyyy || !mm || !dd) return value;
-  return `${dd}-${mm}-${yyyy}`;
-}
-
-function PaymentsTable({ payments }: { payments: PaymentRow[] }) {
-  const { sortedItems, handleSort, getSortIndicator } = useSort<
-    PaymentRow,
-    SortKey
-  >(payments, {
-    defaultKey: "date_paid",
-    getSortValueType: (key) => {
-      if (key === "date_paid" || key === "amount") return "number";
-      return "string";
-    },
-    getSortValue: (key, p) => {
-      if (key === "date_paid") return new Date(p.date_paid).getTime();
-      if (key === "amount") return Number(p.amount);
-      if (key === "comment") return p.comment ?? "";
-      return "";
-    },
-  });
-
-  return (
-    <div className="overflow-x-auto rounded-lg border border-dashboard-border">
-      <table className="w-full text-xs">
-        <thead className="bg-dashboard-hover text-left text-dashboard-muted">
-          <tr>
-            <th className="px-3 py-2 font-medium">
-              <button
-                type="button"
-                onClick={() => handleSort("date_paid")}
-                className="inline-flex items-center gap-1 hover:text-dashboard-text"
-              >
-                <span>Date</span>
-                <span className="inline-flex w-4 justify-center text-dashboard-text">
-                  {getSortIndicator("date_paid")}
-                </span>
-              </button>
-            </th>
-            <th className="px-3 py-2 font-medium">
-              <button
-                type="button"
-                onClick={() => handleSort("amount")}
-                className="inline-flex items-center gap-1 hover:text-dashboard-text"
-              >
-                <span>Amount</span>
-                <span className="inline-flex w-4 justify-center text-dashboard-text">
-                  {getSortIndicator("amount")}
-                </span>
-              </button>
-            </th>
-            <th className="px-3 py-2 font-medium">
-              <button
-                type="button"
-                onClick={() => handleSort("comment")}
-                className="inline-flex items-center gap-1 hover:text-dashboard-text"
-              >
-                <span>Comment</span>
-                <span className="inline-flex w-4 justify-center text-dashboard-text">
-                  {getSortIndicator("comment")}
-                </span>
-              </button>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedItems.map((p) => (
-            <tr
-              key={p.id}
-              className="border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
-            >
-              <td className="px-3 py-2 text-dashboard-text">
-                {fmtDateDDMMYYYY(p.date_paid)}
-              </td>
-              <td className="px-3 py-2 text-dashboard-text">
-                {fmtMoney(Number(p.amount))}
-              </td>
-              <td className="px-3 py-2 text-dashboard-muted">
-                {p.comment?.trim() ? p.comment : "—"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 /**
  * ViewPaymentsModal
@@ -224,7 +120,7 @@ export default function ViewPaymentsModal({
             <p className="text-dashboard-text">
               <span className="text-dashboard-muted">Total paid: </span>
               <span className="font-medium text-success">
-                {fmtMoney(totalPaid)}
+                {fmtInt(totalPaid)}
               </span>
             </p>
             <p className="text-dashboard-text">
@@ -234,7 +130,7 @@ export default function ViewPaymentsModal({
                   remaining > 0 ? "text-error" : "text-success"
                 }`}
               >
-                {fmtMoney(remaining)}
+                {fmtInt(remaining)}
               </span>
             </p>
           </div>

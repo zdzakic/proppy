@@ -31,6 +31,7 @@ import type { TableViewMode } from "@/utils/table/viewMode";
 import type { ServiceCharge } from "@/types/serviceCharge";
 import type { ServicePeriod } from "@/types/servicePeriod";
 import apiClient from "@/utils/api/apiClient";
+import { fmtInt } from "@/utils/common/formatNumber";
 
 
 // ---------------------------------------------------------------------------
@@ -57,11 +58,6 @@ const STATUS_LABEL: Record<ServiceCharge["status"], string> = {
   partial: "Partial",
   unpaid: "Unpaid",
 };
-
-/** DRF may return DecimalField amounts as strings — normalise to two-decimal display. */
-function fmt(value: number | string): string {
-  return Number(value).toFixed(2);
-}
 
 const stopPropagation = (e: MouseEvent<HTMLElement>) => e.stopPropagation();
 
@@ -175,12 +171,12 @@ function ChargesBlock({
                       <div>
                         <p className="text-dashboard-muted">Charge</p>
                         <p className="font-medium text-dashboard-text">
-                          {fmt(c.amount)}
+                          {fmtInt(c.amount)}
                         </p>
                       </div>
                       <div>
                         <p className="text-dashboard-muted">Paid</p>
-                        <p className="font-medium text-success">{fmt(c.paid)}</p>
+                        <p className="font-medium text-success">{fmtInt(c.paid)}</p>
                       </div>
                       <div>
                         <p className="text-dashboard-muted">Remaining</p>
@@ -189,7 +185,7 @@ function ChargesBlock({
                             Number(c.remaining) > 0 ? "text-error" : "text-success"
                           }`}
                         >
-                          {fmt(c.remaining)}
+                          {fmtInt(c.remaining)}
                         </p>
                       </div>
                     </div>
@@ -342,17 +338,17 @@ function ChargesBlock({
                       </td>
 
                       <td className="px-3 py-2 text-dashboard-muted">
-                        {fmt(c.amount)}
+                        {fmtInt(c.amount)}
                       </td>
 
-                      <td className="px-3 py-2 text-success">{fmt(c.paid)}</td>
+                      <td className="px-3 py-2 text-success">{fmtInt(c.paid)}</td>
 
                       <td
                         className={`px-3 py-2 font-medium ${
                           Number(c.remaining) > 0 ? "text-error" : "text-success"
                         }`}
                       >
-                        {fmt(c.remaining)}
+                        {fmtInt(c.remaining)}
                       </td>
 
                       <td className="px-3 py-2">
