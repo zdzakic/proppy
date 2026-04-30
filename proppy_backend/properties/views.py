@@ -12,7 +12,7 @@ from users.models import Role
 from .models import Block, UserRookeryRole, Property, PropertyOwner, ServiceCharge, Payment, ServicePeriod
 from .serializers import BlockSerializer, PropertySerializer, PropertyOwnerSerializer, \
     AddCompanyAdminSerializer, ServiceChargeListSerializer, ServicePeriodSerializer
-from .serializers_payment import PaymentCreateSerializer
+from .serializers_payment import PaymentCreateSerializer, PaymentListSerializer
 from .permissions import IsCompanyAdmin
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -469,16 +469,36 @@ class ServicePeriodListView(CompanyAdminScopedMixin, ListAPIView):
         ).order_by("-start_date", "-id")
 
 
-class PaymentCreateView(CompanyAdminScopedMixin, generics.CreateAPIView):
+class PaymentCreateView(CompanyAdminScopedMixin, generics.ListCreateAPIView):
     """
     PaymentCreateView
-    - POST /payments/
+    - GET /payments/ — list payments for companies where user is COMPANYADMIN
+    - GET /payments/?service_charge=ID — same scope, filtered to one charge
+    - POST /payments/ — create (unchanged)
 
     Creates a payment for a ServiceCharge, scoped to the admin's companies.
     """
 
-    serializer_class = PaymentCreateSerializer
     permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return PaymentCreateSerializer
+        return PaymentListSerializer
+
+    def get_queryset(self):
+        company_ids = self.get_admin_company_ids()
+        qs = (
+            Payment.objects.filter(
+                service_charge__property__block__company_id__in=company_ids
+            )
+            .select_related("service_charge")
+            .order_by("-date_paid", "-id")
+        )
+        service_charge_param = self.request.query_params.get("service_charge")
+        if service_charge_param and str(service_charge_param).strip().isdigit():
+            qs = qs.filter(service_charge_id=int(service_charge_param))
+        return qs
 
     def perform_create(self, serializer):
         company_ids = self.get_admin_company_ids()

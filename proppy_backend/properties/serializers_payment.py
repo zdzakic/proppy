@@ -6,6 +6,22 @@ from rest_framework import serializers
 from .models import Payment, ServiceCharge
 
 
+class PaymentListSerializer(serializers.ModelSerializer):
+    """
+    PaymentListSerializer
+
+    WHAT:
+    - Read-only shape for listing payments (GET).
+
+    WHY:
+    - ListCreateAPIView uses a slim serializer; create stays on PaymentCreateSerializer.
+    """
+
+    class Meta:
+        model = Payment
+        fields = ["id", "amount", "date_paid", "comment"]
+
+
 class PaymentCreateSerializer(serializers.ModelSerializer):
     """
     PaymentCreateSerializer
@@ -14,7 +30,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
     - Minimal serializer for creating a Payment towards a ServiceCharge.
 
     WHY:
-    - Keeps the API KISS (CreateAPIView + ModelSerializer), mirroring Blocks create style.
+    - Keeps the API KISS (POST on ListCreateAPIView + ModelSerializer), mirroring Blocks create style.
     """
 
     service_charge = serializers.PrimaryKeyRelatedField(
