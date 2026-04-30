@@ -33,13 +33,14 @@ export default function PaymentForm({
   const [datePaid, setDatePaid] = useState("");
 
   const amountNumber = Number(amount);
-  const isAmountValid = amount.trim() !== "" && !Number.isNaN(amountNumber) && amountNumber > 0;
+  const isAmountValid =
+    amount.trim() !== "" && !Number.isNaN(amountNumber) && amountNumber > 0;
   const isSubmitDisabled = !isAmountValid || !datePaid || isSubmitting;
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitDisabled) return;
-    onSubmit({ amount: amountNumber, date_paid: datePaid });
+    onSubmit({ amount: Math.round(amountNumber), date_paid: datePaid });
   };
 
   return (
@@ -51,12 +52,16 @@ export default function PaymentForm({
         <input
           id="payment-amount-input"
           type="number"
-          inputMode="decimal"
-          step="0.01"
+          inputMode="numeric"
+          step="1"
           min="0"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="0.00"
+          onChange={(e) => {
+            // Integer-only billing rule: keep digits only.
+            const digitsOnly = e.target.value.replace(/[^\d]/g, "");
+            setAmount(digitsOnly);
+          }}
+          placeholder="0"
           className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
         />
       </div>
