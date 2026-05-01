@@ -16,6 +16,7 @@ export type OwnerFormValues = {
   email: string;
   first_name: string;
   last_name: string;
+  display_label?: string;
   phone: string;
   address_1: string;
   postcode: string;
@@ -26,6 +27,7 @@ const EMPTY_VALUES: OwnerFormValues = {
   email: "",
   first_name: "",
   last_name: "",
+  display_label: "",
   phone: "",
   address_1: "",
   postcode: "",
@@ -124,6 +126,7 @@ export default function OwnerForm({
       email,
       first_name: firstName,
       last_name: lastName,
+      display_label: form.display_label?.trim() ?? "",
       phone: form.phone.trim(),
       address_1: form.address_1.trim(),
       postcode: form.postcode.trim(),
@@ -164,7 +167,16 @@ export default function OwnerForm({
           />
         </div>
 
-        <div className="space-y-1 md:col-span-2">
+        <div className="space-y-1">
+          <p className="text-sm text-dashboard-muted">Property Label (Optional)</p>
+          <FormInput
+            placeholder="e.g. Apartment Zurich"
+            value={form.display_label ?? ""}
+            onChange={setField("display_label")}
+          />
+        </div>
+
+        <div className="space-y-1">
           <p className="text-sm text-dashboard-muted">Email (Required)</p>
           <FormInput
             type="email"

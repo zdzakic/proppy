@@ -88,6 +88,7 @@ export function usePropertyOwnerSave() {
       email: values.email.trim().toLowerCase(),
       first_name: values.first_name.trim(),
       last_name: values.last_name.trim(),
+      display_label: values.display_label ?? "",
       phone: values.phone.trim(),
       address_1: values.address_1.trim(),
       postcode: values.postcode.trim(),
