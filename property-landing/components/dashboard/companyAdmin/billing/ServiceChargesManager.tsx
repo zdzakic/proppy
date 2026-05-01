@@ -16,6 +16,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { MouseEvent } from "react";
+import dynamic from "next/dynamic";
 import { Eye, Plus } from "lucide-react";
 
 import CollapsibleTable from "@/components/ui/dashboard/CollapsibleTable";
@@ -32,6 +33,12 @@ import type { ServiceCharge } from "@/types/serviceCharge";
 import type { ServicePeriod } from "@/types/servicePeriod";
 import apiClient from "@/utils/api/apiClient";
 import { fmtInt } from "@/utils/common/formatNumber";
+
+/** Client-only: keeps `@react-pdf/renderer` out of the SSR bundle (Turbopack cannot chunk it for server). */
+const DownloadServiceChargePDF = dynamic(
+  () => import("@/components/dashboard/companyAdmin/billing/DownloadServiceChargePDF"),
+  { ssr: false },
+);
 
 
 // ---------------------------------------------------------------------------
@@ -216,6 +223,8 @@ function ChargesBlock({
                       >
                         <Eye size={12} aria-hidden />
                       </button>
+
+                      <DownloadServiceChargePDF charge={c} />
                     </div>
                   </div>
                 </article>
@@ -386,6 +395,8 @@ function ChargesBlock({
                           >
                             <Eye size={12} aria-hidden />
                           </button>
+
+                          <DownloadServiceChargePDF charge={c} />
                         </div>
                       </td>
                     </tr>

@@ -319,6 +319,37 @@ describe("OwnersManager – owner modal flows", () => {
     });
   });
 
+  it("edit owner: display_label value is sent in payload", async () => {
+    const user = userEvent.setup();
+
+    mockGet.mockResolvedValueOnce({ data: [propertyWithOwner] });
+    mockDelete.mockResolvedValueOnce({ data: {} });
+    mockPost.mockResolvedValueOnce({ data: { id: 11, user_email: "jane@test.com" } });
+    mockGet.mockResolvedValueOnce({ data: [propertyWithOwner] });
+
+    render(<OwnersManager />);
+    await expandFirstCompanySection(user);
+
+    await screen.findAllByText("Unit B");
+    await user.click(screen.getAllByLabelText("Edit owner")[0]);
+
+    const dialog = await screen.findByRole("dialog", { name: /update owner/i });
+
+    await user.type(
+      within(dialog).getByPlaceholderText("e.g. Apartment Zurich"),
+      "Lake View A1",
+    );
+
+    await user.click(within(dialog).getByRole("button", { name: /^save$/i }));
+
+    await waitFor(() => {
+      expect(mockPost).toHaveBeenCalledWith(
+        "/properties/blocks/5/properties/2/owners/create/",
+        expect.objectContaining({ display_label: "Lake View A1" }),
+      );
+    });
+  });
+
   it("edit owner: shows success toast and closes modal", async () => {
     const user = userEvent.setup();
     const { toast } = await import("sonner");
