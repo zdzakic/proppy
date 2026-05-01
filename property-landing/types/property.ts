@@ -9,6 +9,8 @@ export type PropertyOwner = {
   id: number;
   user_email?: string;
   display_name?: string;
+  /** Short label shown in owners list (e.g. unit / role). */
+  display_label?: string;
   comment?: string;
   /** Same as Property.block_id — included on nested owner for owner URL construction. */
   block_id?: number;

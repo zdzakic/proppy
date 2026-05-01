@@ -28,7 +28,7 @@ type Props = {
 };
 
 // company_name column is omitted — it is now the collapsible section header.
-type SortKey = "name" | "block_name" | "owner";
+type SortKey = "name" | "block_name" | "owner" | "display_label";
 
 /**
  * Assign-owner icon button — dashboard tokens only (no `dark:`) so it stays readable in both themes.
@@ -36,6 +36,9 @@ type SortKey = "name" | "block_name" | "owner";
  */
 const assignOwnerIconButtonClassName =
   "inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border-1 border-dashboard-accent bg-dashboard-surface text-dashboard-accent shadow-sm transition-colors hover:bg-dashboard-accent/25";
+
+/** Equal fifths + min-w-0 so Actions column cannot grow past 20% (buttons stay inside). */
+const ownersTableCellWidthClass = "w-1/5 min-w-0 overflow-hidden";
 
 export default function OwnersTable({
   properties,
@@ -60,6 +63,10 @@ export default function OwnersTable({
         const title = first?.user_title;
         const name = first?.display_name ?? first?.user_email ?? "";
         return title ? `${title} ${name}` : name;
+      }
+      if (key === "display_label") {
+        const first = property.owners?.[0];
+        return first?.display_label?.trim() ?? "";
       }
       return "";
     },
@@ -100,6 +107,11 @@ export default function OwnersTable({
                 const ownerLabel = title ? `${title} ${name}` : name;
                 const hasOwner = ownerLabel !== null;
                 const blockLabel = property.block_name ?? "—";
+                const displayLabelRaw = firstOwner?.display_label;
+                const displayLabelText =
+                  displayLabelRaw != null && String(displayLabelRaw).trim() !== ""
+                    ? String(displayLabelRaw).trim()
+                    : "—";
 
                 return (
                   <article
@@ -111,11 +123,15 @@ export default function OwnersTable({
                         {property.name}
                       </p>
 
-                      <p className="text-xs text-dashboard-muted">Block: {blockLabel}</p>
+                      <p className="text-xs text-dashboard-muted">
+                        Label: {displayLabelText}
+                      </p>
 
                       <p className="text-xs text-dashboard-muted">
                         Owner: {ownerLabel ?? "—"}
                       </p>
+
+                      <p className="text-xs text-dashboard-muted">Block: {blockLabel}</p>
 
                       <div className="flex flex-wrap gap-1.5">
                         {!hasOwner ? (
@@ -155,15 +171,16 @@ export default function OwnersTable({
             <div className={tableWrapperClassName}>
               <table className="w-full table-fixed text-xs">
                 <colgroup>
-                  <col className="w-[35%]" />
-                  <col className="w-[35%]" />
                   <col className="w-[20%]" />
-                  <col className="w-[10%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[20%]" />
+                  <col className="w-[20%]" />
                 </colgroup>
 
                 <thead className="bg-dashboard-hover text-left text-dashboard-muted">
                   <tr>
-                    <th className="px-3 py-2 font-medium">
+                    <th className={`px-3 py-2 font-medium ${ownersTableCellWidthClass}`}>
                       <button
                         type="button"
                         onClick={() => handleSort("name")}
@@ -176,7 +193,20 @@ export default function OwnersTable({
                       </button>
                     </th>
 
-                    <th className="px-3 py-2 font-medium">
+                    <th className={`px-3 py-2 font-medium ${ownersTableCellWidthClass}`}>
+                      <button
+                        type="button"
+                        onClick={() => handleSort("display_label")}
+                        className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                      >
+                        <span>Label</span>
+                        <span className="inline-flex w-4 justify-center text-dashboard-text">
+                          {getSortIndicator("display_label")}
+                        </span>
+                      </button>
+                    </th>
+
+                    <th className={`px-3 py-2 font-medium ${ownersTableCellWidthClass}`}>
                       <button
                         type="button"
                         onClick={() => handleSort("owner")}
@@ -189,7 +219,7 @@ export default function OwnersTable({
                       </button>
                     </th>
 
-                    <th className="px-3 py-2 font-medium">
+                    <th className={`px-3 py-2 font-medium ${ownersTableCellWidthClass}`}>
                       <button
                         type="button"
                         onClick={() => handleSort("block_name")}
@@ -202,7 +232,11 @@ export default function OwnersTable({
                       </button>
                     </th>
 
-                    <th className="px-3 py-2 text-right font-medium">Actions</th>
+                    <th
+                      className={`px-3 py-2 text-right font-medium ${ownersTableCellWidthClass}`}
+                    >
+                      Actions
+                    </th>
                   </tr>
                 </thead>
 
@@ -214,28 +248,43 @@ export default function OwnersTable({
                     const ownerLabel = title ? `${title} ${name}` : name;
                     const hasOwner = ownerLabel !== null;
                     const blockLabel = property.block_name ?? "—";
+                    const displayLabelRaw = firstOwner?.display_label;
+                    const displayLabelText =
+                      displayLabelRaw != null && String(displayLabelRaw).trim() !== ""
+                        ? String(displayLabelRaw).trim()
+                        : "—";
 
                     return (
                       <tr
                         key={property.id}
                         className="border-t border-dashboard-border transition-colors hover:bg-dashboard-hover"
                       >
-                        <td className="px-3 py-2">
-                          <span className="font-medium text-dashboard-text">
+                        <td className={`px-3 py-2 ${ownersTableCellWidthClass}`}>
+                          <span className="block truncate font-medium text-dashboard-text">
                             {property.name}
                           </span>
                         </td>
 
-                        <td className="px-3 py-2 text-dashboard-muted">
-                          {ownerLabel ?? "—"}
+                        <td
+                          className={`px-3 py-2 text-dashboard-muted ${ownersTableCellWidthClass}`}
+                        >
+                          <span className="block truncate">{displayLabelText}</span>
                         </td>
 
-                        <td className="px-3 py-2 text-dashboard-muted">
-                          {blockLabel}
+                        <td
+                          className={`px-3 py-2 text-dashboard-muted ${ownersTableCellWidthClass}`}
+                        >
+                          <span className="block truncate">{ownerLabel ?? "—"}</span>
                         </td>
 
-                        <td className="px-3 py-2">
-                          <div className="flex items-center justify-end gap-1.5">
+                        <td
+                          className={`px-3 py-2 text-dashboard-muted ${ownersTableCellWidthClass}`}
+                        >
+                          <span className="block truncate">{blockLabel}</span>
+                        </td>
+
+                        <td className={`px-3 py-2 ${ownersTableCellWidthClass}`}>
+                          <div className="flex min-w-0 items-center justify-end gap-1.5">
                             {!hasOwner ? (
                               <button
                                 onClick={(event) => {

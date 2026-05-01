@@ -26,6 +26,7 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
     address_1 = serializers.CharField(required=False, allow_blank=True, write_only=True)
     postcode = serializers.CharField(required=False, allow_blank=True, write_only=True)
     country = serializers.CharField(required=False, allow_blank=True, write_only=True)
+    display_label = serializers.CharField(required=False, allow_blank=True)
 
     # Read-only profile fields for nested property lists / edit forms (sourced from linked User).
     user_first_name = serializers.CharField(source="user.first_name", read_only=True)
@@ -50,6 +51,7 @@ class PropertyOwnerSerializer(serializers.ModelSerializer):
             "title",
             "block_id",
             "display_name",
+            "display_label", 
             "date_from",
             "date_to",
             "comment",

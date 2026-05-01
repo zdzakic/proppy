@@ -108,13 +108,37 @@ class PropertyOwner(models.Model):
 
     display_name = models.CharField(max_length=255, blank=True)
     title = models.CharField(max_length=10, blank=True, choices=TITLE_CHOICES, default='', help_text='Title of the owner')
-
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=True, blank=True)
-
     comment = models.TextField(blank=True)
-
     order = models.IntegerField(default=0)
+    display_label = models.CharField(max_length=255,blank=True, help_text="UI label (default: first_name + property name)"
+)
+    
+    def save(self, *args, **kwargs):
+        """
+        Ensure display_value has a default value if not provided.
+
+        Why:
+        - Used for UI display (OwnerTable)
+        - Allows user override
+        - Keeps logic centralized
+        """
+
+        if not self.display_label:
+            first_name = ""
+
+            if self.user and self.user.first_name:
+                first_name = self.user.first_name
+
+            property_name = ""
+            if self.property and self.property.name:
+                property_name = self.property.name
+
+            self.display_label = f"{first_name}-{property_name}"
+
+        super().save(*args, **kwargs)
+    
 
     def __str__(self):
         owner_label = self.user.email if self.user else self.display_name or "Unknown owner"
