@@ -1,5 +1,7 @@
 "use client";
 
+import { Pencil, Trash2 } from "lucide-react";
+
 import { useSort } from "@/hooks/useSort";
 import { fmtInt } from "@/utils/common/formatNumber";
 
@@ -27,8 +29,29 @@ function fmtDateDDMMYYYY(value: string) {
  * What it does: Renders a sortable payments table (date/amount/comment).
  * Why it exists: Keeps modal components small and matches Blocks/Companies table structure.
  * What would break if removed: ViewPaymentsModal would need to re-implement table + sorting logic.
+ *
+ * Action buttons match BlocksTable icon sizing/tokens (brand-accent pencil, error trash).
  */
-export default function PaymentsTable({ payments }: { payments: PaymentRow[] }) {
+export default function PaymentsTable({
+  payments,
+  onEdit,
+  onDelete,
+}: {
+  payments: PaymentRow[];
+  onEdit?: (payment: PaymentRow) => void;
+  onDelete?: (payment: PaymentRow) => void;
+}) {
+  const showActions = Boolean(onEdit && onDelete);
+
+  const stopRowClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+  };
+
+  const editButtonClassName =
+    "inline-flex h-7 w-7 items-center justify-center rounded-md border border-brand-accent bg-brand-accent/10 text-brand-accent transition-colors hover:bg-brand-accent/20";
+
+  const deleteButtonClassName =
+    "inline-flex h-7 w-7 items-center justify-center rounded-md border border-error bg-error/10 text-error transition-colors hover:bg-error/20";
   const { sortedItems, handleSort, getSortIndicator } = useSort<
     PaymentRow,
     SortKey
@@ -87,6 +110,9 @@ export default function PaymentsTable({ payments }: { payments: PaymentRow[] }) 
                 </span>
               </button>
             </th>
+            {showActions ? (
+              <th className="px-3 py-2 text-right font-medium">Actions</th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
@@ -104,6 +130,36 @@ export default function PaymentsTable({ payments }: { payments: PaymentRow[] }) 
               <td className="px-3 py-2 text-dashboard-muted">
                 {p.comment?.trim() ? p.comment : "—"}
               </td>
+              {showActions ? (
+                <td className="px-3 py-2">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onEdit?.(p);
+                      }}
+                      title="Edit payment"
+                      aria-label="Edit payment"
+                      className={editButtonClassName}
+                    >
+                      <Pencil size={12} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        stopRowClick(event);
+                        onDelete?.(p);
+                      }}
+                      title="Delete payment"
+                      aria-label="Delete payment"
+                      className={deleteButtonClassName}
+                    >
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
+                </td>
+              ) : null}
             </tr>
           ))}
         </tbody>

@@ -12,6 +12,15 @@ export type PaymentFormValues = {
 };
 
 type PaymentFormProps = {
+  /**
+   * `create` — amount, date, comment (Add Payment).
+   * `edit` — amount + comment only; date is kept in state for a full `PaymentFormValues` payload but not shown.
+   */
+  mode?: "create" | "edit";
+  /** Pre-fill (edit mode or future reuse); omit for empty add form. */
+  defaultValues?: Partial<
+    Pick<PaymentFormValues, "amount" | "date_paid" | "comment">
+  >;
   onSubmit: (values: PaymentFormValues) => void;
   isSubmitting: boolean;
   error?: string | null;
@@ -19,25 +28,42 @@ type PaymentFormProps = {
   onCancel: () => void;
 };
 
+function initialAmountString(
+  dv: Partial<Pick<PaymentFormValues, "amount">> | undefined,
+): string {
+  if (dv?.amount == null || Number.isNaN(Number(dv.amount))) return "";
+  return String(Math.round(Number(dv.amount)));
+}
+
 /**
- * UI-only form for creating a Payment.
- * Mirrors BlockForm/CompanyForm structure: no API calls, just calls onSubmit.
+ * UI-only form for creating or editing a payment.
+ * Shared by AddPaymentModal (create) and EditPaymentModal (edit) — same pattern as BlockForm.
  */
 export default function PaymentForm({
+  mode = "create",
+  defaultValues,
   onSubmit,
   isSubmitting,
   error,
   submitLabel = "Save",
   onCancel,
 }: PaymentFormProps) {
-  const [amount, setAmount] = useState("");
-  const [datePaid, setDatePaid] = useState("");
-  const [comment, setComment] = useState("");
+  const isEdit = mode === "edit";
+
+  const [amount, setAmount] = useState(() => initialAmountString(defaultValues));
+  const [datePaid, setDatePaid] = useState(defaultValues?.date_paid ?? "");
+  const [comment, setComment] = useState(defaultValues?.comment ?? "");
 
   const amountNumber = Number(amount);
   const isAmountValid =
     amount.trim() !== "" && !Number.isNaN(amountNumber) && amountNumber > 0;
-  const isSubmitDisabled = !isAmountValid || !datePaid || isSubmitting;
+  const isSubmitDisabled = isEdit
+    ? !isAmountValid || isSubmitting
+    : !isAmountValid || !datePaid || isSubmitting;
+
+  const amountInputId = isEdit ? "payment-edit-amount-input" : "payment-amount-input";
+  const dateInputId = "payment-date-input";
+  const commentId = isEdit ? "payment-edit-comment" : "payment-comment";
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -52,11 +78,11 @@ export default function PaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
       <div className="space-y-1">
-        <label htmlFor="payment-amount-input" className="text-sm text-dashboard-muted">
+        <label htmlFor={amountInputId} className="text-sm text-dashboard-muted">
           Amount
         </label>
         <input
-          id="payment-amount-input"
+          id={amountInputId}
           type="number"
           inputMode="numeric"
           step="1"
@@ -72,23 +98,25 @@ export default function PaymentForm({
         />
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor="payment-date-input" className="text-sm text-dashboard-muted">
-          Date paid
-        </label>
-        <DatePickerInput
-          id="payment-date-input"
-          value={datePaid}
-          onChange={setDatePaid}
-        />
-      </div>
+      {!isEdit ? (
+        <div className="space-y-1">
+          <label htmlFor={dateInputId} className="text-sm text-dashboard-muted">
+            Date paid
+          </label>
+          <DatePickerInput
+            id={dateInputId}
+            value={datePaid}
+            onChange={setDatePaid}
+          />
+        </div>
+      ) : null}
 
       <div className="space-y-1">
-        <label htmlFor="payment-comment" className="text-sm text-dashboard-muted">
+        <label htmlFor={commentId} className="text-sm text-dashboard-muted">
           Comment (Optional)
         </label>
         <textarea
-          id="payment-comment"
+          id={commentId}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder="Optional note about this payment"

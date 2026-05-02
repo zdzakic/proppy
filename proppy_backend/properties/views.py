@@ -12,7 +12,7 @@ from users.models import Role
 from .models import Block, UserRookeryRole, Property, PropertyOwner, ServiceCharge, Payment, ServicePeriod
 from .serializers import BlockSerializer, PropertySerializer, PropertyOwnerSerializer, \
     AddCompanyAdminSerializer, ServiceChargeListSerializer, ServicePeriodSerializer
-from .serializers_payment import PaymentCreateSerializer, PaymentListSerializer
+from .serializers_payment import PaymentCreateSerializer, PaymentListSerializer, PaymentUpdateSerializer
 from .permissions import IsCompanyAdmin
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
@@ -511,3 +511,39 @@ class PaymentCreateView(CompanyAdminScopedMixin, generics.ListCreateAPIView):
         )
 
         serializer.save(service_charge=allowed_charge)
+
+
+class PaymentRetrieveUpdateDestroyAPIView(CompanyAdminScopedMixin, generics.RetrieveUpdateDestroyAPIView):
+    """
+    Single-payment endpoint:
+    - GET    /payments/{id}/
+    - PATCH  /payments/{id}/
+    - DELETE /payments/{id}/
+
+    WHY scoped queryset:
+    - Prevents one COMPANYADMIN from touching payments that belong to another company.
+    - Never uses Payment.objects.all() — the queryset is always restricted to the
+      admin's own companies via the service_charge → property → block → company chain.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, IsCompanyAdmin]
+
+    def get_serializer_class(self):
+        if self.request.method in ("PUT", "PATCH"):
+            return PaymentUpdateSerializer
+        return PaymentListSerializer
+
+    def get_queryset(self):
+        company_ids = self.get_admin_company_ids()
+        return Payment.objects.filter(
+            service_charge__property__block__company_id__in=company_ids
+        ).select_related("service_charge")
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        payment_id = instance.id
+        self.perform_destroy(instance)
+        return Response(
+            {"message": f"Payment {payment_id} deleted successfully"},
+            status=status.HTTP_200_OK,
+        )

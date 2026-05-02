@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission
 
-from .models import Block, Property, PropertyOwner, UserRookeryRole
+from .models import Block, Payment, Property, PropertyOwner, ServiceCharge, UserRookeryRole
 
 
 def _company_for_obj(obj):
@@ -10,6 +10,11 @@ def _company_for_obj(obj):
         return obj.block.company
     if isinstance(obj, PropertyOwner):
         return obj.property.block.company
+    if isinstance(obj, ServiceCharge):
+        return obj.company
+    if isinstance(obj, Payment):
+        # Tenant for payments is the service charge’s company (same chain as views queryset).
+        return obj.service_charge.company
     return None
 
 

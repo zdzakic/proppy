@@ -12,6 +12,8 @@ type BaseModalProps = {
   actions?: ReactNode;
   children: ReactNode;
   maxWidthClassName?: string;
+  /** Stack above another modal (default `z-50`). */
+  stackClassName?: string;
 };
 
 let openModalCount = 0;
@@ -62,6 +64,7 @@ export default function BaseModal({
   actions,
   children,
   maxWidthClassName = "max-w-5xl",
+  stackClassName,
 }: BaseModalProps) {
   const titleId = useId();
   const [mounted, setMounted] = useState(false);
@@ -82,7 +85,9 @@ export default function BaseModal({
   if (!isOpen || !mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-dashboard-sidebar/40 p-3 sm:items-center sm:p-4">
+    <div
+      className={`fixed inset-0 flex items-end justify-center bg-dashboard-sidebar/40 p-3 sm:items-center sm:p-4 ${stackClassName ?? "z-50"}`}
+    >
       <div
         className={`w-full overflow-hidden rounded-xl border border-dashboard-border bg-dashboard-surface shadow-premium ${maxWidthClassName}`}
         role="dialog"

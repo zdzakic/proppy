@@ -481,7 +481,17 @@ export default function ServiceChargesManager() {
     refetch,
   } = useServiceCharges(selectedPeriodIds);
 
-  const { isCreating: isCreatingPayment, createError, createPayment } = usePayments();
+  const {
+    isCreating: isCreatingPayment,
+    createError,
+    createPayment,
+    isUpdating: isUpdatingPayment,
+    updateError: updatePaymentError,
+    updatePayment,
+    clearUpdateError,
+    isDeleting: isDeletingPayment,
+    deletePayment,
+  } = usePayments();
 
   const handleAddPaymentOpen = (serviceChargeId: number) => {
     const charge = charges.find((c) => c.id === serviceChargeId);
@@ -654,6 +664,15 @@ export default function ServiceChargesManager() {
         propertyName={viewPaymentsContext?.propertyName ?? ""}
         periodName={viewPaymentsContext?.periodName ?? ""}
         totalAmount={viewPaymentsContext?.totalAmount ?? 0}
+        onUpdatePayment={(id, values) => updatePayment(id, values)}
+        onDeletePayment={deletePayment}
+        isUpdatingPayment={isUpdatingPayment}
+        isDeletingPayment={isDeletingPayment}
+        updatePaymentError={updatePaymentError}
+        onClearUpdatePaymentError={clearUpdateError}
+        onPaymentsMutated={() => {
+          void refetch();
+        }}
       />
     </section>
   );

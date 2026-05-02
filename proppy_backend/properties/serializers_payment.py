@@ -39,7 +39,7 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ["id", "service_charge", "amount", "date_paid"]
+        fields = ["id", "service_charge", "amount", "date_paid", "comment"]
 
     def validate_amount(self, value):
         if value is None:
@@ -58,6 +58,52 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
                 Payment.objects.filter(service_charge=service_charge).aggregate(
                     total=Sum("amount")
                 )["total"]
+                or Decimal("0")
+            )
+            remaining = service_charge.amount - paid_total
+            if amount > remaining:
+                raise serializers.ValidationError(
+                    {"amount": "Amount cannot exceed remaining balance."}
+                )
+
+        return attrs
+
+
+class PaymentUpdateSerializer(serializers.ModelSerializer):
+    """
+    PaymentUpdateSerializer
+
+    WHAT:
+    - Handles PATCH/PUT on an existing Payment.
+
+    WHY service_charge is excluded:
+    - Immutable after create; changing it would corrupt accounting history.
+
+    WHY self.instance in validate:
+    - Overpayment check must exclude the current payment from the total,
+      otherwise editing (e.g. correcting a typo) always fails the check.
+    """
+
+    class Meta:
+        model = Payment
+        fields = ["id", "amount", "date_paid", "comment"]
+
+    def validate_amount(self, value):
+        if value is None:
+            return value
+        if value <= Decimal("0"):
+            raise serializers.ValidationError("Amount must be greater than 0.")
+        return value
+
+    def validate(self, attrs):
+        amount = attrs.get("amount")
+
+        if self.instance is not None and amount is not None:
+            service_charge = self.instance.service_charge
+            paid_total = (
+                Payment.objects.filter(service_charge=service_charge)
+                .exclude(pk=self.instance.pk)
+                .aggregate(total=Sum("amount"))["total"]
                 or Decimal("0")
             )
             remaining = service_charge.amount - paid_total

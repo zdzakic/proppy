@@ -82,3 +82,47 @@ def test_create_property_owner_duplicate():
     r2 = client.post(url, payload, format="json")
     assert r2.status_code == 400
 
+
+@pytest.mark.django_db
+def test_display_label_auto_computed():
+    owner_user = User.objects.create_user(
+        email="owner.label@test.com",
+        password="1234",
+        first_name="Ana",
+    )
+
+    company = Company.objects.create(name="Test Company")
+    block = Block.objects.create(name="Block A", company=company)
+    prop = Property.objects.create(name="Property 1", block=block)
+
+    owner = PropertyOwner(
+        user=owner_user,
+        property=prop,
+        display_label="",
+    )
+    owner.save()
+
+    assert owner.display_label == f"{owner_user.first_name}-{prop.name}"
+
+
+@pytest.mark.django_db
+def test_display_label_user_override():
+    owner_user = User.objects.create_user(
+        email="owner.label.override@test.com",
+        password="1234",
+        first_name="Ana",
+    )
+
+    company = Company.objects.create(name="Test Company")
+    block = Block.objects.create(name="Block A", company=company)
+    prop = Property.objects.create(name="Property 1", block=block)
+
+    owner = PropertyOwner(
+        user=owner_user,
+        property=prop,
+        display_label="My Custom Label",
+    )
+    owner.save()
+
+    assert owner.display_label == "My Custom Label"
+

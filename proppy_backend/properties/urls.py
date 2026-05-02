@@ -16,6 +16,7 @@ from .views import (
     ServiceChargeListView,
     ServicePeriodListView,
     PaymentCreateView,
+    PaymentRetrieveUpdateDestroyAPIView,
 )
 
 
@@ -91,5 +92,10 @@ urlpatterns = [
         'payments/',
         PaymentCreateView.as_view(),
         name='payment-create',
+    ),
+    path(
+        'payments/<int:pk>/',
+        PaymentRetrieveUpdateDestroyAPIView.as_view(),
+        name='payment-detail',
     ),
 ]

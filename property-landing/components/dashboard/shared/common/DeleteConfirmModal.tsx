@@ -12,6 +12,8 @@ type DeleteConfirmModalProps = {
   title: string;
   confirmLabel: string;
   description: string;
+  /** Stack above another `z-50` overlay (default `z-50`). */
+  stackClassName?: string;
 };
 
 export default function DeleteConfirmModal({
@@ -22,11 +24,14 @@ export default function DeleteConfirmModal({
   title,
   confirmLabel,
   description,
+  stackClassName,
 }: DeleteConfirmModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-dashboard-sidebar/40 p-3 sm:items-center sm:p-4">
+    <div
+      className={`fixed inset-0 flex items-end justify-center bg-dashboard-sidebar/40 p-3 sm:items-center sm:p-4 ${stackClassName ?? "z-50"}`}
+    >
       <div className="w-full max-w-lg rounded-xl border border-error/60 bg-dashboard-surface p-4 shadow-premium sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2 text-error">
