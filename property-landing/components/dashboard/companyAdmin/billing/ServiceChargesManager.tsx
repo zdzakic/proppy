@@ -40,6 +40,15 @@ const DownloadServiceChargePDF = dynamic(
   { ssr: false },
 );
 
+const DownloadCompanyReportPDF = dynamic<{
+  charges: ServiceCharge[];
+  selectedPeriodName: string | null;
+}>(
+  () => import("@/components/dashboard/companyAdmin/billing/DownloadCompanyReportPDF"),
+  { ssr: false },
+);
+
+
 
 // ---------------------------------------------------------------------------
 // Local helpers
@@ -571,6 +580,10 @@ export default function ServiceChargesManager() {
               Billing overview — grouped by company.
             </p>
           </div>
+          <DownloadCompanyReportPDF
+            charges={charges}
+            selectedPeriodName={selectedPeriodName}
+          />
         </div>
 
         {/* Period filter + view toggle row */}
