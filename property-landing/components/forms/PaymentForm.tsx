@@ -8,6 +8,7 @@ import FormError from "@/components/ui/FormError";
 export type PaymentFormValues = {
   amount: number;
   date_paid: string;
+  comment: string;
 };
 
 type PaymentFormProps = {
@@ -31,6 +32,7 @@ export default function PaymentForm({
 }: PaymentFormProps) {
   const [amount, setAmount] = useState("");
   const [datePaid, setDatePaid] = useState("");
+  const [comment, setComment] = useState("");
 
   const amountNumber = Number(amount);
   const isAmountValid =
@@ -40,7 +42,11 @@ export default function PaymentForm({
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (isSubmitDisabled) return;
-    onSubmit({ amount: Math.round(amountNumber), date_paid: datePaid });
+    onSubmit({
+      amount: Math.round(amountNumber),
+      date_paid: datePaid,
+      comment: comment.trim(),
+    });
   };
 
   return (
@@ -74,6 +80,20 @@ export default function PaymentForm({
           id="payment-date-input"
           value={datePaid}
           onChange={setDatePaid}
+        />
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="payment-comment" className="text-sm text-dashboard-muted">
+          Comment (Optional)
+        </label>
+        <textarea
+          id="payment-comment"
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Optional note about this payment"
+          rows={4}
+          className="w-full resize-y rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
         />
       </div>
 

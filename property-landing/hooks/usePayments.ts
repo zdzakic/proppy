@@ -9,6 +9,7 @@ type CreatePaymentPayload = {
   service_charge: number;
   amount: number;
   date_paid: string;
+  comment?: string;
 };
 
 type CreatePaymentOptions = {

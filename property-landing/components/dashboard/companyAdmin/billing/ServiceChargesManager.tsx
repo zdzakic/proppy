@@ -512,6 +512,7 @@ export default function ServiceChargesManager() {
       service_charge: selectedServiceChargeId,
       amount: values.amount,
       date_paid: values.date_paid,
+      comment: values.comment,
     }, { successMessage });
 
     if (!ok) return;

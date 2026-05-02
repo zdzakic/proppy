@@ -2,7 +2,7 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, test, vi } from "vitest";
 
-import DownloadServiceChargePDF from "./DownloadServiceChargePDF";
+import DownloadServiceChargePDF from "../../components/dashboard/companyAdmin/billing/DownloadServiceChargePDF";
 import apiClient from "@/utils/api/apiClient";
 
 vi.mock("@/utils/api/apiClient", () => ({
@@ -21,7 +21,7 @@ vi.mock("@react-pdf/renderer", () => ({
   pdf: vi.fn(() => ({ toBlob: vi.fn().mockResolvedValue(new Blob()) })),
 }));
 
-vi.mock("./ServiceChargePDFDocument", () => ({
+vi.mock("../../components/dashboard/companyAdmin/billing/ServiceChargePDFDocument", () => ({
   __esModule: true,
   default: () => React.createElement("div"),
 }));
