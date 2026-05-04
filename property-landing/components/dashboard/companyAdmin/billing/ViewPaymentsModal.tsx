@@ -185,12 +185,22 @@ export default function ViewPaymentsModal({
           ) : payments.length === 0 ? (
             <p className="text-sm text-dashboard-muted">No payments yet</p>
           ) : (
-            <PaymentsTable
-              key={`${serviceChargeId}-open`}
-              payments={payments}
-              onEdit={showActions ? handleEditStart : undefined}
-              onDelete={showActions ? handleDeleteRequest : undefined}
-            />
+            <>
+              {payments[0]?.display_label?.trim() ? (
+                <p className="text-xs text-dashboard-muted">
+                  Label:{" "}
+                  <span className="font-medium text-dashboard-text">
+                    {payments[0].display_label}
+                  </span>
+                </p>
+              ) : null}
+              <PaymentsTable
+                key={`${serviceChargeId}-open`}
+                payments={payments}
+                onEdit={showActions ? handleEditStart : undefined}
+                onDelete={showActions ? handleDeleteRequest : undefined}
+              />
+            </>
           )}
 
           {!isLoading && !error ? (

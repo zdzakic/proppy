@@ -20,10 +20,18 @@ class PaymentListSerializer(serializers.ModelSerializer):
     transaction_type_name = serializers.CharField(
         source="transaction_type.name", read_only=True, default=None
     )
+    property_name = serializers.CharField(
+        source="service_charge.property.name", read_only=True
+    )
+    display_label = serializers.SerializerMethodField()
+
+    def get_display_label(self, obj):
+        first_owner = obj.service_charge.property.owners.first()
+        return first_owner.display_label if first_owner else ""
 
     class Meta:
         model = Payment
-        fields = ["id", "amount", "date_paid", "comment", "transaction_type", "transaction_type_name"]
+        fields = ["id", "amount", "date_paid", "comment", "transaction_type", "transaction_type_name", "property_name", "display_label"]
 
 
 class PaymentCreateSerializer(serializers.ModelSerializer):

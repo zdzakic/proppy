@@ -69,7 +69,7 @@ def test_payment_list_only_returns_payments_for_admin_company():
     assert row["amount"] == "10.00"
     assert row["date_paid"] == "2026-04-01"
     assert row["comment"] == "mine"
-    assert set(row.keys()) == {"id", "amount", "date_paid", "comment", "transaction_type", "transaction_type_name"}
+    assert set(row.keys()) == {"id", "amount", "date_paid", "comment", "transaction_type", "transaction_type_name", "property_name", "display_label"}
 
 
 @pytest.mark.django_db

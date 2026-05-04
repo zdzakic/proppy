@@ -56,6 +56,7 @@ const DownloadCompanyReportPDF = dynamic<{
 
 type SortKey =
   | "property_name"
+  | "display_label"
   | "owner_name"
   | "amount"
   | "paid"
@@ -125,6 +126,7 @@ function ChargesBlock({
     },
     getSortValue: (key, c) => {
       if (key === "property_name") return c.property_name;
+      if (key === "display_label") return c.display_label ?? "";
       if (key === "owner_name") return c.owner_name;
       if (key === "amount") return Number(c.amount);
       if (key === "paid") return Number(c.paid);
@@ -176,6 +178,11 @@ function ChargesBlock({
                       </span>
                     </div>
 
+                    {c.display_label?.trim() ? (
+                      <p className="text-xs text-dashboard-muted">
+                        Label: <span className="text-dashboard-text">{c.display_label}</span>
+                      </p>
+                    ) : null}
                     <p className="text-xs text-dashboard-muted">
                       Owner: {c.owner_name}
                     </p>
@@ -246,13 +253,14 @@ function ChargesBlock({
             <div className={tableWrapperClassName}>
               <table className="w-full table-fixed text-xs">
                 <colgroup>
-                  <col className="w-[22%]" />
-                  <col className="w-[20%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[10%]" />
-                  <col className="w-[11%]" />
-                  <col className="w-[11%]" />
+                  <col className="w-[18%]" />
+                  <col className="w-[14%]" />
                   <col className="w-[16%]" />
+                  <col className="w-[9%]" />
+                  <col className="w-[9%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[14%]" />
                 </colgroup>
 
                 <thead className="bg-dashboard-hover text-left text-dashboard-muted">
@@ -266,6 +274,19 @@ function ChargesBlock({
                         <span>Property</span>
                         <span className="inline-flex w-4 justify-center text-dashboard-text">
                           {getSortIndicator("property_name")}
+                        </span>
+                      </button>
+                    </th>
+
+                    <th className="px-3 py-2 font-medium">
+                      <button
+                        type="button"
+                        onClick={() => handleSort("display_label")}
+                        className="inline-flex items-center gap-1 hover:text-dashboard-text"
+                      >
+                        <span>Label</span>
+                        <span className="inline-flex w-4 justify-center text-dashboard-text">
+                          {getSortIndicator("display_label")}
                         </span>
                       </button>
                     </th>
@@ -349,6 +370,10 @@ function ChargesBlock({
                         <span className="font-medium text-dashboard-text">
                           {c.property_name}
                         </span>
+                      </td>
+
+                      <td className="px-3 py-2 text-dashboard-muted">
+                        {c.display_label?.trim() ? c.display_label : "—"}
                       </td>
 
                       <td className="px-3 py-2 text-dashboard-muted">

@@ -13,6 +13,8 @@ export type PaymentRow = {
   comment: string;
   transaction_type: number | null;
   transaction_type_name: string | null;
+  property_name: string;
+  display_label: string;
 };
 
 /** Subset used by ServiceChargePDFDocument — PDF does not need transaction fields. */

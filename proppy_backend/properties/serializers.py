@@ -232,6 +232,7 @@ class ServiceChargeListSerializer(serializers.ModelSerializer):
     period_name = serializers.CharField(source="service_period.name", read_only=True)
 
     owner_name = serializers.SerializerMethodField()
+    display_label = serializers.SerializerMethodField()
 
     paid = serializers.SerializerMethodField()
     remaining = serializers.SerializerMethodField()
@@ -246,6 +247,7 @@ class ServiceChargeListSerializer(serializers.ModelSerializer):
             "property_name",
             "company_name",
             "owner_name",
+            "display_label",
             "period_name",  # ostavljamo (debug + FE context)
             "amount",
             "paid",
@@ -272,6 +274,10 @@ class ServiceChargeListSerializer(serializers.ModelSerializer):
             return full_name or owner.user.email
 
         return owner.display_name or "-"
+
+    def get_display_label(self, obj):
+        first_owner = obj.property.owners.first()
+        return first_owner.display_label if first_owner else ""
 
     def get_paid(self, obj):
         """

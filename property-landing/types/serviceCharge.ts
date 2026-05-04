@@ -11,6 +11,7 @@ export type ServiceCharge = {
   block_name: string;
   property_name: string;
   owner_name: string;
+  display_label: string;
   period_name: string;
   amount: number;
   paid: number;
