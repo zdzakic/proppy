@@ -2,6 +2,8 @@
  * ServiceCharge type — mirrors ServiceChargeListSerializer fields from the backend.
  * Shared here so page, manager, and future components import from one place.
  */
+export type ServiceChargeStatus = "paid" | "partial" | "unpaid";
+
 export type ServiceCharge = {
   id: number;
   company_id: number;
@@ -13,7 +15,7 @@ export type ServiceCharge = {
   amount: number;
   paid: number;
   remaining: number;
-  status: "paid" | "partial" | "unpaid";
+  status: ServiceChargeStatus;
   last_payment_date: string | null;
   notice_sent_at: string | null;
 };

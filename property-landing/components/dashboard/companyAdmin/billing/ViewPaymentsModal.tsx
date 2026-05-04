@@ -5,9 +5,8 @@ import { useEffect, useMemo, useState } from "react";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import DeleteConfirmModal from "@/components/dashboard/shared/common/DeleteConfirmModal";
 import EditPaymentModal from "@/components/dashboard/companyAdmin/billing/EditPaymentModal";
-import PaymentsTable, {
-  type PaymentRow,
-} from "@/components/dashboard/companyAdmin/billing/PaymentsTable";
+import type { PaymentRow } from "@/types/payment";
+import PaymentsTable from "@/components/dashboard/companyAdmin/billing/PaymentsTable";
 import type { PaymentFormValues } from "@/components/forms/PaymentForm";
 import apiClient from "@/utils/api/apiClient";
 import { fmtInt } from "@/utils/common/formatNumber";

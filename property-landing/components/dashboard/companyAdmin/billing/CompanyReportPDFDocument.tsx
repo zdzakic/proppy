@@ -10,6 +10,7 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 import { fmtInt } from "@/utils/common/formatNumber";
+import type { ServiceChargeStatus } from "@/types/serviceCharge";
 
 export type CompanyReportRow = {
   company_name: string;
@@ -19,7 +20,7 @@ export type CompanyReportRow = {
   amount: number;
   paid: number;
   remaining: number;
-  status: "paid" | "partial" | "unpaid";
+  status: ServiceChargeStatus;
 };
 
 export type CompanyReportPDFProps = {
@@ -39,7 +40,7 @@ const PDF = {
   warning: "#d97706",
 } as const;
 
-const STATUS_LABEL: Record<CompanyReportRow["status"], string> = {
+const STATUS_LABEL: Record<ServiceChargeStatus, string> = {
   paid: "Paid",
   partial: "Partial",
   unpaid: "Unpaid",
@@ -215,7 +216,7 @@ function formatTodayDdMmYyyy(d: Date): string {
   return `${dd}.${mm}.${yyyy}`;
 }
 
-function statusColor(status: CompanyReportRow["status"]): string {
+function statusColor(status: ServiceChargeStatus): string {
   if (status === "paid") return PDF.success;
   if (status === "partial") return PDF.warning;
   return PDF.error;

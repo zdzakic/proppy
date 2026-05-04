@@ -8,8 +8,8 @@ import type { MouseEvent } from "react";
 import { useCallback, useState } from "react";
 import { FileDown, Loader2 } from "lucide-react";
 
-import type { PaymentRow } from "@/components/dashboard/companyAdmin/billing/PaymentsTable";
-import type { PDFPaymentRow } from "@/components/dashboard/companyAdmin/billing/ServiceChargePDFDocument";
+import type { PaymentRow, PDFPaymentRow } from "@/types/payment";
+import type { ServiceChargeStatus } from "@/types/serviceCharge";
 import apiClient from "@/utils/api/apiClient";
 
 type ServiceChargePdfCharge = {
@@ -21,7 +21,7 @@ type ServiceChargePdfCharge = {
   amount: number;
   paid: number;
   remaining: number;
-  status: "paid" | "partial" | "unpaid";
+  status: ServiceChargeStatus;
 };
 
 type Props = {

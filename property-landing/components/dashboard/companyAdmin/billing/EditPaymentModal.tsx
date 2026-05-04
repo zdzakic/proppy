@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import BaseModal from "@/components/ui/modal/BaseModal";
 import PaymentForm, { type PaymentFormValues } from "@/components/forms/PaymentForm";
-import type { PaymentRow } from "@/components/dashboard/companyAdmin/billing/PaymentsTable";
+import type { PaymentRow } from "@/types/payment";
 import { PAYMENT_TRANSACTION_TYPES } from "@/constants/paymentTypes";
 
 type EditPaymentModalProps = {

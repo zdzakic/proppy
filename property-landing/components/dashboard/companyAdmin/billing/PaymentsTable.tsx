@@ -4,14 +4,9 @@ import { Pencil, Trash2 } from "lucide-react";
 
 import { useSort } from "@/hooks/useSort";
 import { fmtInt } from "@/utils/common/formatNumber";
-export type PaymentRow = {
-  id: number;
-  amount: string | number;
-  date_paid: string;
-  comment: string;
-  transaction_type: number | null;
-  transaction_type_name: string | null;
-};
+import type { PaymentRow } from "@/types/payment";
+
+export type { PaymentRow };
 
 type SortKey = "date_paid" | "amount" | "comment" | "transaction_type";
 

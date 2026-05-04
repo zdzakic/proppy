@@ -12,14 +12,10 @@
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 
 import { fmtInt } from "@/utils/common/formatNumber";
+import type { PDFPaymentRow } from "@/types/payment";
+import type { ServiceChargeStatus } from "@/types/serviceCharge";
 
-/** Payment line as serialized for the PDF table (mirrors API payment list fields). */
-export type PDFPaymentRow = {
-  id: number;
-  amount: string | number;
-  date_paid: string;
-  comment: string;
-};
+export type { PDFPaymentRow };
 
 /** Props for one service charge PDF export (amounts are the same units as the billing screen). */
 export type ServiceChargePDFProps = {
@@ -30,7 +26,7 @@ export type ServiceChargePDFProps = {
   amount: number;
   paid: number;
   remaining: number;
-  status: "paid" | "partial" | "unpaid";
+  status: ServiceChargeStatus;
   payments: PDFPaymentRow[];
 };
 
@@ -45,7 +41,7 @@ const PDF = {
   warning: "#d97706",
 } as const;
 
-const STATUS_LABEL: Record<ServiceChargePDFProps["status"], string> = {
+const STATUS_LABEL: Record<ServiceChargeStatus, string> = {
   paid: "Paid",
   partial: "Partial",
   unpaid: "Unpaid",
@@ -232,7 +228,7 @@ function formatTodayDdMmYyyy(d: Date): string {
  * Why it exists: Keeps status coloring consistent with the product’s semantic status colors.
  * Why this approach was chosen: A small lookup avoids branching sprinkled through the layout.
  */
-function statusColor(status: ServiceChargePDFProps["status"]): string {
+function statusColor(status: ServiceChargeStatus): string {
   if (status === "paid") return PDF.success;
   if (status === "partial") return PDF.warning;
   return PDF.error;
