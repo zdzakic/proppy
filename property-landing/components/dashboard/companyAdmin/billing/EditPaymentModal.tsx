@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import BaseModal from "@/components/ui/modal/BaseModal";
 import PaymentForm, { type PaymentFormValues } from "@/components/forms/PaymentForm";
 import type { PaymentRow } from "@/components/dashboard/companyAdmin/billing/PaymentsTable";
+import { PAYMENT_TRANSACTION_TYPES } from "@/constants/paymentTypes";
 
 type EditPaymentModalProps = {
   isOpen: boolean;
@@ -83,6 +84,9 @@ export default function EditPaymentModal({
           amount: Number(payment.amount),
           date_paid: payment.date_paid,
           comment: payment.comment ?? "",
+          transaction_type: PAYMENT_TRANSACTION_TYPES.find(
+            (t) => t === payment.transaction_type_name,
+          ),
         }}
         onSubmit={handleSubmit}
         isSubmitting={isSubmitting}

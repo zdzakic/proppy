@@ -12,7 +12,7 @@ import pytest
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from properties.models import Company, Payment, UserRookeryRole
+from properties.models import Company, Payment, PaymentTransactionType, UserRookeryRole
 from users.models import Role
 from properties.tests.test_service_charge_list import create_charge, create_company_admin
 
@@ -69,7 +69,7 @@ def test_payment_list_only_returns_payments_for_admin_company():
     assert row["amount"] == "10.00"
     assert row["date_paid"] == "2026-04-01"
     assert row["comment"] == "mine"
-    assert set(row.keys()) == {"id", "amount", "date_paid", "comment"}
+    assert set(row.keys()) == {"id", "amount", "date_paid", "comment", "transaction_type", "transaction_type_name"}
 
 
 @pytest.mark.django_db
@@ -287,6 +287,76 @@ def test_payment_delete_returns_200_with_message():
     assert response.status_code == 200
     assert response.data == {"message": f"Payment {payment_id} deleted successfully"}
     assert not Payment.objects.filter(id=payment_id).exists()
+
+
+# ---------------------------------------------------------------------------
+# PaymentTransactionType
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_payment_transaction_type_returned_in_list():
+    """
+    WHAT: Payment created with a transaction_type is returned with type id and name.
+    WHY:  Guards that PaymentListSerializer exposes both FK id and human-readable name.
+
+    NOTE: Data migration doesn't run in tests — we create the type manually.
+    """
+    client = APIClient()
+    user, company = create_company_admin(email="txtype@admin.test", company_name="TxType Co")
+    charge, _, _ = create_charge(
+        company=company,
+        block_name="B1",
+        property_name="P1",
+        period_name="Per1",
+        due_date=date(2026, 6, 1),
+        amount=Decimal("100.00"),
+    )
+    tx_type = PaymentTransactionType.objects.create(name="Incoming", order=1)
+    payment = Payment.objects.create(
+        service_charge=charge,
+        amount=Decimal("50.00"),
+        date_paid=date(2026, 4, 1),
+        transaction_type=tx_type,
+    )
+
+    client.force_authenticate(user=user)
+    response = client.get(URL)
+
+    assert response.status_code == 200
+    row = next(r for r in response.data if r["id"] == payment.id)
+    assert row["transaction_type"] == tx_type.id
+    assert row["transaction_type_name"] == "Incoming"
+
+
+@pytest.mark.django_db
+def test_payment_transaction_type_null_when_not_set():
+    """
+    WHAT: Payment without transaction_type returns null for both type fields.
+    WHY:  Field is optional (null=True) — existing payments must not break.
+    """
+    client = APIClient()
+    user, company = create_company_admin(email="txnull@admin.test", company_name="TxNull Co")
+    charge, _, _ = create_charge(
+        company=company,
+        block_name="B2",
+        property_name="P2",
+        period_name="Per2",
+        due_date=date(2026, 6, 1),
+        amount=Decimal("100.00"),
+    )
+    payment = Payment.objects.create(
+        service_charge=charge,
+        amount=Decimal("20.00"),
+        date_paid=date(2026, 4, 1),
+    )
+
+    client.force_authenticate(user=user)
+    response = client.get(URL)
+
+    assert response.status_code == 200
+    row = next(r for r in response.data if r["id"] == payment.id)
+    assert row["transaction_type"] is None
+    assert row["transaction_type_name"] is None
 
 
 @pytest.mark.django_db

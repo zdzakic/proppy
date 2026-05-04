@@ -532,6 +532,7 @@ export default function ServiceChargesManager() {
       amount: values.amount,
       date_paid: values.date_paid,
       comment: values.comment,
+      transaction_type: values.transaction_type,
     }, { successMessage });
 
     if (!ok) return;

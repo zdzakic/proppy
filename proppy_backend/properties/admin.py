@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db.models import Count, Sum
 
 from .models import Company, Block, Property, PropertyOwner, \
-    UserRookeryRole, ServiceCharge, Payment, ServicePeriod
+    UserRookeryRole, ServiceCharge, Payment, ServicePeriod, PaymentTransactionType
 
 
 class GhostCompanyFilter(admin.SimpleListFilter):
@@ -185,6 +185,12 @@ class PaymentAdmin(admin.ModelAdmin):
     def company(self, obj):
         return obj.service_charge.property.block.company
     
+
+
+@admin.register(PaymentTransactionType)
+class PaymentTransactionTypeAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "order")
+    ordering = ("order",)
 
 
 @admin.register(ServicePeriod)

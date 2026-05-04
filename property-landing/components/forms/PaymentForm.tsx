@@ -4,12 +4,23 @@ import { useState } from "react";
 import ActionButton from "@/components/ui/ActionButton";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import FormError from "@/components/ui/FormError";
+import FormSelect from "@/components/ui/FormSelect";
+import {
+  PAYMENT_TRANSACTION_TYPES,
+  type PaymentTransactionType,
+} from "@/constants/paymentTypes";
 
 export type PaymentFormValues = {
   amount: number;
   date_paid: string;
   comment: string;
+  transaction_type: PaymentTransactionType;
 };
+
+const TRANSACTION_TYPE_OPTIONS = PAYMENT_TRANSACTION_TYPES.map((t) => ({
+  value: t,
+  label: t,
+}));
 
 type PaymentFormProps = {
   /**
@@ -19,7 +30,7 @@ type PaymentFormProps = {
   mode?: "create" | "edit";
   /** Pre-fill (edit mode or future reuse); omit for empty add form. */
   defaultValues?: Partial<
-    Pick<PaymentFormValues, "amount" | "date_paid" | "comment">
+    Pick<PaymentFormValues, "amount" | "date_paid" | "comment" | "transaction_type">
   >;
   onSubmit: (values: PaymentFormValues) => void;
   isSubmitting: boolean;
@@ -53,6 +64,9 @@ export default function PaymentForm({
   const [amount, setAmount] = useState(() => initialAmountString(defaultValues));
   const [datePaid, setDatePaid] = useState(defaultValues?.date_paid ?? "");
   const [comment, setComment] = useState(defaultValues?.comment ?? "");
+  const [transactionType, setTransactionType] = useState<PaymentTransactionType>(
+    defaultValues?.transaction_type ?? PAYMENT_TRANSACTION_TYPES[0],
+  );
 
   const amountNumber = Number(amount);
   const isAmountValid =
@@ -72,6 +86,7 @@ export default function PaymentForm({
       amount: Math.round(amountNumber),
       date_paid: datePaid,
       comment: comment.trim(),
+      transaction_type: transactionType,
     });
   };
 
@@ -95,6 +110,19 @@ export default function PaymentForm({
           }}
           placeholder="0"
           className="w-full rounded-md border border-dashboard-border bg-dashboard-surface px-3 py-2 text-sm text-dashboard-text placeholder:text-dashboard-muted focus:outline-none focus:ring-2 focus:ring-dashboard-ring"
+        />
+      </div>
+
+      <div className="space-y-1">
+        <label htmlFor="payment-transaction-type" className="text-sm text-dashboard-muted">
+          Payment Type
+        </label>
+        <FormSelect
+          id="payment-transaction-type"
+          value={transactionType}
+          onChange={(v) => setTransactionType(v as PaymentTransactionType)}
+          options={TRANSACTION_TYPE_OPTIONS}
+          className="w-full"
         />
       </div>
 

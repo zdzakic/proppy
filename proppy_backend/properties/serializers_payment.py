@@ -3,7 +3,7 @@ from decimal import Decimal
 from django.db.models import Sum
 from rest_framework import serializers
 
-from .models import Payment, ServiceCharge
+from .models import Payment, PaymentTransactionType, ServiceCharge
 
 
 class PaymentListSerializer(serializers.ModelSerializer):
@@ -17,9 +17,13 @@ class PaymentListSerializer(serializers.ModelSerializer):
     - ListCreateAPIView uses a slim serializer; create stays on PaymentCreateSerializer.
     """
 
+    transaction_type_name = serializers.CharField(
+        source="transaction_type.name", read_only=True, default=None
+    )
+
     class Meta:
         model = Payment
-        fields = ["id", "amount", "date_paid", "comment"]
+        fields = ["id", "amount", "date_paid", "comment", "transaction_type", "transaction_type_name"]
 
 
 class PaymentCreateSerializer(serializers.ModelSerializer):
@@ -36,10 +40,16 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
     service_charge = serializers.PrimaryKeyRelatedField(
         queryset=ServiceCharge.objects.all()
     )
+    transaction_type = serializers.SlugRelatedField(
+        queryset=PaymentTransactionType.objects.all(),
+        slug_field="name",
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = Payment
-        fields = ["id", "service_charge", "amount", "date_paid", "comment"]
+        fields = ["id", "service_charge", "amount", "date_paid", "comment", "transaction_type"]
 
     def validate_amount(self, value):
         if value is None:
@@ -84,9 +94,19 @@ class PaymentUpdateSerializer(serializers.ModelSerializer):
       otherwise editing (e.g. correcting a typo) always fails the check.
     """
 
+    transaction_type = serializers.SlugRelatedField(
+        queryset=PaymentTransactionType.objects.all(),
+        slug_field="name",
+        required=False,
+        allow_null=True,
+    )
+    transaction_type_name = serializers.CharField(
+        source="transaction_type.name", read_only=True, default=None
+    )
+
     class Meta:
         model = Payment
-        fields = ["id", "amount", "date_paid", "comment"]
+        fields = ["id", "amount", "date_paid", "comment", "transaction_type", "transaction_type_name"]
 
     def validate_amount(self, value):
         if value is None:

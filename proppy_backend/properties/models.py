@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from users.models import Role
-from .constants import TITLE_CHOICES
+from .constants import TITLE_CHOICES, PAYMENT_TRANSACTION_TYPE_NAMES
 
 User = get_user_model()
 
@@ -388,6 +388,33 @@ class ServiceCharge(models.Model):
     
 
 # =========================================================
+# PAYMENT TRANSACTION TYPE
+# =========================================================
+class PaymentTransactionType(models.Model):
+    """
+    Classifies a payment by its purpose or direction.
+
+    WHY:
+    - Distinguishes between notice charges, incoming owner payments, and outgoing vendor payments
+    - Enables per-type filtering and reporting without hardcoding strings in business logic
+    - Extensible: new types added as rows, no schema change needed
+
+    IMPORTANT:
+    - Seed data is defined in PAYMENT_TRANSACTION_TYPE_NAMES (constants.py)
+    - Applied via data migration immediately after schema migration
+    """
+
+    name = models.CharField(max_length=100)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.name
+
+
+# =========================================================
 # PAYMENT (what is paid)
 # =========================================================
 class Payment(models.Model):
@@ -409,6 +436,12 @@ class Payment(models.Model):
     date_paid = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     comment = models.TextField(blank=True)
+    transaction_type = models.ForeignKey(
+        PaymentTransactionType,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return f"{self.amount} paid on {self.date_paid}"

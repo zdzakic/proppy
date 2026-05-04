@@ -5,12 +5,14 @@ import { toast } from "sonner";
 
 import type { PaymentRow } from "@/components/dashboard/companyAdmin/billing/PaymentsTable";
 import apiClient from "@/utils/api/apiClient";
+import type { PaymentTransactionType } from "@/constants/paymentTypes";
 
 type CreatePaymentPayload = {
   service_charge: number;
   amount: number;
   date_paid: string;
   comment?: string;
+  transaction_type: PaymentTransactionType;
 };
 
 type CreatePaymentOptions = {
@@ -20,6 +22,7 @@ type CreatePaymentOptions = {
 type UpdatePaymentPayload = {
   amount: number;
   comment?: string;
+  transaction_type: PaymentTransactionType;
 };
 
 function paymentApiErrorMessage(error: unknown, fallback: string): string {
@@ -100,6 +103,7 @@ export function usePayments() {
       const res = await apiClient.patch<PaymentRow>(`/properties/payments/${id}/`, {
         amount: payload.amount,
         comment: payload.comment ?? "",
+        transaction_type: payload.transaction_type,
       });
       toast.success("Payment updated successfully.");
       return res.data;

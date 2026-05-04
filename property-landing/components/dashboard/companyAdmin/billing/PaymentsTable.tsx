@@ -4,15 +4,16 @@ import { Pencil, Trash2 } from "lucide-react";
 
 import { useSort } from "@/hooks/useSort";
 import { fmtInt } from "@/utils/common/formatNumber";
-
 export type PaymentRow = {
   id: number;
   amount: string | number;
   date_paid: string;
   comment: string;
+  transaction_type: number | null;
+  transaction_type_name: string | null;
 };
 
-type SortKey = "date_paid" | "amount" | "comment";
+type SortKey = "date_paid" | "amount" | "comment" | "transaction_type";
 
 function fmtDateDDMMYYYY(value: string) {
   // Expected: "YYYY-MM-DD" from DRF DateField; fall back to original if unexpected.
@@ -65,6 +66,7 @@ export default function PaymentsTable({
       if (key === "date_paid") return new Date(p.date_paid).getTime();
       if (key === "amount") return Number(p.amount);
       if (key === "comment") return p.comment ?? "";
+      if (key === "transaction_type") return p.transaction_type_name ?? "";
       return "";
     },
   });
@@ -101,6 +103,18 @@ export default function PaymentsTable({
             <th className="px-3 py-2 font-medium">
               <button
                 type="button"
+                onClick={() => handleSort("transaction_type")}
+                className="inline-flex items-center gap-1 hover:text-dashboard-text"
+              >
+                <span>Payment Type</span>
+                <span className="inline-flex w-4 justify-center text-dashboard-text">
+                  {getSortIndicator("transaction_type")}
+                </span>
+              </button>
+            </th>
+            <th className="px-3 py-2 font-medium">
+              <button
+                type="button"
                 onClick={() => handleSort("comment")}
                 className="inline-flex items-center gap-1 hover:text-dashboard-text"
               >
@@ -126,6 +140,9 @@ export default function PaymentsTable({
               </td>
               <td className="px-3 py-2 text-dashboard-text">
                 {fmtInt(p.amount)}
+              </td>
+              <td className="px-3 py-2 text-dashboard-text">
+                {p.transaction_type_name ?? "—"}
               </td>
               <td className="px-3 py-2 text-dashboard-muted">
                 {p.comment?.trim() ? p.comment : "—"}

@@ -15,7 +15,7 @@ import { fmtInt } from "@/utils/common/formatNumber";
 type PaymentMutations = {
   onUpdatePayment: (
     id: number,
-    values: Pick<PaymentFormValues, "amount" | "comment">,
+    values: Pick<PaymentFormValues, "amount" | "comment" | "transaction_type">,
   ) => Promise<PaymentRow | null>;
   onDeletePayment: (id: number) => Promise<boolean>;
   isUpdatingPayment: boolean;
@@ -139,9 +139,14 @@ export default function ViewPaymentsModal({
     const updated = await onUpdatePayment(editingPayment.id, {
       amount: values.amount,
       comment: values.comment,
+      transaction_type: values.transaction_type,
     });
     if (updated) {
-      setPayments((prev) => prev.map((row) => (row.id === updated.id ? updated : row)));
+      const patchedRow: PaymentRow = {
+        ...updated,
+        transaction_type_name: updated.transaction_type_name ?? values.transaction_type ?? null,
+      };
+      setPayments((prev) => prev.map((row) => (row.id === patchedRow.id ? patchedRow : row)));
       onPaymentsMutated?.();
       handleEditClose();
     }

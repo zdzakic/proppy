@@ -89,7 +89,7 @@ describe("ViewPaymentsModal", () => {
     const onDeletePayment = vi.fn().mockResolvedValue(true);
 
     mockGet.mockResolvedValueOnce({
-      data: [{ id: 1, amount: "20.00", date_paid: "2026-04-11", comment: "note" }],
+      data: [{ id: 1, amount: "20.00", date_paid: "2026-04-11", comment: "note", transaction_type: 1, transaction_type_name: "Incoming" }],
     });
 
     render(
@@ -119,7 +119,7 @@ describe("ViewPaymentsModal", () => {
     await user.click(screen.getByRole("button", { name: "Save Changes" }));
 
     await vi.waitFor(() => {
-      expect(onUpdatePayment).toHaveBeenCalledWith(1, { amount: 15, comment: "note" });
+      expect(onUpdatePayment).toHaveBeenCalledWith(1, { amount: 15, comment: "note", transaction_type: "Incoming" });
     });
 
     expect(onPaymentsMutated).toHaveBeenCalledTimes(1);
