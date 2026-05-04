@@ -1,5 +1,6 @@
 import {
   Building2,
+  ChartBar,
   CircleHelp,
   LayoutDashboard,
   LogOut,
@@ -69,6 +70,11 @@ const dashboardSidebarByRole: Record<AppRole, DashboardMenuItemConfig[]> = {
       label: "Service Charges",
       href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.SERVICE_CHARGES,
       icon: ReceiptText,
+    },
+    {
+      label: "Reports",
+      href: ROUTES.DASHBOARD_PAGES.COMPANY_ADMIN.REPORTS,
+      icon: ChartBar,
     },
     {
       label: "How To Use",

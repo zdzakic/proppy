@@ -37,6 +37,7 @@ export const ROUTES = {
       PROPERTIES: "/dashboard/properties",
       OWNERS: "/dashboard/owners",
       SERVICE_CHARGES: "/dashboard/service-charges",
+      REPORTS: "/dashboard/reports",
       USERS: "/dashboard/users",
       HOW_TO_USE: "/dashboard/how-to-use",
     },
